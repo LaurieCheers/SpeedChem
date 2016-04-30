@@ -14,9 +14,9 @@ namespace SpeedChem
         bool isPushed = false;
         Texture2D pushedTexture;
         Texture2D unpushedTexture;
-        Triggerable target;
+        Command target;
 
-        public PushButton(Triggerable target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size): base(unpushedTexture, pos, size)
+        public PushButton(Command target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size): base(unpushedTexture, pos, size)
         {
             this.target = target;
             this.pushedTexture = pushedTexture;
@@ -24,7 +24,7 @@ namespace SpeedChem
             objectType = WorldObjectType.Trigger;
         }
 
-        public PushButton(Triggerable target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size, Color color) : base(unpushedTexture, pos, size, color)
+        public PushButton(Command target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size, Color color) : base(unpushedTexture, pos, size, color)
         {
             this.target = target;
             this.pushedTexture = pushedTexture;
@@ -50,11 +50,29 @@ namespace SpeedChem
                 }
             }
 
+            if (!isPushed)
+            {
+                const int EXPAND = 8;
+                Vectangle expandedBounds = myBounds;
+                expandedBounds.X -= EXPAND;
+                expandedBounds.Y -= EXPAND;
+                expandedBounds.Width += EXPAND*2;
+                expandedBounds.Height += EXPAND*2;
+                foreach (Projectile p in projectiles)
+                {
+                    if(expandedBounds.Contains(p.pos))
+                    {
+                        isPushed = true;
+                        break;
+                    }
+                }
+            }
+
             if (isPushed)
             {
                 texture = pushedTexture;
                 if (!wasPushed)
-                    target.Trigger();
+                    target.Run();
             }
             else
             {

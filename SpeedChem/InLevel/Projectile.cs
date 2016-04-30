@@ -11,7 +11,7 @@ namespace SpeedChem
     public class Projectile
     {
         Texture2D texture;
-        Vector2 pos;
+        public Vector2 pos;
         Vector2 size;
         float rotation;
         Vector2 velocity;
@@ -78,6 +78,7 @@ namespace SpeedChem
             switch (obj.objectType)
             {
                 case WorldObjectType.Character:
+                case WorldObjectType.Trigger:
                     return false;
                 default:
                     return true;

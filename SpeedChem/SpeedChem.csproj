@@ -66,21 +66,32 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ChemBlock.cs" />
-    <Compile Include="CuttingBeam.cs" />
+    <Compile Include="InLevel\ChemBlock.cs" />
+    <Compile Include="ChemicalFactory.cs" />
+    <Compile Include="ChemicalSilo.cs" />
+    <Compile Include="LRCEngine\JSONTable.cs" />
+    <Compile Include="LRCEngine\RichImage.cs" />
+    <Compile Include="LRCEngine\UIButton.cs" />
+    <Compile Include="InLevel\CuttingBeam.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="InputState.cs" />
-    <Compile Include="LRCEngine.cs" />
-    <Compile Include="PlatformCharacter.cs" />
+    <Compile Include="InLevel\GameLevel.cs" />
+    <Compile Include="LRCEngine\InputState.cs" />
+    <Compile Include="LRCEngine\LRCEngine.cs" />
+    <Compile Include="LRCEngine\UIContainer.cs" />
+    <Compile Include="MetaGame.cs" />
+    <Compile Include="InLevel\OutputZone.cs" />
+    <Compile Include="InLevel\PlatformCharacter.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Projectile.cs" />
+    <Compile Include="InLevel\Projectile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PushButton.cs" />
-    <Compile Include="RigidBody.cs" />
-    <Compile Include="Spawner.cs" />
-    <Compile Include="Triggerable.cs" />
-    <Compile Include="Vectangle.cs" />
-    <Compile Include="WorldObject.cs" />
+    <Compile Include="InLevel\PushButton.cs" />
+    <Compile Include="InLevel\RigidBody.cs" />
+    <Compile Include="InLevel\Command_Spawn.cs" />
+    <Compile Include="LRCEngine\SpriteObject.cs" />
+    <Compile Include="TextureCache.cs" />
+    <Compile Include="InLevel\Command.cs" />
+    <Compile Include="LRCEngine\Vectangle.cs" />
+    <Compile Include="InLevel\WorldObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -99,7 +110,22 @@
     <Content Include="Content\button3d.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\button3d_hover.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\button3d_pressed.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\chemicon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\clear.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\hq.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\silo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\white.png">

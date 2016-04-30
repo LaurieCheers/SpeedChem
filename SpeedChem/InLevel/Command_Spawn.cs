@@ -8,20 +8,20 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class Spawner: Triggerable
+    class Command_Spawn: Command
     {
         bool triggered;
         Vectangle bounds;
-        Color[,] blockTemplate;
+        ChemicalSignature blockTemplate;
 
-        public Spawner(Vectangle bounds, Color[,] blockTemplate)
+        public Command_Spawn(Vectangle bounds, ChemicalSignature blockTemplate)
         {
             triggered = false;
             this.bounds = bounds;
             this.blockTemplate = blockTemplate;
         }
 
-        public void Trigger()
+        public void Run()
         {
             triggered = true;
         }
@@ -39,8 +39,8 @@ namespace SpeedChem
 
             triggered = false;
 
-            int height = blockTemplate.GetLength(0);
-            int width = blockTemplate.GetLength(1);
+            int height = blockTemplate.height;
+            int width = blockTemplate.width;
 
             float startX = bounds.CenterX - width * 32 / 2;
             float startY = bounds.CenterY - height * 32 / 2;
@@ -53,10 +53,10 @@ namespace SpeedChem
             {
                 for(int row = 0; row < height; ++row)
                 {
-                    Color c = blockTemplate[row, col];
-                    if (c != null)
+                    ChemicalElement c = blockTemplate[col, row];
+                    if (c != ChemicalElement.NONE)
                     {
-                        ChemBlock newBlock = new ChemBlock(Game1.instance.blockTexture, new Vector2(curX, curY), new Vector2(32, 32), c);
+                        ChemBlock newBlock = new ChemBlock(c, Game1.textures.block, new Vector2(curX, curY), new Vector2(32, 32), c.ToColor());
                         objects.Add(newBlock);
 
                         if(firstBlock != null)

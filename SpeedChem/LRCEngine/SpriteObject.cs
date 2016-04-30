@@ -7,21 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpeedChem
+namespace LRCEngine
 {
-    public enum WorldObjectType
+    public class SpriteObject
     {
-        Solid,
-        Character,
-        Pushable,
-        Trigger,
-    };
-
-    public class WorldObject
-    {
-        public WorldObjectType objectType = WorldObjectType.Solid;
         public Vector2 pos;
-        public Vector2 size {
+        public Vector2 size
+        {
             get { return _size; }
             set { _size = value; _scale = new Vector2(value.X / textureRegion.Width, value.Y / textureRegion.Height); }
         }
@@ -32,7 +24,7 @@ namespace SpeedChem
         Color color = Color.White;
         public SpriteEffects spriteEffects = SpriteEffects.None;
 
-        public WorldObject(Texture2D texture, Vector2 pos, Vector2 size)
+        public SpriteObject(Texture2D texture, Vector2 pos, Vector2 size)
         {
             this.texture = texture;
             this.pos = pos;
@@ -40,12 +32,12 @@ namespace SpeedChem
             this.size = size;
         }
 
-        public WorldObject(Texture2D texture, Vector2 pos, Vector2 size, Color color): this(texture, pos, size)
+        public SpriteObject(Texture2D texture, Vector2 pos, Vector2 size, Color color): this(texture, pos, size)
         {
             this.color = color;
         }
 
-        public WorldObject(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion)
+        public SpriteObject(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion)
         {
             this.texture = texture;
             this.pos = pos;
@@ -54,25 +46,9 @@ namespace SpeedChem
             this.color = color;
         }
 
-        public virtual void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
-        {
-        }
-
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texture, new Vector2((int)pos.X, (int)pos.Y), textureRegion, color, 0, Vector2.Zero, _scale, spriteEffects, 0);
-        }
-
-        public virtual void CollidedX(RigidBody other)
-        {
-            other.velocity.X = 0;
-            other.UpdatedVelocity();
-        }
-
-        public virtual void CollidedY(RigidBody other)
-        {
-            other.velocity.Y = 0;
-            other.UpdatedVelocity();
         }
 
         public Vectangle bounds { get { return new Vectangle(pos, size); } }

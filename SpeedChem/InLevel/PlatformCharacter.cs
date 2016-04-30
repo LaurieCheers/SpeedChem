@@ -97,12 +97,12 @@ namespace SpeedChem
             if(input.WasMouseRightJustReleased())
             {
                 const float NAILSPEED = 10.0f;
-                const float RECOILSPEED = 2.5f;
+                const float RECOILSPEED = 0.0f;// 2.5f;
                 Vector2 shootPos = bounds.Center;
                 Vector2 targetPos = input.MousePos;
                 Vector2 shootDir = (targetPos - shootPos);
                 shootDir.Normalize();
-                projectiles.Add(new Projectile(Game1.instance.whiteTexture, bounds.Center, new Vector2(15, 3), shootDir*NAILSPEED));
+                projectiles.Add(new Projectile(Game1.textures.white, bounds.Center, new Vector2(15, 3), shootDir*NAILSPEED));
                 velocity -= shootDir * RECOILSPEED;
             }
 

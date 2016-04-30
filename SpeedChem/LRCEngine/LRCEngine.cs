@@ -1,0 +1,108 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LRCEngine
+{
+    public enum Rotation90
+    {
+        None,
+        Rot90,
+        Rot180,
+        Rot270
+    }
+
+    public static class LRCEngineExtensions
+    {
+        public static float DotProduct(this Vector2 a, Vector2 b)
+        {
+            return a.X * b.X + a.Y * b.Y;
+        }
+
+        public static bool Contains(this Rectangle rect, Vector2 pos)
+        {
+            return rect.Contains(new Point((int)pos.X, (int)pos.Y));
+        }
+
+        public static void Draw(this SpriteBatch spriteBatch, RichImage image, Rectangle rect, Color col)
+        {
+            image.Draw(spriteBatch, rect);
+        }
+
+        public static Color Multiply(this Color col1, Color col2)
+        {
+            return new Color(col1.R * col2.R * (1 / 65536.0f), col1.G * col2.G * (1 / 65536.0f), col1.B * col2.B * (1 / 65536.0f), col1.A * col2.A * (1 / 65536.0f));
+        }
+
+        public static int hexToInt(this String str)
+        {
+            int result = 0;
+            foreach (char c in str)
+            {
+                if (c >= 'a' && c <= 'f')
+                {
+                    result = (c - 'a') + 10 + result * 16;
+                }
+                else if (c >= 'A' && c <= 'F')
+                {
+                    result = (c - 'A') + 10 + result * 16;
+                }
+                else if (c >= '0' && c <= '9')
+                {
+                    result = (c - '0') + result * 16;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            return result;
+        }
+
+        public static Color toColor(this String str)
+        {
+            if (str.Length == 6)
+            {
+                return new Color(str.Substring(0, 2).hexToInt(), str.Substring(2, 2).hexToInt(), str.Substring(4, 2).hexToInt());
+            }
+            else if (str.Length == 8)
+            {
+                return new Color(str.Substring(0, 2).hexToInt(), str.Substring(2, 2).hexToInt(), str.Substring(4, 2).hexToInt(), str.Substring(6, 2).hexToInt());
+            }
+            return Color.White;
+        }
+
+        public static int toInt(this Rotation90 rot)
+        {
+            switch (rot)
+            {
+                case Rotation90.Rot90: return 90;
+                case Rotation90.Rot180: return 180;
+                case Rotation90.Rot270: return 270;
+                default: return 0;
+            }
+        }
+
+        public static Rotation90 getRotation(this JSONTable table, string name, Rotation90 defaultValue)
+        {
+            int angle = table.getInt(name, defaultValue.toInt());
+            return (Rotation90)(angle / 90);
+        }
+
+        public static Rotation90 rotateBy(this Rotation90 rotation, Rotation90 other)
+        {
+            int newRotation = (rotation.toInt() + other.toInt()) % 360;
+            return (Rotation90)(newRotation / 90);
+        }
+
+        public static Rotation90 invert(this Rotation90 rotation)
+        {
+            int newRotation = 360 - rotation.toInt();
+            return (Rotation90)(newRotation / 90);
+        }
+    }
+}

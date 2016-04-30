@@ -9,21 +9,118 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
+    public enum ChemicalElement
+    {
+        NONE,
+        WHITE,
+        GREEN,
+        RED,
+        BLUE
+    };
+
+    public static class ChemicalExtension
+    {
+        public static Color ToColor(this ChemicalElement e)
+        {
+            switch(e)
+            {
+                case ChemicalElement.WHITE:
+                    return Color.White;
+                case ChemicalElement.GREEN:
+                    return Color.Green;
+                case ChemicalElement.RED:
+                    return Color.Red;
+                case ChemicalElement.BLUE:
+                    return Color.Blue;
+                default:
+                    return Color.Black;
+            }
+        }
+    }
+
+    public struct ChemicalSignature
+    {
+        public readonly int width;
+        public int height { get { return elements.Length / width; } }
+        readonly ChemicalElement[] elements;
+
+        public ChemicalSignature(int width, ChemicalElement[] elements)
+        {
+            this.width = width;
+            this.elements = elements;
+        }
+
+        public override bool Equals(Object obj)
+        {
+            return obj is ChemicalSignature && this == (ChemicalSignature)obj;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            foreach(ChemicalElement e in elements)
+            {
+                hash = (6*hash) + e.GetHashCode();
+            }
+            hash ^= width.GetHashCode();
+            return hash;
+        }
+
+        public static bool operator== (ChemicalSignature a, ChemicalSignature b)
+        {
+            if (a.width != b.width || a.elements.Length != b.elements.Length)
+                return false;
+
+            for(int Idx = 0; Idx < a.elements.Length; ++Idx)
+            {
+                if (a.elements[Idx] != b.elements[Idx])
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool operator !=(ChemicalSignature a, ChemicalSignature b)
+        {
+            return !(a == b);
+        }
+
+        public ChemicalElement this[int x, int y]
+        {
+            get {
+                return elements[x+y*width];
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Vector2 pos)
+        {
+            int y = 0;
+            for(int Idx = 0; Idx < elements.Length;)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    ChemicalElement element = elements[Idx];
+                    if (element != ChemicalElement.NONE)
+                    {
+                        spriteBatch.Draw(Game1.textures.chemIcon, new Rectangle((int)pos.X+x*8, (int)pos.Y+y*8, 8,8), element.ToColor());
+                    }
+                    Idx++;
+                }
+                y++;
+            }
+        }
+    }
+
     class ChemGrid
     {
         HashSet<Point> horizontalBonds;
         HashSet<Point> verticalBonds;
         Dictionary<ChemBlock, Point> blocks;
-        int width;
-        int height;
 
         public ChemGrid(ChemBlock solo)
         {
             blocks = new Dictionary<ChemBlock, Point> { { solo, Point.Zero } };
             horizontalBonds = new HashSet<Point>();
             verticalBonds = new HashSet<Point>();
-            width = 1;
-            height = 1;
         }
 
         public Vector2 GetOrigin()
@@ -122,8 +219,6 @@ namespace SpeedChem
                 // merge the grids
                 Point b_in_aPos = a_in_aPos + blockOffset;
                 Point gridOffset = b_in_aPos - b_in_bPos;
-                width = Math.Max(width, gridOffset.X + b.chemGrid.width);
-                height = Math.Max(height, gridOffset.Y + b.chemGrid.height);
                 foreach (Point p in b.chemGrid.horizontalBonds)
                 {
                     horizontalBonds.Add(p + gridOffset);
@@ -171,7 +266,7 @@ namespace SpeedChem
             Point origin = GetOrigin().ToPoint();
             foreach(Point curPos in horizontalBonds)
             {
-                spriteBatch.Draw(Game1.instance.whiteTexture, new Rectangle(
+                spriteBatch.Draw(Game1.textures.white, new Rectangle(
                     origin.X + curPos.X * 32 + 25,
                     origin.Y + curPos.Y * 32 + 15,
                     15,
@@ -181,7 +276,7 @@ namespace SpeedChem
             }
             foreach (Point curPos in verticalBonds)
             {
-                spriteBatch.Draw(Game1.instance.whiteTexture, new Rectangle(
+                spriteBatch.Draw(Game1.textures.white, new Rectangle(
                     origin.X + curPos.X * 32 + 15,
                     origin.Y + curPos.Y * 32 + 25,
                     3,
@@ -190,19 +285,64 @@ namespace SpeedChem
                 );
             }
         }
+
+        public void DoOutput()
+        {
+            ChemicalSignature signature = GetSignature();
+            Game1.instance.metaGame.ProduceChemical(signature, 1);
+
+            foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
+            {
+                kv.Key.destroyed = true;
+            }
+        }
+
+        public ChemicalSignature GetSignature()
+        {
+            Point p = blocks.First().Value;
+            int minX = p.X;
+            int minY = p.Y;
+            int maxX = p.X;
+            int maxY = p.Y;
+            foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
+            {
+                minX = Math.Min(minX, kv.Value.X);
+                minY = Math.Min(minY, kv.Value.Y);
+                maxX = Math.Max(maxX, kv.Value.X);
+                maxY = Math.Max(maxY, kv.Value.Y);
+            }
+
+            int width = maxX + 1 - minX;
+            int height = maxY + 1 - minY;
+            int signatureLength = width * height;
+            ChemicalElement[] signature = new ChemicalElement[signatureLength];
+            for(int Idx = 0; Idx < signatureLength; ++Idx)
+            {
+                signature[Idx] = ChemicalElement.NONE;
+            }
+
+            foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
+            {
+                signature[(kv.Value.X-minX) + (kv.Value.Y - minY) * width] = kv.Key.element;
+            }
+
+            return new ChemicalSignature(width, signature);
+        }
     }
 
     class ChemBlock : RigidBody
     {
         Vector2 nailDirection;
         int nailDuration;
+        public readonly ChemicalElement element;
         public ChemGrid chemGrid;
         const int NAIL_DURATION_MAX = 20;
         const float NAIL_SEARCH_RANGE = 4.0f;
         const float NAIL_SEARCH_NARROW = 8.0f;
 
-        public ChemBlock(Texture2D texture, Vector2 pos, Vector2 size, Color color) : base(texture, pos, size, color)
+        public ChemBlock(ChemicalElement element, Texture2D texture, Vector2 pos, Vector2 size, Color color) : base(texture, pos, size, color)
         {
+            this.element = element;
             objectType = WorldObjectType.Pushable;
             chemGrid = new ChemGrid(this);
         }

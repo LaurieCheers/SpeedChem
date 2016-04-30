@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    interface Triggerable
+    interface Command
     {
-        void Trigger();
+        void Run();
         void Update(List<WorldObject> objects);
     }
 }
