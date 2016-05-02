@@ -228,6 +228,17 @@ namespace LRCEngine
         void Draw(SpriteBatch spriteBatch, Rectangle rect, Color col, Rotation90 rotation);
     }
 
+    public enum RichImageDrawMode
+    {
+        DEFAULT,
+        STRETCHED,
+        FIXED,
+        FITTED,
+        TILED,
+        TILED9GRID,
+        STRETCHED9GRID,
+    };
+
     public class RichImageLayer_Texture : RichImageLayer
     {
         Texture2D texture;
@@ -237,7 +248,7 @@ namespace LRCEngine
         Vector2 offset;
         Rotation90 rotation;
         bool modifiesRect;
-        static Dictionary<String, IDrawMode> drawModes = new Dictionary<string, IDrawMode> {
+        static Dictionary<String, IDrawMode> drawModesByName = new Dictionary<string, IDrawMode> {
             {"default", new DrawMode_Stretched()},
             {"stretched", new DrawMode_Stretched()},
             {"fixed", new DrawMode_Fixed()},
@@ -246,8 +257,17 @@ namespace LRCEngine
             {"tiled9grid", new DrawMode_Tiled9Grid()},
             {"stretched9grid", new DrawMode_Stretch9Grid()}
         };
+        static Dictionary<RichImageDrawMode, IDrawMode> drawModes = new Dictionary<RichImageDrawMode, IDrawMode> {
+            {RichImageDrawMode.DEFAULT, new DrawMode_Stretched()},
+            {RichImageDrawMode.STRETCHED, new DrawMode_Stretched()},
+            {RichImageDrawMode.FIXED, new DrawMode_Fixed()},
+            {RichImageDrawMode.FITTED, new DrawMode_Fitted()},
+            {RichImageDrawMode.TILED, new DrawMode_Tiled()},
+            {RichImageDrawMode.TILED9GRID, new DrawMode_Tiled9Grid()},
+            {RichImageDrawMode.STRETCHED9GRID, new DrawMode_Stretch9Grid()}
+        };
 
-        public RichImageLayer_Texture(Texture2D aTexture, Color aColor, String aDrawMode, int aPadding, Rotation90 aRotation)
+        public RichImageLayer_Texture(Texture2D aTexture, Color aColor, RichImageDrawMode aDrawMode, int aPadding, Rotation90 aRotation)
         {
             texture = aTexture;
             color = aColor;
@@ -259,11 +279,23 @@ namespace LRCEngine
             modifiesRect = (padding != 0 || offset.X != 0 || offset.Y != 0);
         }
 
+        public RichImageLayer_Texture(Texture2D aTexture, Color aColor, String aDrawMode, int aPadding, Rotation90 aRotation)
+        {
+            texture = aTexture;
+            color = aColor;
+            drawMode = drawModesByName[aDrawMode];
+            padding = aPadding;
+            rotation = aRotation;
+            offset = Vector2.Zero;
+
+            modifiesRect = (padding != 0 || offset.X != 0 || offset.Y != 0);
+        }
+
         public RichImageLayer_Texture(JSONTable template, ContentManager content)
         {
             texture = content.Load<Texture2D>(template.getString("texture", "white"));
             color = template.getString("color", "FFFFFF").toColor();
-            drawMode = drawModes[template.getString("draw", "default")];
+            drawMode = drawModesByName[template.getString("draw", "default")];
             padding = template.getInt("padding", 0);
 
             JSONArray offsetArray = template.getArray("offset", null);

@@ -25,7 +25,7 @@ namespace SpeedChem
             switch(e)
             {
                 case ChemicalElement.WHITE:
-                    return Color.White;
+                    return Color.Pink;
                 case ChemicalElement.GREEN:
                     return Color.Green;
                 case ChemicalElement.RED:
@@ -38,7 +38,7 @@ namespace SpeedChem
         }
     }
 
-    public struct ChemicalSignature
+    public class ChemicalSignature
     {
         public readonly int width;
         public int height { get { return elements.Length / width; } }
@@ -68,6 +68,14 @@ namespace SpeedChem
 
         public static bool operator== (ChemicalSignature a, ChemicalSignature b)
         {
+            bool aNull = object.ReferenceEquals(a, null);
+            bool bNull = object.ReferenceEquals(b, null);
+
+            if (aNull)
+                return bNull;
+            else if (bNull)
+                return false;
+
             if (a.width != b.width || a.elements.Length != b.elements.Length)
                 return false;
 
@@ -93,6 +101,11 @@ namespace SpeedChem
 
         public void Draw(SpriteBatch spriteBatch, Vector2 pos)
         {
+            Draw(spriteBatch, pos, Game1.textures.chemIcon);
+        }
+
+        public void Draw(SpriteBatch spriteBatch, Vector2 pos, Texture2D texture)
+        {
             int y = 0;
             for(int Idx = 0; Idx < elements.Length;)
             {
@@ -101,7 +114,7 @@ namespace SpeedChem
                     ChemicalElement element = elements[Idx];
                     if (element != ChemicalElement.NONE)
                     {
-                        spriteBatch.Draw(Game1.textures.chemIcon, new Rectangle((int)pos.X+x*8, (int)pos.Y+y*8, 8,8), element.ToColor());
+                        spriteBatch.Draw(texture, new Rectangle((int)pos.X + x*texture.Width, (int)pos.Y + y*texture.Height, texture.Width, texture.Height), element.ToColor());
                     }
                     Idx++;
                 }
@@ -289,12 +302,14 @@ namespace SpeedChem
         public void DoOutput()
         {
             ChemicalSignature signature = GetSignature();
-            Game1.instance.metaGame.ProduceChemical(signature, 1);
 
             foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
             {
                 kv.Key.destroyed = true;
             }
+
+            Game1.instance.level.ProduceChemical(signature);
+            Game1.instance.level.UpdateSaveButton();
         }
 
         public ChemicalSignature GetSignature()

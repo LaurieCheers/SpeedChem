@@ -32,6 +32,7 @@ namespace SpeedChem
             const float GRAVITY = 0.35f;
             const float JUMP_VEL = -7.2f;
             const float JUMP_DAMPINGY = 0.5f;
+            const float FLOAT_DAMPINGY = 0.75f;
 
             bool isGrabbing = input.IsKeyDown(Keys.LeftShift);
 
@@ -67,7 +68,11 @@ namespace SpeedChem
                 velocity.X *= BRAKES_DAMPINGX;
             }
 
-            if (velocity.Y > 0 || input.IsKeyDown(Keys.Space))
+            if (velocity.Y > 0 && input.IsKeyDown(Keys.Space))
+            {
+                velocity.Y *= FLOAT_DAMPINGY;
+            }
+            else if (velocity.Y > 0 || input.IsKeyDown(Keys.Space))
             {
                 velocity.Y *= DAMPINGY;
             }

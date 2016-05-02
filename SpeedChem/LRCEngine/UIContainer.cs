@@ -1,4 +1,5 @@
 ﻿using LRCEngine;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -8,26 +9,41 @@ using System.Threading.Tasks;
 
 namespace LRCEngine
 {
-    public interface UIElement
+    public abstract class UIElement
     {
-        void Update(InputState inputState);
-        void Draw(SpriteBatch spriteBatch);
+        public abstract void Update(InputState inputState, Vector2 origin);
+        public void Update(InputState inputState) { Update(inputState, Vector2.Zero);  }
+        public abstract void Draw(SpriteBatch spriteBatch, Vector2 origin);
+        public void Draw(SpriteBatch spriteBatch) { Draw(spriteBatch, Vector2.Zero); }
     }
 
     public class UIContainer :UIElement
     {
+        public Vector2 origin;
         List<UIElement> elements = new List<UIElement>();
 
-        public void Update(InputState inputState)
+        public UIContainer()
         {
-            foreach (UIElement element in elements)
-                element.Update(inputState);
+
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public UIContainer(Vector2 origin)
         {
+            this.origin = origin;
+        }
+
+        public override void Update(InputState inputState, Vector2 origin)
+        {
+            Vector2 newOrigin = origin + this.origin;
             foreach (UIElement element in elements)
-                element.Draw(spriteBatch);
+                element.Update(inputState, newOrigin);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, Vector2 origin)
+        {
+            Vector2 newOrigin = origin + this.origin;
+            foreach (UIElement element in elements)
+                element.Draw(spriteBatch, newOrigin);
         }
 
         public void Add(UIElement element)

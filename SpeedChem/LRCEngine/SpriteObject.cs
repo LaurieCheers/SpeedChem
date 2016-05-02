@@ -22,6 +22,7 @@ namespace LRCEngine
         public Texture2D texture;
         public Rectangle textureRegion;
         Color color = Color.White;
+        public float layerDepth;
         public SpriteEffects spriteEffects = SpriteEffects.None;
 
         public SpriteObject(Texture2D texture, Vector2 pos, Vector2 size)
@@ -48,7 +49,7 @@ namespace LRCEngine
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, new Vector2((int)pos.X, (int)pos.Y), textureRegion, color, 0, Vector2.Zero, _scale, spriteEffects, 0);
+            spriteBatch.Draw(texture, new Vector2((int)pos.X, (int)pos.Y), textureRegion, color, 0, Vector2.Zero, _scale, spriteEffects, layerDepth);
         }
 
         public Vectangle bounds { get { return new Vectangle(pos, size); } }

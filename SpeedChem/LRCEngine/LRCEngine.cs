@@ -23,6 +23,26 @@ namespace LRCEngine
             return a.X * b.X + a.Y * b.Y;
         }
 
+        // Convert a vector to an angle. Due right (Vector2(1,0)) is at 0.0f, and the angles continue clockwise.
+        public static float ToAngle(this Vector2 a)
+        {
+            float len = a.Length();
+
+            if (len < 0.001f)
+            {
+                return 0;
+            }
+            else
+            {
+                Vector2 dir = a / len;
+
+                float result = (float)Math.Asin(dir.Y);
+                if (a.X < 0)
+                    result = (float)(Math.PI-result);
+                return result;
+            }
+        }
+
         public static bool Contains(this Rectangle rect, Vector2 pos)
         {
             return rect.Contains(new Point((int)pos.X, (int)pos.Y));
@@ -36,6 +56,11 @@ namespace LRCEngine
         public static Color Multiply(this Color col1, Color col2)
         {
             return new Color(col1.R * col2.R * (1 / 65536.0f), col1.G * col2.G * (1 / 65536.0f), col1.B * col2.B * (1 / 65536.0f), col1.A * col2.A * (1 / 65536.0f));
+        }
+
+        public static Vector2 Size(this Texture2D texture)
+        {
+            return new Vector2(texture.Width, texture.Height);
         }
 
         public static int hexToInt(this String str)

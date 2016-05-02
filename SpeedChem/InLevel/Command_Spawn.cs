@@ -12,13 +12,15 @@ namespace SpeedChem
     {
         bool triggered;
         Vectangle bounds;
-        ChemicalSignature blockTemplate;
+        ChemicalFactory factory;
+        int inputIndex;
 
-        public Command_Spawn(Vectangle bounds, ChemicalSignature blockTemplate)
+        public Command_Spawn(Vectangle bounds, ChemicalFactory factory, int inputIndex)
         {
             triggered = false;
             this.bounds = bounds;
-            this.blockTemplate = blockTemplate;
+            this.factory = factory;
+            this.inputIndex = inputIndex;
         }
 
         public void Run()
@@ -37,35 +39,42 @@ namespace SpeedChem
                     return;
             }
 
+            ChemicalSignature signature = factory.ConsumeInput(inputIndex);
+            if (signature == null)
+                return;
+
             triggered = false;
 
-            int height = blockTemplate.height;
-            int width = blockTemplate.width;
+            int height = signature.height;
+            int width = signature.width;
 
             float startX = bounds.CenterX - width * 32 / 2;
             float startY = bounds.CenterY - height * 32 / 2;
             float curX = startX;
             float curY = startY;
 
-            ChemBlock firstBlock = null;
+            ChemBlock[,] blocksSpawned = new ChemBlock[width, height];
 
             for(int col = 0; col < width; ++col)
             {
                 for(int row = 0; row < height; ++row)
                 {
-                    ChemicalElement c = blockTemplate[col, row];
+                    ChemicalElement c = signature[col, row];
                     if (c != ChemicalElement.NONE)
                     {
                         ChemBlock newBlock = new ChemBlock(c, Game1.textures.block, new Vector2(curX, curY), new Vector2(32, 32), c.ToColor());
                         objects.Add(newBlock);
 
-                        if(firstBlock != null)
+                        blocksSpawned[col, row] = newBlock;
+
+                        if(col > 0 && blocksSpawned[col-1,row] != null)
                         {
-                            firstBlock.NailOnto(newBlock);
+                            blocksSpawned[col - 1, row].NailOnto(newBlock);
                         }
-                        else
+
+                        if (row > 0 && blocksSpawned[col, row - 1] != null)
                         {
-                            firstBlock = newBlock;
+                            blocksSpawned[col, row - 1].NailOnto(newBlock);
                         }
                     }
 
@@ -74,6 +83,8 @@ namespace SpeedChem
 
                 curX += 32;
                 curY = startY;
+
+                Game1.instance.level.UpdateSaveButton();
             }
         }
     }

@@ -11,9 +11,12 @@ namespace SpeedChem
 {
     class OutputZone: WorldObject
     {
-        public OutputZone(Texture2D texture, Vector2 pos, Vector2 size): base(texture, pos, size)
+        ChemicalSignature signature;
+
+        public OutputZone(ChemicalSignature signature, Texture2D texture, Vector2 pos, Vector2 size): base(texture, pos, size)
         {
             objectType = WorldObjectType.Trigger;
+            this.signature = signature;
         }
 
         public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
@@ -27,6 +30,16 @@ namespace SpeedChem
                     ChemBlock block = (ChemBlock)obj;
                     block.chemGrid.DoOutput();
                 }
+            }
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            //base.Draw(spriteBatch);
+            if (signature != null)
+            {
+                spriteBatch.DrawString(Game1.font, "Make this:", new Vector2(bounds.CenterX, bounds.Y), Color.White);
+                signature.Draw(spriteBatch, bounds.Center, Game1.textures.block);
             }
         }
     }

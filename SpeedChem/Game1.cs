@@ -18,9 +18,10 @@ namespace SpeedChem
         SpriteBatch spriteBatch;
         InputState inputState = new InputState();
         public static SpriteFont font;
+        public SplashManager splashes;
 
         public MetaGame metaGame;
-        GameLevel level;
+        public GameLevel level;
 
         public Game1()
         {
@@ -57,6 +58,7 @@ namespace SpeedChem
             buttonStyle = UIButton.GetDefaultStyle(Content);
             metaGame = new MetaGame();
             level = new GameLevel();
+            splashes = new SplashManager();
         }
 
         /// <summary>
@@ -79,6 +81,7 @@ namespace SpeedChem
 
             level.Update(inputState);
             metaGame.Update(inputState, level.active);
+            splashes.Update();
 
             base.Update(gameTime);
         }
@@ -93,10 +96,14 @@ namespace SpeedChem
 
             spriteBatch.Begin();
 
+            spriteBatch.Draw(textures.grass, new Rectangle(0, 0, 800, 600), Color.White);
+
             if (level.active)
                 level.Draw(spriteBatch);
             else
                 metaGame.Draw(spriteBatch);
+
+            splashes.Draw(spriteBatch);
             spriteBatch.End();
             // TODO: Add your drawing code here
 
@@ -105,7 +112,7 @@ namespace SpeedChem
 
         public void ViewFactory(ChemicalFactory factory)
         {
-            level.button_Reset();
+            level.StartPlay(factory);
         }
     }
 }

@@ -13,12 +13,14 @@ namespace LRCEngine
         public readonly UIButtonAppearance normal;
         public readonly UIButtonAppearance hover;
         public readonly UIButtonAppearance pressed;
+        public readonly UIButtonAppearance disabled;
 
-        public UIButtonStyle(UIButtonAppearance normal, UIButtonAppearance hover, UIButtonAppearance pressed)
+        public UIButtonStyle(UIButtonAppearance normal, UIButtonAppearance hover, UIButtonAppearance pressed, UIButtonAppearance disabled)
         {
             this.normal = normal;
             this.hover = hover;
             this.pressed = pressed;
+            this.disabled = disabled;
         }
     }
 
@@ -28,12 +30,14 @@ namespace LRCEngine
         public readonly Color textColor;
         public readonly RichImage image;
         public readonly Vector2 textOffset;
+        public readonly Color fillColor;
 
         public UIButtonAppearance(SpriteFont font, Color textColor, RichImage image, Color fillColor)
         {
             this.font = font;
             this.textColor = textColor;
             this.image = image;
+            this.fillColor = fillColor;
         }
 
         public UIButtonAppearance(SpriteFont font, Color textColor, RichImage image, Color fillColor, Vector2 textOffset)
@@ -46,7 +50,7 @@ namespace LRCEngine
 
         public void Draw(SpriteBatch spriteBatch, string label, Rectangle frame)
         {
-            image.Draw(spriteBatch, frame);
+            image.Draw(spriteBatch, frame, fillColor);
 //            MagicUI.Draw9Grid(spriteBatch, texture, frame, fillColor);
 //            spriteBatch.Draw(texture, frame, fillColor);
             if (font != null)
@@ -66,6 +70,7 @@ namespace LRCEngine
         public delegate void OnPressDelegate();
         bool mouseInside;
         bool pressedInside;
+        bool enabled = true;
 
         public static UIButtonStyle GetDefaultStyle(ContentManager Content)
         {
@@ -77,7 +82,8 @@ namespace LRCEngine
             return new UIButtonStyle(
                 new UIButtonAppearance(font, Color.Black, normalImage, Color.White),
                 new UIButtonAppearance(font, Color.Black, hoverImage, Color.White),
-                new UIButtonAppearance(font, Color.Black, pressedImage, Color.White)
+                new UIButtonAppearance(font, Color.Black, pressedImage, Color.White),
+                new UIButtonAppearance(font, Color.Black, normalImage, Color.Gray)
             );
         }
 
@@ -89,9 +95,16 @@ namespace LRCEngine
             this.onPress = onPress;
         }
 
-        public void Update(InputState inputState)
+        public override void Update(InputState inputState, Vector2 origin)
         {
-            mouseInside = frame.Contains(inputState.MousePos);
+            if (!enabled)
+            {
+                mouseInside = false;
+                pressedInside = false;
+                return;
+            }
+
+            mouseInside = frame.Contains(inputState.MousePos-origin);
             if(mouseInside && inputState.WasMouseLeftJustPressed())
             {
                 pressedInside = true;
@@ -107,10 +120,14 @@ namespace LRCEngine
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, Vector2 origin)
         {
             UIButtonAppearance currentStyle;
-            if(mouseInside)
+            if(!enabled)
+            {
+                currentStyle = styles.disabled;
+            }
+            else if(mouseInside)
             {
                 if (pressedInside)
                     currentStyle = styles.pressed;
@@ -122,7 +139,12 @@ namespace LRCEngine
                 currentStyle = styles.normal;
             }
 
-            currentStyle.Draw(spriteBatch, label, frame);
+            currentStyle.Draw(spriteBatch, label, new Rectangle(frame.X+(int)origin.X, frame.Y+(int)origin.Y, frame.Width, frame.Height));
+        }
+
+        public void SetEnabled(bool enabled)
+        {
+            this.enabled = enabled;
         }
     }
 }
