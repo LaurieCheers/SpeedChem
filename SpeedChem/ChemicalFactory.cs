@@ -51,7 +51,7 @@ namespace SpeedChem
         public ChemicalFactory(Vector2 pos): base(Game1.textures.factory, pos, Game1.textures.factory.Size())
         {
             ui = new UIContainer(pos);
-            ui.Add(new UIButton("Play", new Rectangle(64, 0, 70, 35), Game1.buttonStyle, button_Play));
+            ui.Add(new UIButton("Record", new Rectangle(64, 0, 90, 35), Game1.buttonStyle, button_Play));
 
             SetPipeSocket(new Vector2(32, 16), 2);
             AddOutputPipe(new Vector2(32, 16));
@@ -64,18 +64,21 @@ namespace SpeedChem
 
         public bool PushOutput(ChemicalSignature signature)
         {
-            if (queuedOutput != null)
-                return false;
-
-            if (recording)
-            {
-                commands.Add(new FactoryCommand(currentTime, FactoryCommandType.OUTPUT, signature));
-                nextCommandIdx++;
-            }
-
             PipeSocket socket = pipes.First().connectedTo;
             if (socket != null)
             {
+                if (queuedOutput != null)
+                {
+                    if (socket.parent.ReceiveInput(queuedOutput))
+                    {
+                        pipes.First().AnimatePip();
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
                 if (socket.parent.ReceiveInput(signature))
                 {
                     pipes.First().AnimatePip();
@@ -83,8 +86,28 @@ namespace SpeedChem
                 }
             }
 
+            // failed to output - try to queue it
+            if (queuedOutput != null)
+            {
+                return false;
+            }
+
             queuedOutput = signature;
             return true;
+        }
+
+        public ChemicalSignature GetInputChemical(int inputIndex)
+        {
+            if (pipeSocket.connectedPipes.Count <= inputIndex)
+                return null;
+
+            List<OutputPipe> sortedPipes = pipeSocket.connectedPipes.OrderBy(o => o.sourcePos.X).ToList();
+
+            OutputPipe pipe = sortedPipes[inputIndex];
+            if (pipe == null || pipe.source == null)
+                return null;
+
+            return pipe.source.GetOutputChemical();
         }
 
         public ChemicalSignature ConsumeInput(int inputIndex)
@@ -99,12 +122,6 @@ namespace SpeedChem
                 return null;
 
             ChemicalSignature signature = pipe.source.RequestOutput(pipe);
-
-            if (recording && signature != null)
-            {
-                commands.Add(new FactoryCommand(currentTime, FactoryCommandType.INPUT, signature));
-                nextCommandIdx++;
-            }
 
             return signature;
         }
@@ -153,23 +170,10 @@ namespace SpeedChem
             return queuedOutput;
         }
 
-        public void StartRecording()
+        public void SaveRecording(List<FactoryCommand> recordedCommands)
         {
-            ClearRecording();
-            recording = true;
-        }
-
-        public void StopRecording()
-        {
-            recording = false;
-            currentTime = 0;
+            commands = recordedCommands.ToList();
             nextCommandIdx = 0;
-        }
-
-        public void ClearRecording()
-        {
-            commands.Clear();
-            nextCommandIdx = -1;
             currentTime = 0;
         }
 
@@ -232,8 +236,7 @@ namespace SpeedChem
             base.Draw(spriteBatch);
             if(stalled)
             {
-                spriteBatch.DrawString(Game1.font, "STALLED", new Vector2(bounds.X+1, bounds.CenterY+1), Color.Black);
-                spriteBatch.DrawString(Game1.font, "STALLED", new Vector2(bounds.X, bounds.CenterY), Color.Yellow);
+                spriteBatch.Draw(Game1.textures.warning, new Rectangle((int)bounds.X, (int)bounds.Y, 16, 16), Color.White);
             }
 
             if (selected)
@@ -242,8 +245,8 @@ namespace SpeedChem
 
                 if(commands.Count > 0)
                 {
-                    string currentStr = TimeToString(currentTime);
-                    string finalStr = " / "+TimeToString(commands.Last().time);
+                    string currentStr = GameLevel.TimeToString(currentTime);
+                    string finalStr = " / "+ GameLevel.TimeToString(commands.Last().time);
                     Vector2 currentSize = Game1.font.MeasureString(currentStr);
                     Vector2 finalSize = Game1.font.MeasureString(currentStr);
                     float totalWidth = currentSize.X + finalSize.X;
@@ -252,15 +255,6 @@ namespace SpeedChem
                     spriteBatch.DrawString(Game1.font, finalStr, new Vector2((int)(lhsX+currentSize.X), (int)(bounds.Y - 20)), Color.Yellow);
                 }
             }
-        }
-
-        string TimeToString(int time)
-        {
-            string millis = "" + (time % 60);
-            if (millis.Length == 1)
-                millis = "0" + millis;
-
-            return "" + (time / 60) + ":" + millis;
         }
     }
 }

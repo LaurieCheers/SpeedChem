@@ -23,6 +23,7 @@ namespace SpeedChem
         public Texture2D pipeHandle;
         public Texture2D inbox;
         public Texture2D outbox;
+        public Texture2D warning;
 
         public RichImage grass;
 
@@ -39,6 +40,7 @@ namespace SpeedChem
             pipeHandle = Content.Load<Texture2D>("pipehandle");
             inbox = Content.Load<Texture2D>("helipad");
             outbox = Content.Load<Texture2D>("hq");
+            warning = Content.Load<Texture2D>("warning");
 
             grass = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("grass"), Color.White, RichImageDrawMode.TILED, 0, Rotation90.None));
         }

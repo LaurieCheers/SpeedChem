@@ -44,6 +44,11 @@ namespace SpeedChem
             return signature;
         }
 
+        public override void Update(InputState inputState, ref object selectedObject)
+        {
+            HandleUnlimitedPipes();
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);

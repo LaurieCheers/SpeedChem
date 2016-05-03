@@ -22,17 +22,30 @@ namespace SpeedChem
         public MetaGame()
         {
             int nextInputX = 200;
-            objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.WHITE }), 0, new Vector2(nextInputX, 30)));
+            ChemicalInbox tutorialInbox = new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.WHITE }), 0, new Vector2(nextInputX, 30));
+            objects.Add(tutorialInbox);
             nextInputX += 100;
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.BLUE }), 5, new Vector2(nextInputX, 30)));
             nextInputX += 100;
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.RED }), 80, new Vector2(nextInputX, 30)));
 
-            int nextOutputX = 200;
-            objects.Add(new ChemicalOutbox
+            int nextOutputX = 100;
+            ChemicalOutbox tutorialOutbox = new ChemicalOutbox
             (
                 new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.WHITE }),
                 1,
+                new Vector2(nextOutputX, 350)
+            );
+            objects.Add(tutorialOutbox);
+
+            nextOutputX += 100;
+            objects.Add(new ChemicalOutbox
+            (
+                new ChemicalSignature(1, new ChemicalElement[] {
+                    ChemicalElement.BLUE,
+                    ChemicalElement.BLUE,
+                }),
+                15,
                 new Vector2(nextOutputX, 350)
             ));
 
@@ -42,7 +55,7 @@ namespace SpeedChem
                 new ChemicalSignature(3, new ChemicalElement[] {
                                 ChemicalElement.WHITE, ChemicalElement.BLUE, ChemicalElement.WHITE
                 }),
-                30,
+                35,
                 new Vector2(nextOutputX, 350)
             ));
 
@@ -71,9 +84,18 @@ namespace SpeedChem
             ));
 
 
+            ChemicalFactory tutorialFactory = new ChemicalFactory(new Vector2(100, 200));
+            objects.Add(tutorialFactory);
+
+            tutorialInbox.pipes.First().ConnectTo(tutorialFactory.pipeSocket);
+            tutorialFactory.pipes.First().ConnectTo(tutorialOutbox.pipeSocket);
+
+            selectedObject = tutorialFactory;
+
             ui = new UIContainer();
-            ui.Add(new UIButton("New Factory", new Rectangle(10, 30, 120, 40), Game1.buttonStyle, button_SpawnFactory));
-            ui.Add(new UIButton("New Silo", new Rectangle(10, 75, 120, 40), Game1.buttonStyle, button_SpawnSilo));
+            ui.Add(new UIButton("New Factory", new Rectangle(600, 30, 120, 40), Game1.buttonStyle, button_SpawnFactory));
+            ui.Add(new UIButton("New Silo", new Rectangle(600, 75, 120, 40), Game1.buttonStyle, button_SpawnSilo));
+            ui.Add(new UIButton("Cheat:Loadsamoney", new Rectangle(600, 120, 170, 40), Game1.buttonStyle, button_CheatMoney));
         }
 
         public void button_SpawnFactory()
@@ -84,6 +106,11 @@ namespace SpeedChem
         public void button_SpawnSilo()
         {
             objects.Add(new ChemicalSilo(new Vector2(50, 200)));
+        }
+
+        public void button_CheatMoney()
+        {
+            money += 1000000;
         }
 
         public void Update(InputState inputState, bool isBackground)

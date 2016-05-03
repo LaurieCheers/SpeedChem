@@ -29,7 +29,7 @@ namespace LRCEngine
         {
             this.button = button;
             pressed = IsButtonPressed(initialState);
-            durationFrames = -1;
+            durationFrames = 100;
             initialMousePos = new Vector2(initialState.X, initialState.Y);
         }
 
@@ -80,6 +80,8 @@ namespace LRCEngine
         KeyboardState oldKeyboard;
         public KeyboardState keyboard { get; internal set; }
         public bool pauseMouse { get; private set; }
+        bool preFirstUpdate = true;
+        bool firstUpdate = true;
 
         public MouseButtonState mouseLeft;
         public MouseButtonState mouseMiddle;
@@ -87,6 +89,9 @@ namespace LRCEngine
 
         public void Update()
         {
+            if(firstUpdate && !preFirstUpdate)
+                firstUpdate = false;
+            preFirstUpdate = false;
             oldKeyboard = keyboard;
             keyboard = Keyboard.GetState();
             /*if (WasKeyJustPressed(Keys.Space))

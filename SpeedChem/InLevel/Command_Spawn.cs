@@ -39,7 +39,7 @@ namespace SpeedChem
                     return;
             }
 
-            ChemicalSignature signature = factory.ConsumeInput(inputIndex);
+            ChemicalSignature signature = Game1.instance.level.SpawnInputChemical(inputIndex);
             if (signature == null)
                 return;
 

@@ -112,7 +112,7 @@ namespace SpeedChem
 
         public void ViewFactory(ChemicalFactory factory)
         {
-            level.StartPlay(factory);
+            level.Open(factory);
         }
     }
 }

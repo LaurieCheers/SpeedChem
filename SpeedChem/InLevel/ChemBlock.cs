@@ -384,7 +384,7 @@ namespace SpeedChem
 
                     foreach (WorldObject obj in allObjects)
                     {
-                        if(obj is ChemBlock && checkArea.Intersects(obj.bounds))
+                        if(obj != this && obj is ChemBlock && checkArea.Intersects(obj.bounds))
                         {
                             NailOnto((ChemBlock)obj);
                             nailDuration = 0;

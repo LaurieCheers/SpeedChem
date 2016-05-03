@@ -18,6 +18,9 @@ namespace SpeedChem
         public bool active { get; private set; }
         ChemicalFactory factory;
         public UIButton saveButton;
+        List<FactoryCommand> recordedCommands = new List<FactoryCommand>();
+        int currentTime;
+        bool paused;
 
         public GameLevel()
         {
@@ -49,7 +52,7 @@ namespace SpeedChem
             }
 
             triggerables = new List<Command>();
-            Command_Spawn spawner = new Command_Spawn(new Vectangle(92, 32, 78, 36), factory, 0);
+            Command_Spawn spawner = new Command_Spawn(new Vectangle(92, 32, 78, -36), factory, 0);
             triggerables.Add(spawner);
 
             objects.Add(new PushButton(spawner, Game1.textures.clear, Game1.textures.white, new Vector2(32, 224), new Vector2(8, 32), Color.Red));
@@ -60,42 +63,40 @@ namespace SpeedChem
                 objects.Add(new WorldObject(Game1.textures.block, new Vector2(368, 32), new Vector2(32, 32)));
                 objects.Add(new WorldObject(Game1.textures.block, new Vector2(192, 96), new Vector2(192, 32)));
 
-                Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, 32, 78, 36), factory, 1);
+                Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, 32, 78, -36), factory, 1);
                 triggerables.Add(spawner2);
                 objects.Add(new PushButton(spawner2, Game1.textures.clear, Game1.textures.white, new Vector2(384 - 8, 64), new Vector2(8, 32), Color.Red));
             }
 
-            PlatformCharacter player = new PlatformCharacter(Game1.textures.character, new Vector2(50, 100), new Vector2(22, 32), Color.White, new Rectangle(10, 0, 22, 32));
+            PlatformCharacter player = new PlatformCharacter(Game1.textures.character, new Vector2(50, 200), new Vector2(22, 32), Color.White, new Rectangle(10, 0, 22, 32));
             objects.Add(player);
 
             projectiles = new List<Projectile>();
             active = true;
+            paused = true;
+            recordedCommands.Clear();
+            currentTime = 0;
         }
 
-        public void StartPlay(ChemicalFactory factory)
+        public void Open(ChemicalFactory factory)
         {
             this.factory = factory;
             InitObjects();
-            factory.StartRecording();
         }
 
         public void button_Reset()
         {
-            factory.StopRecording();
             InitObjects();
-            factory.StartRecording();
         }
 
         public void button_Cancel()
         {
-            factory.StopRecording();
-            factory.ClearRecording();
             active = false;
         }
 
         public void button_Save()
         {
-            factory.StopRecording();
+            factory.SaveRecording(recordedCommands);
             active = false;
         }
 
@@ -104,36 +105,53 @@ namespace SpeedChem
             if (!active)
                 return;
 
-            bool needsDestroy = false;
-            foreach (WorldObject obj in objects)
+            if (paused)
             {
-                obj.Update(inputState, objects, projectiles);
-                if (obj.destroyed)
-                    needsDestroy = true;
-            }
-            if(needsDestroy)
-            {
-                for (int oIdx = objects.Count - 1; oIdx >= 0; --oIdx)
+                if (inputState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.A)
+                    || inputState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.D)
+                    || inputState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space)
+                    || inputState.WasMouseRightJustPressed()
+                    || (inputState.WasMouseLeftJustPressed() && inputState.MousePos.X < 500 ))
                 {
-                    if (objects[oIdx].destroyed)
+                    paused = false;
+                }
+            }
+
+            if (!paused)
+            {
+                currentTime++;
+
+                bool needsDestroy = false;
+                foreach (WorldObject obj in objects)
+                {
+                    obj.Update(inputState, objects, projectiles);
+                    if (obj.destroyed)
+                        needsDestroy = true;
+                }
+                if (needsDestroy)
+                {
+                    for (int oIdx = objects.Count - 1; oIdx >= 0; --oIdx)
                     {
-                        objects[oIdx] = objects[objects.Count - 1];
-                        objects.RemoveAt(objects.Count - 1);
+                        if (objects[oIdx].destroyed)
+                        {
+                            objects[oIdx] = objects[objects.Count - 1];
+                            objects.RemoveAt(objects.Count - 1);
+                        }
                     }
                 }
-            }
-            for (int pIdx = projectiles.Count - 1; pIdx >= 0; --pIdx)
-            {
-                projectiles[pIdx].Update(objects);
-                if (projectiles[pIdx].destroyed)
+                for (int pIdx = projectiles.Count - 1; pIdx >= 0; --pIdx)
                 {
-                    projectiles[pIdx] = projectiles[projectiles.Count - 1];
-                    projectiles.RemoveAt(projectiles.Count - 1);
+                    projectiles[pIdx].Update(objects);
+                    if (projectiles[pIdx].destroyed)
+                    {
+                        projectiles[pIdx] = projectiles[projectiles.Count - 1];
+                        projectiles.RemoveAt(projectiles.Count - 1);
+                    }
                 }
-            }
-            foreach (Command triggerable in triggerables)
-            {
-                triggerable.Update(objects);
+                foreach (Command triggerable in triggerables)
+                {
+                    triggerable.Update(objects);
+                }
             }
 
             ui.Update(inputState);
@@ -154,11 +172,25 @@ namespace SpeedChem
             }
 
             ui.Draw(spriteBatch);
+
+            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(500, 10), paused? Color.Pink: Color.White);
         }
 
         public void ProduceChemical(ChemicalSignature signature)
         {
-            factory.PushOutput(signature);
+            recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.OUTPUT, signature));
+
+//            factory.PushOutput(signature);
+        }
+
+        public ChemicalSignature SpawnInputChemical(int inputIndex)
+        {
+            ChemicalSignature signature = factory.GetInputChemical(inputIndex);
+            if(signature != null)
+            {
+                recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.INPUT, signature));
+            }
+            return signature;
         }
 
         public void UpdateSaveButton()
@@ -173,6 +205,15 @@ namespace SpeedChem
                 }
             }
             Game1.instance.level.saveButton.SetEnabled(!anyBlocksLeft);
+        }
+
+        public static string TimeToString(int time)
+        {
+            string millis = "" + (time % 60);
+            if (millis.Length == 1)
+                millis = "0" + millis;
+
+            return "" + (time / 60) + ":" + millis;
         }
     }
 }

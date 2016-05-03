@@ -71,9 +71,9 @@ namespace SpeedChem
                 draggingOffset = inputState.MousePos - bounds.Origin;
             }
 
-            if(dragging && selectedObject == this)
+            if (dragging && selectedObject == this)
             {
-                if(inputState.mouseLeft.pressed)
+                if (inputState.mouseLeft.pressed)
                 {
                     bounds.Origin = inputState.MousePos - draggingOffset;
                     sprite.pos = bounds.Origin;
@@ -88,36 +88,39 @@ namespace SpeedChem
                 dragging = false;
             }
 
-            if(unlimitedPipes)
+            if (unlimitedPipes)
+                HandleUnlimitedPipes();
+
+            selected = (selectedObject == this);
+        }
+
+        public void HandleUnlimitedPipes()
+        {
+            bool foundOneDisconnected = false;
+            int Idx = 0;
+            while (Idx < pipes.Count)
             {
-                bool foundOneDisconnected = false;
-                int Idx = 0;
-                while(Idx < pipes.Count)
+                OutputPipe pipe = pipes[Idx];
+                if (pipe.connectedTo == null)
                 {
-                    OutputPipe pipe = pipes[Idx];
-                    if (pipe.connectedTo == null)
+                    if (foundOneDisconnected)
                     {
-                        if (foundOneDisconnected)
-                        {
-                            pipes.RemoveAt(Idx);
-                        }
-                        else
-                        {
-                            foundOneDisconnected = true;
-                            Idx++;
-                        }
+                        pipes.RemoveAt(Idx);
                     }
                     else
                     {
+                        foundOneDisconnected = true;
                         Idx++;
                     }
                 }
-
-                if (!foundOneDisconnected)
-                    AddOutputPipe(pipes.First().sourceOffset);
+                else
+                {
+                    Idx++;
+                }
             }
 
-            selected = (selectedObject == this);
+            if (!foundOneDisconnected)
+                AddOutputPipe(pipes.First().sourceOffset);
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)
