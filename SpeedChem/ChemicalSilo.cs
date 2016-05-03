@@ -43,7 +43,20 @@ namespace SpeedChem
 
         public override ChemicalSignature GetOutputChemical()
         {
-            return signature;
+            if(signature != null)
+                return signature;
+
+            foreach (OutputPipe pipe in pipeSocket.connectedPipes)
+            {
+                ChemicalSignature tryChemical = pipe.source.GetOutputChemical();
+                if (tryChemical != null)
+                {
+                    signature = tryChemical;
+                    return signature;
+                }
+            }
+
+            return null;
         }
 
         public override bool ReceiveInput(ChemicalSignature signature)
@@ -71,6 +84,17 @@ namespace SpeedChem
                 return signature;
             }
 
+            foreach (OutputPipe pipe2 in pipeSocket.connectedPipes)
+            {
+                ChemicalSignature result = pipe2.source.RequestOutput(pipe);
+                if(result != null)
+                {
+                    pipe.AnimatePip();
+                    pipe2.AnimatePip();
+                    return result;
+                }
+            }
+
             return null;
         }
 
@@ -79,7 +103,7 @@ namespace SpeedChem
             base.Draw(spriteBatch);
             Vector2 pos = bounds.Origin;
             if(signature != null)
-                signature.Draw(spriteBatch, new Vector2(pos.X+16-4*signature.width, pos.Y-8*signature.height));
+                signature.Draw(spriteBatch, new Vector2(pos.X+16-4*signature.width, pos.Y-8*signature.height), true);
             ui.Draw(spriteBatch);
             spriteBatch.DrawString(Game1.font, ""+amount, new Vector2(pos.X + 8, pos.Y - 34), Color.Black);
         }

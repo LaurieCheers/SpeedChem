@@ -39,7 +39,7 @@ namespace SpeedChem
             if (signature != null)
             {
                 spriteBatch.DrawString(Game1.font, "Make this:", new Vector2(bounds.CenterX, bounds.Y), Color.White);
-                signature.Draw(spriteBatch, bounds.Center, Game1.textures.block);
+                signature.Draw(spriteBatch, bounds.Center, false);
             }
         }
     }

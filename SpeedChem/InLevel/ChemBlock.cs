@@ -15,7 +15,8 @@ namespace SpeedChem
         WHITE,
         GREEN,
         RED,
-        BLUE
+        BLUE,
+        GLASS,
     };
 
     public static class ChemicalExtension
@@ -32,9 +33,40 @@ namespace SpeedChem
                     return Color.Red;
                 case ChemicalElement.BLUE:
                     return Color.Blue;
+                case ChemicalElement.GLASS:
+                    return Color.White;
                 default:
                     return Color.Black;
             }
+        }
+
+        public static Texture2D ToTexture(this ChemicalElement e, bool icon)
+        {
+            if (icon)
+            {
+                switch (e)
+                {
+                    case ChemicalElement.GLASS:
+                        return Game1.textures.glassIcon;
+                    default:
+                        return Game1.textures.chemIcon;
+                }
+            }
+            else
+            {
+                switch (e)
+                {
+                    case ChemicalElement.GLASS:
+                        return Game1.textures.glassBlock;
+                    default:
+                        return Game1.textures.block;
+                }
+            }
+        }
+
+        public static bool ShouldShatter(this ChemicalElement e)
+        {
+            return e == ChemicalElement.GLASS;
         }
     }
 
@@ -99,12 +131,7 @@ namespace SpeedChem
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch, Vector2 pos)
-        {
-            Draw(spriteBatch, pos, Game1.textures.chemIcon);
-        }
-
-        public void Draw(SpriteBatch spriteBatch, Vector2 pos, Texture2D texture)
+        public void Draw(SpriteBatch spriteBatch, Vector2 pos, bool icon)
         {
             int y = 0;
             for(int Idx = 0; Idx < elements.Length;)
@@ -114,6 +141,7 @@ namespace SpeedChem
                     ChemicalElement element = elements[Idx];
                     if (element != ChemicalElement.NONE)
                     {
+                        Texture2D texture = element.ToTexture(icon);
                         spriteBatch.Draw(texture, new Rectangle((int)pos.X + x*texture.Width, (int)pos.Y + y*texture.Height, texture.Width, texture.Height), element.ToColor());
                     }
                     Idx++;
@@ -427,6 +455,12 @@ namespace SpeedChem
 
         public void Nailed(Vector2 direction)
         {
+            if(element.ShouldShatter())
+            {
+                destroyed = true;
+                return;
+            }
+
             if (nailDuration > 0)
                 NailExpired();
 

@@ -63,7 +63,7 @@ namespace LRCEngine
 
     public class UIButton :UIElement
     {
-        public readonly string label;
+        public string label;
         public readonly Rectangle frame;
         public readonly UIButtonStyle styles;
         public readonly OnPressDelegate onPress;

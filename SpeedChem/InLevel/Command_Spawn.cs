@@ -62,7 +62,7 @@ namespace SpeedChem
                     ChemicalElement c = signature[col, row];
                     if (c != ChemicalElement.NONE)
                     {
-                        ChemBlock newBlock = new ChemBlock(c, Game1.textures.block, new Vector2(curX, curY), new Vector2(32, 32), c.ToColor());
+                        ChemBlock newBlock = new ChemBlock(c, c.ToTexture(false), new Vector2(curX, curY), new Vector2(32, 32), c.ToColor());
                         objects.Add(newBlock);
 
                         blocksSpawned[col, row] = newBlock;

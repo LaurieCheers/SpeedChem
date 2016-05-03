@@ -72,6 +72,7 @@ namespace SpeedChem
                     if (socket.parent.ReceiveInput(queuedOutput))
                     {
                         pipes.First().AnimatePip();
+                        queuedOutput = null;
                     }
                     else
                     {
@@ -175,6 +176,7 @@ namespace SpeedChem
             commands = recordedCommands.ToList();
             nextCommandIdx = 0;
             currentTime = 0;
+            queuedOutput = null;
         }
 
         public override void Run()

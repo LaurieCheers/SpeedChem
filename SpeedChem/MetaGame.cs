@@ -18,6 +18,8 @@ namespace SpeedChem
         //Dictionary<ChemicalSignature, ChemicalSilo> chemicals = new Dictionary<ChemicalSignature, ChemicalSilo>();
         object selectedObject;
         bool isBackground;
+        int nextFactoryPrice = 500;
+        UIButton newFactoryButton;
 
         public MetaGame()
         {
@@ -28,8 +30,10 @@ namespace SpeedChem
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.BLUE }), 5, new Vector2(nextInputX, 30)));
             nextInputX += 100;
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.RED }), 80, new Vector2(nextInputX, 30)));
+            nextInputX += 100;
+            objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.GLASS }), 10000, new Vector2(nextInputX, 30)));
 
-            int nextOutputX = 100;
+            int nextOutputX = 20;
             ChemicalOutbox tutorialOutbox = new ChemicalOutbox
             (
                 new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.WHITE }),
@@ -67,7 +71,7 @@ namespace SpeedChem
                     ChemicalElement.NONE, ChemicalElement.RED, ChemicalElement.NONE,
                     ChemicalElement.WHITE, ChemicalElement.BLUE, ChemicalElement.WHITE
                 }),
-                500,
+                300,
                 new Vector2(nextOutputX, 350)
             ));
 
@@ -83,6 +87,16 @@ namespace SpeedChem
                 new Vector2(nextOutputX, 350)
             ));
 
+            nextOutputX += 100;
+            objects.Add(new ChemicalOutbox
+            (
+                new ChemicalSignature(2, new ChemicalElement[] {
+                    ChemicalElement.GLASS, ChemicalElement.BLUE,
+                    ChemicalElement.BLUE, ChemicalElement.GLASS,
+                }),
+                28000,
+                new Vector2(nextOutputX, 350)
+            ));
 
             ChemicalFactory tutorialFactory = new ChemicalFactory(new Vector2(100, 200));
             objects.Add(tutorialFactory);
@@ -90,17 +104,34 @@ namespace SpeedChem
             tutorialInbox.pipes.First().ConnectTo(tutorialFactory.pipeSocket);
             tutorialFactory.pipes.First().ConnectTo(tutorialOutbox.pipeSocket);
 
+            objects.Add(new ChemicalFactory(new Vector2(400, 200)));
+
             selectedObject = tutorialFactory;
 
             ui = new UIContainer();
-            ui.Add(new UIButton("New Factory", new Rectangle(600, 30, 120, 40), Game1.buttonStyle, button_SpawnFactory));
+            newFactoryButton = new UIButton(GetFactoryButtonLabel(), new Rectangle(600, 30, 170, 40), Game1.buttonStyle, button_SpawnFactory);
+            ui.Add(newFactoryButton);
             ui.Add(new UIButton("New Silo", new Rectangle(600, 75, 120, 40), Game1.buttonStyle, button_SpawnSilo));
-            ui.Add(new UIButton("Cheat:Loadsamoney", new Rectangle(600, 120, 170, 40), Game1.buttonStyle, button_CheatMoney));
+            ui.Add(new UIButton("Cheat:Loadsamoney", new Rectangle(600, 420, 170, 40), Game1.buttonStyle, button_CheatMoney));
+
+            MoneyChanged();
         }
 
         public void button_SpawnFactory()
         {
-            objects.Add(new ChemicalFactory(new Vector2(50, 200)));
+            Vector2 factoryPos = new Vector2(50, 200);
+            if (PayMoney(nextFactoryPrice, factoryPos))
+            {
+                objects.Add(new ChemicalFactory(factoryPos));
+                nextFactoryPrice = (int)(nextFactoryPrice * 5f);
+                newFactoryButton.label = GetFactoryButtonLabel();
+                MoneyChanged();
+            }
+        }
+
+        string GetFactoryButtonLabel()
+        {
+            return "Build Factory ($" + nextFactoryPrice + ")";
         }
 
         public void button_SpawnSilo()
@@ -110,7 +141,7 @@ namespace SpeedChem
 
         public void button_CheatMoney()
         {
-            money += 1000000;
+            GainMoney(1000000, Vector2.Zero);
         }
 
         public void Update(InputState inputState, bool isBackground)
@@ -166,8 +197,9 @@ namespace SpeedChem
             if (money >= amount)
             {
                 money -= amount;
+                MoneyChanged();
 
-                if(!isBackground)
+                if (!isBackground)
                 {
                     Game1.instance.splashes.Add(new Splash("-$"+amount, Game1.font, Color.Red, splashPos, new Vector2(0, -2), 1.0f, 0.0f, 0.5f));
                 }
@@ -181,6 +213,7 @@ namespace SpeedChem
         public void GainMoney(int amount, Vector2 splashPos)
         {
             money += amount;
+            MoneyChanged();
 
             if (!isBackground)
             {
@@ -188,6 +221,10 @@ namespace SpeedChem
             }
         }
 
+        public void MoneyChanged()
+        {
+            newFactoryButton.SetEnabled(money >= nextFactoryPrice);
+        }
 
         /*
         public void ProduceChemical(ChemicalSignature signature)

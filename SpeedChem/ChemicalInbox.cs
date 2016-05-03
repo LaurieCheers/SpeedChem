@@ -67,7 +67,7 @@ namespace SpeedChem
                 bounds.Y - textSize.Y
             );
 
-            signature.Draw(spriteBatch, signaturePos);
+            signature.Draw(spriteBatch, signaturePos, true);
 
             spriteBatch.DrawString(Game1.font, "$" + price, textPos, Color.Yellow);
         }
