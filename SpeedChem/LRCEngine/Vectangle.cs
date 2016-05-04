@@ -22,6 +22,14 @@ namespace LRCEngine
             return X <= point.X && Y <= point.Y && X + Width > point.X && Y + Height > point.Y;
         }
 
+        public bool Contains(Vectangle other)
+        {
+            return X <= other.X
+                && Y <= other.Y
+                && X + Width >= other.X + other.Width
+                && Y + Height >= other.Y + other.Height;
+        }
+
         public bool Intersects(Vectangle other)
         {
             return X <= other.X + other.Width && Y <= other.Y + other.Height &&

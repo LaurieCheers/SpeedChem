@@ -18,6 +18,7 @@ namespace SpeedChem
         public PipeSocket pipeSocket;
         public List<OutputPipe> pipes = new List<OutputPipe>();
         public bool unlimitedPipes;
+        public bool canDrag = true;
         public Vectangle bounds;
 
         public MetaGameObject(Texture2D texture, Vector2 pos, Vector2 size)
@@ -67,7 +68,7 @@ namespace SpeedChem
             if(inputState.WasMouseLeftJustPressed() && bounds.Contains(inputState.MousePos))
             {
                 selectedObject = this;
-                dragging = true;
+                dragging = canDrag;
                 draggingOffset = inputState.MousePos - bounds.Origin;
             }
 

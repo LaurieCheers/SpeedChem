@@ -36,32 +36,42 @@ namespace SpeedChem
         void InitObjects()
         {
             objects = new List<WorldObject>();
-            objects.Add(new WorldObject(Game1.textures.block, new Vector2(0, 0), new Vector2(16, 128)));
-            objects.Add(new WorldObject(Game1.textures.block, new Vector2(0, 128), new Vector2(32, 128)));
-            objects.Add(new WorldObject(Game1.textures.block, new Vector2(384, 0), new Vector2(32, 320)));
-            objects.Add(new WorldObject(Game1.textures.block, new Vector2(16, 188), new Vector2(32, 32)));
-            objects.Add(new WorldObject(Game1.textures.block, new Vector2(0, 256), new Vector2(224, 32)));
-            objects.Add(new WorldObject(Game1.textures.block, new Vector2(192, 288), new Vector2(32, 96)));
+            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(-16, 0), new Vector2(32, 136)));
+            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(0, 136), new Vector2(32, 136)));
+            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(384, 0), new Vector2(32, 128)));
+            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(384, 128), new Vector2(32, 128)));
+            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(384, 256), new Vector2(32, 128)));
+            objects.Add(new WorldObject(Game1.textures.buttonHood, new Vector2(16, 204), new Vector2(32, 32)));
+            objects.Add(new WorldObject(Game1.textures.woodFloor, new Vector2(0, 272), new Vector2(192, 32)));
+            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(192, 272), new Vector2(32, 128)));
 
-            //ChemicalSignature inputChemical = new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.GREEN });
-            ChemicalSignature outputChemical = null;
-            PipeSocket receiver = factory.pipes.First().connectedTo;
-            if(receiver != null)
+            if (factory.internalSeller != null)
             {
-                outputChemical = receiver.parent.GetInputChemical();
+                objects.Add(new SellerZone(factory.internalSeller, factory.sellerPrice, new Vector2(192, 300), new Vector2(160, 32)));
+            }
+            else
+            {
+                //ChemicalSignature inputChemical = new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.GREEN });
+                ChemicalSignature outputChemical = null;
+                PipeSocket receiver = factory.pipes.First().connectedTo;
+                if (receiver != null)
+                {
+                    outputChemical = receiver.parent.GetInputChemical();
+                }
+
+                objects.Add(new OutputZone(outputChemical, new Vector2(192, 300), new Vector2(160, 32)));
             }
 
             triggerables = new List<Command>();
             Command_Spawn spawner = new Command_Spawn(new Vectangle(92, 32, 78, -36), factory, 0);
             triggerables.Add(spawner);
 
-            objects.Add(new PushButton(spawner, Game1.textures.clear, Game1.textures.white, new Vector2(32, 224), new Vector2(8, 32), Color.Red));
-            objects.Add(new OutputZone(outputChemical, Game1.textures.white, new Vector2(192, 300), new Vector2(160, 32)));
+            objects.Add(new PushButton(spawner, Game1.textures.clear, Game1.textures.white, new Vector2(32, 240), new Vector2(8, 32), Color.Red));
 
             if (factory.pipeSocket.connectedPipes.Count > 1)
             {
-                objects.Add(new WorldObject(Game1.textures.block, new Vector2(368, 32), new Vector2(32, 32)));
-                objects.Add(new WorldObject(Game1.textures.block, new Vector2(192, 96), new Vector2(192, 32)));
+                objects.Add(new WorldObject(Game1.textures.buttonHood, new Vector2(366, 28), new Vector2(32, 32)));
+                objects.Add(new WorldObject(Game1.textures.woodFloor, new Vector2(192, 96), new Vector2(192, 32)));
 
                 Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, 32, 78, -36), factory, 1);
                 triggerables.Add(spawner2);
@@ -191,6 +201,11 @@ namespace SpeedChem
                 recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.INPUT, signature));
             }
             return signature;
+        }
+
+        public void Record_EarnMoney(int amount)
+        {
+            recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.EARNMONEY, amount));
         }
 
         public void UpdateSaveButton()

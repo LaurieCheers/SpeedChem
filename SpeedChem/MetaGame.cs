@@ -18,7 +18,7 @@ namespace SpeedChem
         //Dictionary<ChemicalSignature, ChemicalSilo> chemicals = new Dictionary<ChemicalSignature, ChemicalSilo>();
         object selectedObject;
         bool isBackground;
-        int nextFactoryPrice = 500;
+        int nextFactoryPrice = 80;
         UIButton newFactoryButton;
 
         public MetaGame()
@@ -34,27 +34,34 @@ namespace SpeedChem
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.GLASS }), 10000, new Vector2(nextInputX, 30)));
 
             int nextOutputX = 20;
-            ChemicalOutbox tutorialOutbox = new ChemicalOutbox
+            const int outputSpacingX = 87;
+            /*ChemicalOutbox tutorialOutbox = new ChemicalOutbox
             (
                 new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.WHITE }),
                 1,
                 new Vector2(nextOutputX, 350)
+            );*/
+            ChemicalFactory tutorialOutbox = new ChemicalFactory
+            (
+                new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.WHITE }),
+                1,
+                new Vector2(nextOutputX, 150)
             );
             objects.Add(tutorialOutbox);
 
-            nextOutputX += 100;
-            objects.Add(new ChemicalOutbox
+            nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
             (
                 new ChemicalSignature(1, new ChemicalElement[] {
                     ChemicalElement.BLUE,
                     ChemicalElement.BLUE,
                 }),
                 15,
-                new Vector2(nextOutputX, 350)
+                new Vector2(nextOutputX, 150)
             ));
 
-            nextOutputX += 100;
-            objects.Add(new ChemicalOutbox
+            nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
             (
                 new ChemicalSignature(3, new ChemicalElement[] {
                                 ChemicalElement.WHITE, ChemicalElement.BLUE, ChemicalElement.WHITE
@@ -63,8 +70,8 @@ namespace SpeedChem
                 new Vector2(nextOutputX, 350)
             ));
 
-            nextOutputX += 100;
-            objects.Add(new ChemicalOutbox
+            nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
             (
                 new ChemicalSignature(3, new ChemicalElement[] {
                     ChemicalElement.WHITE, ChemicalElement.BLUE, ChemicalElement.WHITE,
@@ -75,8 +82,8 @@ namespace SpeedChem
                 new Vector2(nextOutputX, 350)
             ));
 
-            nextOutputX += 100;
-            objects.Add(new ChemicalOutbox
+            nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
             (
                 new ChemicalSignature(3, new ChemicalElement[] {
                     ChemicalElement.NONE, ChemicalElement.RED, ChemicalElement.RED,
@@ -87,8 +94,8 @@ namespace SpeedChem
                 new Vector2(nextOutputX, 350)
             ));
 
-            nextOutputX += 100;
-            objects.Add(new ChemicalOutbox
+            nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
             (
                 new ChemicalSignature(2, new ChemicalElement[] {
                     ChemicalElement.GLASS, ChemicalElement.BLUE,
@@ -98,15 +105,28 @@ namespace SpeedChem
                 new Vector2(nextOutputX, 350)
             ));
 
-            ChemicalFactory tutorialFactory = new ChemicalFactory(new Vector2(100, 200));
-            objects.Add(tutorialFactory);
+            nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
+            (
+                new ChemicalSignature(3, new ChemicalElement[] {
+                    ChemicalElement.GLASS, ChemicalElement.NONE, ChemicalElement.GLASS,
+                    ChemicalElement.BLUE, ChemicalElement.GLASS, ChemicalElement.BLUE,
+                }),
+                46000,
+                new Vector2(nextOutputX, 350)
+            ));
 
-            tutorialInbox.pipes.First().ConnectTo(tutorialFactory.pipeSocket);
-            tutorialFactory.pipes.First().ConnectTo(tutorialOutbox.pipeSocket);
+            //            ChemicalFactory tutorialFactory = new ChemicalFactory(new Vector2(100, 200));
+            //            objects.Add(tutorialFactory);
 
-            objects.Add(new ChemicalFactory(new Vector2(400, 200)));
+            //            tutorialInbox.pipes.First().ConnectTo(tutorialFactory.pipeSocket);
+            //            tutorialFactory.pipes.First().ConnectTo(tutorialOutbox.pipeSocket);
+            tutorialInbox.pipes.First().ConnectTo(tutorialOutbox.pipeSocket);
 
-            selectedObject = tutorialFactory;
+            //objects.Add(new ChemicalFactory(new Vector2(400, 200)));
+
+            //            selectedObject = tutorialFactory;
+            selectedObject = tutorialOutbox;
 
             ui = new UIContainer();
             newFactoryButton = new UIButton(GetFactoryButtonLabel(), new Rectangle(600, 30, 170, 40), Game1.buttonStyle, button_SpawnFactory);

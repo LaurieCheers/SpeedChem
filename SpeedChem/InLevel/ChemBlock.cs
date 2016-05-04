@@ -176,6 +176,16 @@ namespace SpeedChem
             return new Vector2(totalPos.X / numBlocks, totalPos.Y / numBlocks);
         }
 
+        public bool IsInside(Vectangle targetArea)
+        {
+            foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
+            {
+                if (!targetArea.Contains(kv.Key.bounds))
+                    return false;
+            }
+            return true;
+        }
+
         public Vector2 GetCorrection(ChemBlock block)
         {
             Point gridPos = blocks[block];
@@ -327,14 +337,18 @@ namespace SpeedChem
             }
         }
 
-        public void DoOutput()
+        public void DestroyAll()
         {
-            ChemicalSignature signature = GetSignature();
-
             foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
             {
                 kv.Key.destroyed = true;
             }
+        }
+
+        public void DoOutput()
+        {
+            ChemicalSignature signature = GetSignature();
+            DestroyAll();
 
             Game1.instance.level.ProduceChemical(signature);
             Game1.instance.level.UpdateSaveButton();

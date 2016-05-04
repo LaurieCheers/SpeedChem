@@ -37,7 +37,8 @@ namespace SpeedChem
         {
             this.texture = texture;
             this.pos = pos;
-            this.textureRegion = new Rectangle(0, 0, texture.Width, texture.Height);
+            if(texture != null)
+                this.textureRegion = new Rectangle(0, 0, texture.Width, texture.Height);
             this.size = size;
         }
 

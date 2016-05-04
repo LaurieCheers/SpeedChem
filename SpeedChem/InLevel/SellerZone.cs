@@ -9,15 +9,16 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class OutputZone: WorldObject
+    class SellerZone : WorldObject
     {
         ChemicalSignature signature;
         int sellPrice;
 
-        public OutputZone(ChemicalSignature signature, Vector2 pos, Vector2 size) : base(null, pos, size)
+        public SellerZone(ChemicalSignature signature, int sellPrice, Vector2 pos, Vector2 size) : base(null, pos, size)
         {
             objectType = WorldObjectType.Trigger;
             this.signature = signature;
+            this.sellPrice = sellPrice;
         }
 
         public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
@@ -26,17 +27,28 @@ namespace SpeedChem
 
             foreach (WorldObject obj in allObjects)
             {
-                if (obj is ChemBlock && obj.bounds.Intersects(myBounds) && !obj.destroyed)
+                if (obj is ChemBlock && !obj.destroyed && myBounds.Intersects(obj.bounds))
                 {
-                    ChemBlock block = (ChemBlock)obj;
-                    block.chemGrid.DoOutput();
+                    ChemBlock block = obj as ChemBlock;
+
+                    /*if (!block.chemGrid.IsInside(myBounds))
+                        continue;
+                    */
+
+                    if (signature != block.chemGrid.GetSignature())
+                        continue;
+
+                    Game1.instance.level.Record_EarnMoney(sellPrice);
+                    block.chemGrid.DestroyAll();
+                    Game1.instance.level.UpdateSaveButton();
                 }
             }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            // base.Draw(spriteBatch);
+            if (texture != null)
+                base.Draw(spriteBatch);
 
             if (signature != null)
             {

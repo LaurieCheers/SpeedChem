@@ -26,6 +26,9 @@ namespace SpeedChem
         public Texture2D warning;
         public Texture2D glassBlock;
         public Texture2D glassIcon;
+        public Texture2D cement;
+        public Texture2D woodFloor;
+        public Texture2D buttonHood;
 
         public RichImage grass;
 
@@ -45,6 +48,9 @@ namespace SpeedChem
             warning = Content.Load<Texture2D>("warning");
             glassBlock = Content.Load<Texture2D>("glassblock");
             glassIcon = Content.Load<Texture2D>("glassicon");
+            cement = Content.Load<Texture2D>("cement");
+            woodFloor = Content.Load<Texture2D>("woodfloor");
+            buttonHood = Content.Load<Texture2D>("buttonhood");
 
             grass = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("grass"), Color.White, RichImageDrawMode.TILED, 0, Rotation90.None));
         }
