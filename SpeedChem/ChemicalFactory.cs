@@ -22,6 +22,8 @@ namespace SpeedChem
         INPUT,
         OUTPUT,
         EARNMONEY,
+        GAINCRYSTAL,
+        SPENDCRYSTAL,
     };
 
     public class FactoryCommand
@@ -44,6 +46,12 @@ namespace SpeedChem
             this.type = type;
             this.amount = amount;
         }
+
+        public FactoryCommand(int currentTime, FactoryCommandType type)
+        {
+            this.time = currentTime;
+            this.type = type;
+        }
     }
 
     public class ChemicalFactory: MetaGameObject
@@ -57,6 +65,7 @@ namespace SpeedChem
         int nextCommandIdx = 0;
         public readonly ChemicalSignature internalSeller;
         public readonly int sellerPrice;
+        public readonly FactoryCommandType sellerAction;
 
         public ChemicalFactory(Vector2 pos): base(Game1.textures.factory, pos, Game1.textures.factory.Size())
         {
@@ -65,6 +74,7 @@ namespace SpeedChem
 
             SetPipeSocket(new Vector2(32, 16), 2);
             AddOutputPipe(new Vector2(32, 16));
+            unlimitedPipes = true;
         }
 
         public ChemicalFactory(ChemicalSignature internalSeller, int sellerPrice, Vector2 pos) : base(Game1.textures.outbox, pos, Game1.textures.outbox.Size())
@@ -74,9 +84,23 @@ namespace SpeedChem
 
             this.internalSeller = internalSeller;
             this.sellerPrice = sellerPrice;
+            this.sellerAction = FactoryCommandType.EARNMONEY;
             this.canDrag = false;
 
             SetPipeSocket(new Vector2(16, 48), 2);
+        }
+
+        public ChemicalFactory(ChemicalSignature internalSeller, FactoryCommandType sellerAction, Vector2 pos) : base(Game1.textures.depot, pos, Game1.textures.depot.Size())
+        {
+            ui = new UIContainer(pos);
+            ui.Add(new UIButton("Record", new Rectangle(-20, (int)bounds.Height+20, 90, 35), Game1.buttonStyle, button_Play));
+
+            this.canDrag = false;
+            this.internalSeller = internalSeller;
+            this.sellerPrice = 1;
+            this.sellerAction = sellerAction;
+
+            SetPipeSocket(new Vector2(16, 16), 2);
         }
 
         public void button_Play()
@@ -86,26 +110,29 @@ namespace SpeedChem
 
         public bool PushOutput(ChemicalSignature signature)
         {
-            PipeSocket socket = pipes.First().connectedTo;
-            if (socket != null)
+            foreach (OutputPipe pipe in pipes)
             {
-                if (queuedOutput != null)
+                PipeSocket socket = pipe.connectedTo;
+                if (socket != null)
                 {
-                    if (socket.parent.ReceiveInput(queuedOutput))
+                    if (queuedOutput != null)
                     {
-                        pipes.First().AnimatePip();
-                        queuedOutput = null;
+                        if (socket.parent.ReceiveInput(queuedOutput))
+                        {
+                            pipe.AnimatePip();
+                            queuedOutput = null;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
-                    else
-                    {
-                        return false;
-                    }
-                }
 
-                if (socket.parent.ReceiveInput(signature))
-                {
-                    pipes.First().AnimatePip();
-                    return true;
+                    if (socket.parent.ReceiveInput(signature))
+                    {
+                        pipe.AnimatePip();
+                        return true;
+                    }
                 }
             }
 
@@ -187,11 +214,20 @@ namespace SpeedChem
             if (queuedOutput != null)
                 return queuedOutput;
 
-            // anticipate what kind of chemicals we would output
-            foreach(FactoryCommand command in commands)
+            // anticipate what kind of chemicals we output next
+            if (commands.Count > 0)
             {
-                if (command.type == FactoryCommandType.OUTPUT)
-                    return command.signature;
+                for (int Idx = nextCommandIdx; Idx < commands.Count; ++Idx)
+                {
+                    if (commands[Idx].type == FactoryCommandType.OUTPUT)
+                        return commands[Idx].signature;
+                }
+
+                for (int Idx = 0; Idx < nextCommandIdx; ++Idx)
+                {
+                    if (commands[Idx].type == FactoryCommandType.OUTPUT)
+                        return commands[Idx].signature;
+                }
             }
 
             return null;
@@ -234,6 +270,18 @@ namespace SpeedChem
                             currentTime++;
                             nextCommandIdx++;
                             break;
+                        case FactoryCommandType.GAINCRYSTAL:
+                            Game1.instance.metaGame.GainCrystal();
+                            currentTime++;
+                            nextCommandIdx++;
+                            break;
+                        case FactoryCommandType.SPENDCRYSTAL:
+                            if (Game1.instance.metaGame.SpendCrystal())
+                            {
+                                currentTime++;
+                                nextCommandIdx++;
+                            }
+                            break;
                     }
                 }
                 else
@@ -274,7 +322,16 @@ namespace SpeedChem
                 Vector2 pos = new Vector2(bounds.X, bounds.Y + bounds.Height);
                 Vector2 signatureSize = new Vector2(internalSeller.width * 8, internalSeller.height * 8);
 
-                string text = "$" + sellerPrice;
+                string text = "";
+                switch(sellerAction)
+                {
+                    case FactoryCommandType.EARNMONEY:
+                        text = "$" + sellerPrice;
+                        break;
+                    case FactoryCommandType.GAINCRYSTAL:
+                        text = "crystal";
+                        break;
+                }
                 Vector2 textSize = Game1.font.MeasureString(text);
 
                 Vector2 signaturePos = new Vector2(
@@ -289,7 +346,7 @@ namespace SpeedChem
 
                 internalSeller.Draw(spriteBatch, signaturePos, true);
 
-                spriteBatch.DrawString(Game1.font, "$" + sellerPrice, textPos, Color.Yellow);
+                spriteBatch.DrawString(Game1.font, text, textPos, Color.Yellow);
             }
 
             if (selected)

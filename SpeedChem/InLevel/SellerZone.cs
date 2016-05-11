@@ -13,12 +13,14 @@ namespace SpeedChem
     {
         ChemicalSignature signature;
         int sellPrice;
+        FactoryCommandType sellAction;
 
-        public SellerZone(ChemicalSignature signature, int sellPrice, Vector2 pos, Vector2 size) : base(null, pos, size)
+        public SellerZone(ChemicalSignature signature, int sellPrice, FactoryCommandType sellAction, Vector2 pos, Vector2 size) : base(null, pos, size)
         {
             objectType = WorldObjectType.Trigger;
             this.signature = signature;
             this.sellPrice = sellPrice;
+            this.sellAction = sellAction;
         }
 
         public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
@@ -38,9 +40,9 @@ namespace SpeedChem
                     if (signature != block.chemGrid.GetSignature())
                         continue;
 
-                    Game1.instance.level.Record_EarnMoney(sellPrice);
+                    Game1.instance.level.Record(sellAction, sellPrice);
                     block.chemGrid.DestroyAll();
-                    Game1.instance.level.UpdateSaveButton();
+                    Game1.instance.level.UpdateAnyBlocksLeft();
                 }
             }
         }

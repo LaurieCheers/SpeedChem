@@ -29,6 +29,10 @@ namespace SpeedChem
         public Texture2D cement;
         public Texture2D woodFloor;
         public Texture2D buttonHood;
+        public Texture2D cuttingBeam;
+        public Texture2D depot;
+        public Texture2D hourglass;
+        public Texture2D hourglass_frozen;
 
         public RichImage grass;
 
@@ -51,6 +55,10 @@ namespace SpeedChem
             cement = Content.Load<Texture2D>("cement");
             woodFloor = Content.Load<Texture2D>("woodfloor");
             buttonHood = Content.Load<Texture2D>("buttonhood");
+            cuttingBeam = Content.Load<Texture2D>("cuttingbeam");
+            depot = Content.Load<Texture2D>("depot");
+            hourglass = Content.Load<Texture2D>("hourglass");
+            hourglass_frozen = Content.Load<Texture2D>("hourglass_frozen");
 
             grass = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("grass"), Color.White, RichImageDrawMode.TILED, 0, Rotation90.None));
         }

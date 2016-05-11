@@ -11,6 +11,7 @@ namespace SpeedChem
     /// </summary>
     public class Game1: Game
     {
+        public const float BLOCKSIZE = 32.0f;
         public static Game1 instance;
         public static TextureCache textures;
         public static UIButtonStyle buttonStyle;

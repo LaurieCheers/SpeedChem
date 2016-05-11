@@ -19,8 +19,12 @@ namespace SpeedChem
         ChemicalFactory factory;
         public UIButton saveButton;
         List<FactoryCommand> recordedCommands = new List<FactoryCommand>();
+        PlatformCharacter player;
+        Weapon rivetGun = new Weapon_Rivetgun();
+        Weapon cuttingBeam = new Weapon_CuttingBeam();
         int currentTime;
         bool paused;
+        bool timerRunning = false;
 
         public GameLevel()
         {
@@ -29,8 +33,12 @@ namespace SpeedChem
             ui = new UIContainer();
             ui.Add(new UIButton("Reset", new Rectangle(500,30, 100,50), Game1.buttonStyle, button_Reset));
             ui.Add(new UIButton("Cancel", new Rectangle(500, 90, 100, 50), Game1.buttonStyle, button_Cancel));
+
             saveButton = new UIButton("Save", new Rectangle(500, 150, 100, 50), Game1.buttonStyle, button_Save);
             ui.Add(saveButton);
+
+            ui.Add(new UIButton("Rivet Gun", new Rectangle(500, 220, 100, 50), Game1.buttonStyle, button_SelectRivetGun));
+            ui.Add(new UIButton("Cutting Beam", new Rectangle(500, 270, 100, 50), Game1.buttonStyle, button_SelectCuttingBeam));
         }
 
         void InitObjects()
@@ -47,7 +55,7 @@ namespace SpeedChem
 
             if (factory.internalSeller != null)
             {
-                objects.Add(new SellerZone(factory.internalSeller, factory.sellerPrice, new Vector2(192, 300), new Vector2(160, 32)));
+                objects.Add(new SellerZone(factory.internalSeller, factory.sellerPrice, factory.sellerAction, new Vector2(192, 300), new Vector2(160, 32)));
             }
             else
             {
@@ -78,14 +86,25 @@ namespace SpeedChem
                 objects.Add(new PushButton(spawner2, Game1.textures.clear, Game1.textures.white, new Vector2(384 - 8, 64), new Vector2(8, 32), Color.Red));
             }
 
-            PlatformCharacter player = new PlatformCharacter(Game1.textures.character, new Vector2(50, 200), new Vector2(22, 32), Color.White, new Rectangle(10, 0, 22, 32));
+            player = new PlatformCharacter(Game1.textures.character, new Vector2(50, 200), new Vector2(22, 32), Color.White, new Rectangle(10, 0, 22, 32));
             objects.Add(player);
 
             projectiles = new List<Projectile>();
             active = true;
-            paused = true;
+            paused = false;
             recordedCommands.Clear();
             currentTime = 0;
+            UpdateAnyBlocksLeft();
+        }
+
+        public void Record(FactoryCommandType commandType)
+        {
+            recordedCommands.Add(new FactoryCommand(currentTime, commandType));
+        }
+
+        public void Record(FactoryCommandType commandType, int sellPrice)
+        {
+            recordedCommands.Add(new FactoryCommand(currentTime, commandType, sellPrice));
         }
 
         public void Open(ChemicalFactory factory)
@@ -110,6 +129,16 @@ namespace SpeedChem
             active = false;
         }
 
+        public void button_SelectCuttingBeam()
+        {
+            player.SelectWeapon(cuttingBeam);
+        }
+
+        public void button_SelectRivetGun()
+        {
+            player.SelectWeapon(rivetGun);
+        }
+
         public void Update(InputState inputState)
         {
             if (!active)
@@ -129,7 +158,8 @@ namespace SpeedChem
 
             if (!paused)
             {
-                currentTime++;
+                if(timerRunning)
+                    currentTime++;
 
                 bool needsDestroy = false;
                 foreach (WorldObject obj in objects)
@@ -183,7 +213,8 @@ namespace SpeedChem
 
             ui.Draw(spriteBatch);
 
-            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(500, 10), paused? Color.Pink: Color.White);
+            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(500, 10), timerRunning ? Color.Yellow: Color.White);
+            spriteBatch.Draw(timerRunning ? Game1.textures.hourglass : Game1.textures.hourglass_frozen, new Vector2(475, 0), Color.White);
         }
 
         public void ProduceChemical(ChemicalSignature signature)
@@ -203,23 +234,18 @@ namespace SpeedChem
             return signature;
         }
 
-        public void Record_EarnMoney(int amount)
+        public void UpdateAnyBlocksLeft()
         {
-            recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.EARNMONEY, amount));
-        }
-
-        public void UpdateSaveButton()
-        {
-            bool anyBlocksLeft = false;
+            timerRunning = false;
             foreach (WorldObject obj in objects)
             {
                 if (obj is ChemBlock && !obj.destroyed)
                 {
-                    anyBlocksLeft = true;
+                    timerRunning = true;
                     break;
                 }
             }
-            Game1.instance.level.saveButton.SetEnabled(!anyBlocksLeft);
+            Game1.instance.level.saveButton.SetEnabled(!timerRunning);
         }
 
         public static string TimeToString(int time)

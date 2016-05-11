@@ -13,6 +13,7 @@ namespace SpeedChem
     {
         List<MetaGameObject> objects = new List<MetaGameObject>();
         int money = 0;
+        int laserCrystals;
         UIContainer ui;
         //Vector2 nextSiloPos = new Vector2(100,300);
         //Dictionary<ChemicalSignature, ChemicalSilo> chemicals = new Dictionary<ChemicalSignature, ChemicalSilo>();
@@ -23,15 +24,27 @@ namespace SpeedChem
 
         public MetaGame()
         {
-            int nextInputX = 200;
+            int nextInputX = 100;
+            int inputSpacingX = 100;
             ChemicalInbox tutorialInbox = new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.WHITE }), 0, new Vector2(nextInputX, 30));
             objects.Add(tutorialInbox);
-            nextInputX += 100;
+            nextInputX += inputSpacingX;
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.BLUE }), 5, new Vector2(nextInputX, 30)));
-            nextInputX += 100;
-            objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.RED }), 80, new Vector2(nextInputX, 30)));
-            nextInputX += 100;
+            nextInputX += inputSpacingX;
+            objects.Add(new ChemicalInbox(new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.RED }), 80, new Vector2(nextInputX, 30)));
+            nextInputX += inputSpacingX;
             objects.Add(new ChemicalInbox(new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.GLASS }), 10000, new Vector2(nextInputX, 30)));
+
+            nextInputX += inputSpacingX;
+            objects.Add(new ChemicalInbox
+            (
+                new ChemicalSignature(1, new ChemicalElement[] {
+                    ChemicalElement.BLUE,
+                    ChemicalElement.BLUE,
+                }),
+                0,
+                new Vector2(nextInputX, 30)
+            ));
 
             int nextOutputX = 20;
             const int outputSpacingX = 87;
@@ -61,6 +74,19 @@ namespace SpeedChem
             ));
 
             nextOutputX += outputSpacingX;
+            objects.Add(new ChemicalFactory
+            (
+                new ChemicalSignature(3, new ChemicalElement[] {
+                    ChemicalElement.NONE,ChemicalElement.WHITE,ChemicalElement.NONE,
+                    ChemicalElement.WHITE,ChemicalElement.RED,ChemicalElement.WHITE,
+                    ChemicalElement.NONE,ChemicalElement.WHITE,ChemicalElement.NONE,
+                }),
+                FactoryCommandType.GAINCRYSTAL,
+                new Vector2(nextOutputX, 180)
+            ));
+
+
+            nextOutputX = 60;
             objects.Add(new ChemicalFactory
             (
                 new ChemicalSignature(3, new ChemicalElement[] {
@@ -129,9 +155,9 @@ namespace SpeedChem
             selectedObject = tutorialOutbox;
 
             ui = new UIContainer();
-            newFactoryButton = new UIButton(GetFactoryButtonLabel(), new Rectangle(600, 30, 170, 40), Game1.buttonStyle, button_SpawnFactory);
+            newFactoryButton = new UIButton(GetFactoryButtonLabel(), new Rectangle(600, 100, 170, 40), Game1.buttonStyle, button_SpawnFactory);
             ui.Add(newFactoryButton);
-            ui.Add(new UIButton("New Silo", new Rectangle(600, 75, 120, 40), Game1.buttonStyle, button_SpawnSilo));
+            ui.Add(new UIButton("New Silo", new Rectangle(600, 150, 120, 40), Game1.buttonStyle, button_SpawnSilo));
             ui.Add(new UIButton("Cheat:Loadsamoney", new Rectangle(600, 420, 170, 40), Game1.buttonStyle, button_CheatMoney));
 
             MoneyChanged();
@@ -162,6 +188,7 @@ namespace SpeedChem
         public void button_CheatMoney()
         {
             GainMoney(1000000, Vector2.Zero);
+            laserCrystals += 100;
         }
 
         public void Update(InputState inputState, bool isBackground)
@@ -210,6 +237,7 @@ namespace SpeedChem
             ui.Draw(spriteBatch);
 
             spriteBatch.DrawString(Game1.font, "$" + money, new Vector2(10, 10), Color.Yellow);
+            spriteBatch.DrawString(Game1.font, "" + laserCrystals+" crystals", new Vector2(10, 30), Color.Orange);
         }
 
         public bool PayMoney(int amount, Vector2 splashPos)
@@ -244,6 +272,22 @@ namespace SpeedChem
         public void MoneyChanged()
         {
             newFactoryButton.SetEnabled(money >= nextFactoryPrice);
+        }
+
+        public void GainCrystal()
+        {
+            laserCrystals++;
+        }
+
+        public bool SpendCrystal()
+        {
+            if (laserCrystals > 0)
+            {
+                laserCrystals--;
+                return true;
+            }
+
+            return false;
         }
 
         /*

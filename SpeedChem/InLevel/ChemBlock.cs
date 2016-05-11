@@ -170,7 +170,7 @@ namespace SpeedChem
             Vector2 totalPos = Vector2.Zero;
             foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
             {
-                totalPos += kv.Key.pos - new Vector2(kv.Value.X * 32.0f, kv.Value.Y * 32.0f);
+                totalPos += kv.Key.pos - new Vector2(kv.Value.X * Game1.BLOCKSIZE, kv.Value.Y * Game1.BLOCKSIZE);
                 numBlocks++;
             }
             return new Vector2(totalPos.X / numBlocks, totalPos.Y / numBlocks);
@@ -190,7 +190,7 @@ namespace SpeedChem
         {
             Point gridPos = blocks[block];
             Vector2 origin = GetOrigin();
-            return new Vector2(origin.X + gridPos.X * 32.0f - block.pos.X, origin.Y + gridPos.Y * 32.0f - block.pos.Y);
+            return new Vector2(origin.X + gridPos.X * Game1.BLOCKSIZE - block.pos.X, origin.Y + gridPos.Y * Game1.BLOCKSIZE - block.pos.Y);
         }
 
         public void AddNail(ChemBlock a, Vector2 direction)
@@ -256,33 +256,42 @@ namespace SpeedChem
             System.Diagnostics.Debug.Assert(a.chemGrid == this);
 
             Vector2 blockOffsetPixels = b.pos - a.pos;
-            Point blockOffset = new Point((int)Math.Round(blockOffsetPixels.X / 32.0f), (int)Math.Round(blockOffsetPixels.Y / 32.0f));
+            Point blockOffset = new Point((int)Math.Round(blockOffsetPixels.X / Game1.BLOCKSIZE), (int)Math.Round(blockOffsetPixels.Y / Game1.BLOCKSIZE));
 
             if (!IsValidNailOffset(blockOffset))
                 return;
 
             Point a_in_aPos = blocks[a];
-            Point b_in_bPos = b.chemGrid.blocks[b];
+            Point b_in_bPos = b.chemGrid != null? b.chemGrid.blocks[b]: new Point(0,0);
             bool sameGrids = blocks.ContainsKey(b);
 
             if (!sameGrids)
             {
-                // merge the grids
                 Point b_in_aPos = a_in_aPos + blockOffset;
-                Point gridOffset = b_in_aPos - b_in_bPos;
-                foreach (Point p in b.chemGrid.horizontalBonds)
+                if (b.chemGrid == null)
                 {
-                    horizontalBonds.Add(p + gridOffset);
-                }
-                foreach (Point p in b.chemGrid.verticalBonds)
-                {
-                    verticalBonds.Add(p + gridOffset);
-                }
-                foreach (KeyValuePair<ChemBlock, Point> kv in b.chemGrid.blocks)
-                {
-                    blocks[kv.Key] = kv.Value + gridOffset;
-                    kv.Key.chemGrid = this;
+                    blocks[b] = b_in_aPos;
+                    b.chemGrid = this;
                     a.BondWith(b);
+                }
+                else
+                {
+                    // merge the grids
+                    Point gridOffset = b_in_aPos - b_in_bPos;
+                    foreach (Point p in b.chemGrid.horizontalBonds)
+                    {
+                        horizontalBonds.Add(p + gridOffset);
+                    }
+                    foreach (Point p in b.chemGrid.verticalBonds)
+                    {
+                        verticalBonds.Add(p + gridOffset);
+                    }
+                    foreach (KeyValuePair<ChemBlock, Point> kv in b.chemGrid.blocks)
+                    {
+                        blocks[kv.Key] = kv.Value + gridOffset;
+                        kv.Key.chemGrid = this;
+                        a.BondWith(kv.Key);
+                    }
                 }
             }
 
@@ -308,6 +317,123 @@ namespace SpeedChem
             }
         }
 
+        public void Split(Vectangle cuttingArea)
+        {
+            Vector2 origin = GetOrigin();
+            bool cutAny = false;
+            if (cuttingArea.Height > 0)
+            {
+                HashSet<Point> newHBonds = new HashSet<Point>();
+                foreach (Point curPos in horizontalBonds)
+                {
+                    Vectangle bondArea = new Vectangle(origin.X + curPos.X * Game1.BLOCKSIZE + 25, origin.Y + curPos.Y * Game1.BLOCKSIZE + 15, 15, 3);
+                    if(cuttingArea.Intersects(bondArea))
+                    {
+                        cutAny = true;
+                    }
+                    else
+                    {
+                        newHBonds.Add(curPos);
+                    }
+                }
+                horizontalBonds = newHBonds;
+            }
+
+            if (cuttingArea.Width > 0)
+            {
+                HashSet<Point> newVBonds = new HashSet<Point>();
+                foreach (Point curPos in verticalBonds)
+                {
+                    Vectangle bondArea = new Vectangle(origin.X + curPos.X * Game1.BLOCKSIZE + 15, origin.Y + curPos.Y * Game1.BLOCKSIZE + 25, 3, 15);
+                    if(cuttingArea.Intersects(bondArea))
+                    {
+                        cutAny = true;
+                    }
+                    else
+                    {
+                        newVBonds.Add(curPos);
+                    }
+                }
+                verticalBonds = newVBonds;
+            }
+
+            if (cutAny)
+            {
+                UpdateConnectivity();
+            }
+        }
+
+        public void UpdateConnectivity()
+        {
+            Dictionary<Point, ChemBlock> blockMapping = new Dictionary<Point, ChemBlock>();
+            HashSet<Point> inactiveBlocks = new HashSet<Point>();
+            foreach (KeyValuePair<ChemBlock, Point> kv in blocks)
+            {
+                blockMapping.Add(kv.Value, kv.Key);
+                inactiveBlocks.Add(kv.Value);
+            }
+
+            //now flood fill regions until everything is filled
+            while (inactiveBlocks.Count > 0)
+            {
+                Point originPoint = inactiveBlocks.First();
+                inactiveBlocks.Remove(originPoint);
+                
+                ChemBlock originBlock = blockMapping[originPoint];
+                ChemGrid newGrid = new ChemGrid(originBlock);
+                originBlock.chemGrid = newGrid;
+                originBlock.UnbondFromGroup();
+
+                List<Point> activeBlocks = new List<Point>() { originPoint };
+                List<Point> nextActiveBlocks = new List<Point>();
+                List<Point> finalPositions = new List<Point>();
+                while (activeBlocks.Count > 0)
+                {
+                    foreach (Point p in activeBlocks)
+                    {
+                        Func<Point, bool> addBlock = pos =>
+                        {
+                            inactiveBlocks.Remove(pos);
+                            nextActiveBlocks.Add(pos);
+                            ChemBlock block = blockMapping[pos];
+                            block.UnbondFromGroup();
+                            block.chemGrid = null;
+                            newGrid.AddNail(blockMapping[p], block);
+                            return false;
+                        };
+
+                        Point up = new Point(p.X, p.Y - 1);
+                        Point down = new Point(p.X, p.Y + 1);
+                        Point left = new Point(p.X - 1, p.Y);
+                        Point right = new Point(p.X + 1, p.Y);
+
+                        if (verticalBonds.Contains(up) && inactiveBlocks.Contains(up))
+                        {
+                            addBlock(up);
+                        }
+                        if (verticalBonds.Contains(p) && inactiveBlocks.Contains(down))
+                        {
+                            addBlock(down);
+                        }
+                        if (horizontalBonds.Contains(left) && inactiveBlocks.Contains(left))
+                        {
+                            addBlock(left);
+                        }
+                        if (horizontalBonds.Contains(p) && inactiveBlocks.Contains(right))
+                        {
+                            addBlock(right);
+                        }
+                    }
+
+                    List<Point> temp = activeBlocks;
+                    temp.Clear();
+                    activeBlocks = nextActiveBlocks;
+                    nextActiveBlocks = temp;
+                }
+
+            }
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             foreach (ChemBlock block in blocks.Keys)
@@ -318,8 +444,8 @@ namespace SpeedChem
             foreach(Point curPos in horizontalBonds)
             {
                 spriteBatch.Draw(Game1.textures.white, new Rectangle(
-                    origin.X + curPos.X * 32 + 25,
-                    origin.Y + curPos.Y * 32 + 15,
+                    origin.X + curPos.X * (int)Game1.BLOCKSIZE + 25,
+                    origin.Y + curPos.Y * (int)Game1.BLOCKSIZE + 15,
                     15,
                     3),
                     Color.Orange
@@ -328,8 +454,8 @@ namespace SpeedChem
             foreach (Point curPos in verticalBonds)
             {
                 spriteBatch.Draw(Game1.textures.white, new Rectangle(
-                    origin.X + curPos.X * 32 + 15,
-                    origin.Y + curPos.Y * 32 + 25,
+                    origin.X + curPos.X * (int)Game1.BLOCKSIZE + 15,
+                    origin.Y + curPos.Y * (int)Game1.BLOCKSIZE + 25,
                     3,
                     15),
                     Color.Orange
@@ -351,7 +477,7 @@ namespace SpeedChem
             DestroyAll();
 
             Game1.instance.level.ProduceChemical(signature);
-            Game1.instance.level.UpdateSaveButton();
+            Game1.instance.level.UpdateAnyBlocksLeft();
         }
 
         public ChemicalSignature GetSignature()
@@ -508,11 +634,6 @@ namespace SpeedChem
 
         public void NailOnto(ChemBlock other)
         {
-            if (chemGrid == null)
-            {
-                chemGrid = new ChemGrid(this);
-            }
-
             chemGrid.AddNail(this, other);
         }
 
@@ -521,10 +642,7 @@ namespace SpeedChem
             if (this != connected[0])
                 return;
 
-            if (chemGrid != null)
-                chemGrid.Draw(spriteBatch);
-            else
-                base.Draw(spriteBatch);
+            chemGrid.Draw(spriteBatch);
         }
 
         public void BaseDraw(SpriteBatch spriteBatch)

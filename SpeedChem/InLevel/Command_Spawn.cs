@@ -78,13 +78,13 @@ namespace SpeedChem
                         }
                     }
 
-                    curY += 32;
+                    curY += 32.025f;
                 }
 
-                curX += 32;
+                curX += 32.025f;
                 curY = startY;
 
-                Game1.instance.level.UpdateSaveButton();
+                Game1.instance.level.UpdateAnyBlocksLeft();
             }
         }
     }
