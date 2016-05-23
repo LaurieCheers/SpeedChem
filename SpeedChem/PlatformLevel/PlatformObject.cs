@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    public enum WorldObjectType
+    public enum PlatformObjectType
     {
         Solid,
         Character,
@@ -17,9 +17,9 @@ namespace SpeedChem
         Trigger,
     };
 
-    public class WorldObject
+    public class PlatformObject
     {
-        public WorldObjectType objectType = WorldObjectType.Solid;
+        public PlatformObjectType objectType = PlatformObjectType.Solid;
         public Vector2 pos;
         public Vector2 size {
             get { return _size; }
@@ -33,7 +33,7 @@ namespace SpeedChem
         public SpriteEffects spriteEffects = SpriteEffects.None;
         public bool destroyed;
 
-        public WorldObject(Texture2D texture, Vector2 pos, Vector2 size)
+        public PlatformObject(Texture2D texture, Vector2 pos, Vector2 size)
         {
             this.texture = texture;
             this.pos = pos;
@@ -42,12 +42,12 @@ namespace SpeedChem
             this.size = size;
         }
 
-        public WorldObject(Texture2D texture, Vector2 pos, Vector2 size, Color color): this(texture, pos, size)
+        public PlatformObject(Texture2D texture, Vector2 pos, Vector2 size, Color color): this(texture, pos, size)
         {
             this.color = color;
         }
 
-        public WorldObject(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion)
+        public PlatformObject(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion)
         {
             this.texture = texture;
             this.pos = pos;
@@ -56,7 +56,7 @@ namespace SpeedChem
             this.color = color;
         }
 
-        public virtual void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public virtual void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
         }
 

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -76,10 +77,40 @@ namespace SpeedChem
         public int height { get { return elements.Length / width; } }
         readonly ChemicalElement[] elements;
 
+        public ChemicalSignature(JSONArray template)
+        {
+            this.width = template.getString(0).Length;
+            this.elements = new ChemicalElement[width*template.Length];
+
+            int Idx = 0;
+            foreach (string line in template.asStrings())
+            {
+                Debug.Assert(line.Length == width);
+
+                foreach(char c in line)
+                {
+                    this.elements[Idx] = Decode(c);
+                    Idx++;
+                }
+            }
+        }
+
         public ChemicalSignature(int width, ChemicalElement[] elements)
         {
             this.width = width;
             this.elements = elements;
+        }
+
+        public static ChemicalElement Decode(char c)
+        {
+            switch(c)
+            {
+                case 'W': return ChemicalElement.WHITE;
+                case 'B': return ChemicalElement.BLUE;
+                case 'R': return ChemicalElement.RED;
+                case 'G': return ChemicalElement.GLASS;
+                default: return ChemicalElement.NONE;
+            }
         }
 
         public override bool Equals(Object obj)
@@ -471,13 +502,27 @@ namespace SpeedChem
             }
         }
 
+        public void Destroy(ChemBlock block)
+        {
+            Point p = blocks[block];
+            
+            horizontalBonds.Remove(p);
+            verticalBonds.Remove(p);
+            horizontalBonds.Remove(new Point(p.X+1,p.Y));
+            verticalBonds.Remove(new Point(p.X, p.Y+1));
+
+            blocks.Remove(block);
+
+            UpdateConnectivity();
+        }
+
         public void DoOutput()
         {
             ChemicalSignature signature = GetSignature();
             DestroyAll();
 
-            Game1.instance.level.ProduceChemical(signature);
-            Game1.instance.level.UpdateAnyBlocksLeft();
+            Game1.instance.platformLevel.ProduceChemical(signature);
+            Game1.instance.platformLevel.UpdateAnyBlocksLeft();
         }
 
         public ChemicalSignature GetSignature()
@@ -526,11 +571,11 @@ namespace SpeedChem
         public ChemBlock(ChemicalElement element, Texture2D texture, Vector2 pos, Vector2 size, Color color) : base(texture, pos, size, color)
         {
             this.element = element;
-            objectType = WorldObjectType.Pushable;
+            objectType = PlatformObjectType.Pushable;
             chemGrid = new ChemGrid(this);
         }
 
-        public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             if (nailDuration > 0)
             {
@@ -550,7 +595,7 @@ namespace SpeedChem
                         checkArea.Width -= NAIL_SEARCH_NARROW * 2;
                     }
 
-                    foreach (WorldObject obj in allObjects)
+                    foreach (PlatformObject obj in allObjects)
                     {
                         if(obj != this && obj is ChemBlock && checkArea.Intersects(obj.bounds))
                         {
@@ -598,6 +643,7 @@ namespace SpeedChem
             if(element.ShouldShatter())
             {
                 destroyed = true;
+                chemGrid.Destroy(this);
                 return;
             }
 
@@ -614,7 +660,7 @@ namespace SpeedChem
             chemGrid.AddNail(this, nailDirection);
         }
 
-        public override void HandleColliding(WorldObject obj, Vector2 move)
+        public override void HandleColliding(PlatformObject obj, Vector2 move)
         {
             if (obj is ChemBlock)
             {

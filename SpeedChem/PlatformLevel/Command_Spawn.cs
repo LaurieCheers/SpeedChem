@@ -28,18 +28,18 @@ namespace SpeedChem
             triggered = true;
         }
 
-        public void Update(List<WorldObject> objects)
+        public void Update(List<PlatformObject> objects)
         {
             if (!triggered)
                 return;
 
-            foreach(WorldObject obj in objects)
+            foreach(PlatformObject obj in objects)
             {
                 if (obj.bounds.Intersects(bounds))
                     return;
             }
 
-            ChemicalSignature signature = Game1.instance.level.SpawnInputChemical(inputIndex);
+            ChemicalSignature signature = Game1.instance.platformLevel.SpawnInputChemical(inputIndex);
             if (signature == null)
                 return;
 
@@ -78,13 +78,13 @@ namespace SpeedChem
                         }
                     }
 
-                    curY += 32.025f;
+                    curY += 32.5f;
                 }
 
-                curX += 32.025f;
+                curX += 32.5f;
                 curY = startY;
 
-                Game1.instance.level.UpdateAnyBlocksLeft();
+                Game1.instance.platformLevel.UpdateAnyBlocksLeft();
             }
         }
     }

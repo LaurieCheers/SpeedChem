@@ -45,7 +45,7 @@ namespace SpeedChem
             }
         }
 
-        public void Update(List<WorldObject> allObjects)
+        public void Update(List<PlatformObject> allObjects)
         {
             pos += velocity;
 
@@ -53,7 +53,7 @@ namespace SpeedChem
             if(pos.X < 0 || pos.Y < 0 || windowSize.X < pos.X || windowSize.Y < pos.Y)
                 destroyed = true;
 
-            foreach(WorldObject obj in allObjects)
+            foreach(PlatformObject obj in allObjects)
             {
                 if(CanCollide(obj) && obj.bounds.Contains(pos))
                 {
@@ -73,12 +73,12 @@ namespace SpeedChem
             }
         }
 
-        bool CanCollide(WorldObject obj)
+        bool CanCollide(PlatformObject obj)
         {
             switch (obj.objectType)
             {
-                case WorldObjectType.Character:
-                case WorldObjectType.Trigger:
+                case PlatformObjectType.Character:
+                case PlatformObjectType.Trigger:
                     return false;
                 default:
                     return true;

@@ -16,6 +16,13 @@ namespace LRCEngine
         Rot270
     }
 
+    public enum TextAlignment
+    {
+        LEFT,
+        CENTER,
+        RIGHT,
+    }
+
     public static class LRCEngineExtensions
     {
         public static float DotProduct(this Vector2 a, Vector2 b)
@@ -50,7 +57,7 @@ namespace LRCEngine
 
         public static void Draw(this SpriteBatch spriteBatch, RichImage image, Rectangle rect, Color col)
         {
-            image.Draw(spriteBatch, rect);
+            image.Draw(spriteBatch, rect, col);
         }
 
         public static Color Multiply(this Color col1, Color col2)
@@ -128,6 +135,29 @@ namespace LRCEngine
         {
             int newRotation = 360 - rotation.toInt();
             return (Rotation90)(newRotation / 90);
+        }
+
+        public static void DrawString(this SpriteBatch spriteBatch, SpriteFont font, string text, Vector2 position, TextAlignment alignment, Color color)
+        {
+            switch (alignment)
+            {
+                case TextAlignment.LEFT:
+                    spriteBatch.DrawString(font, text, position, color);
+                    break;
+                case TextAlignment.RIGHT:
+                    {
+                        Vector2 size = font.MeasureString(text);
+                        spriteBatch.DrawString(font, text, new Vector2((int)(position.X - size.X), position.Y), color);
+                    }
+                    break;
+                case TextAlignment.CENTER:
+                    {
+                        Vector2 size = font.MeasureString(text);
+                        spriteBatch.DrawString(font, text, new Vector2((int)(position.X - size.X / 2), position.Y), color);
+                    }
+                    break;
+            }
+
         }
     }
 }

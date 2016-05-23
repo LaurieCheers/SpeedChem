@@ -9,8 +9,14 @@ using System.Threading.Tasks;
 
 namespace LRCEngine
 {
-    public abstract class UIElement
+    public interface UIMouseResponder
     {
+        UIMouseResponder GetMouseHover(Vector2 localMousePos);
+    }
+
+    public abstract class UIElement: UIMouseResponder
+    {
+        public abstract UIMouseResponder GetMouseHover(Vector2 localMousePos);
         public abstract void Update(InputState inputState, Vector2 origin);
         public void Update(InputState inputState) { Update(inputState, Vector2.Zero);  }
         public abstract void Draw(SpriteBatch spriteBatch, Vector2 origin);
@@ -32,6 +38,19 @@ namespace LRCEngine
             this.origin = origin;
         }
 
+        public override UIMouseResponder GetMouseHover(Vector2 localMousePos)
+        {
+            Vector2 childMousePos = localMousePos - origin;
+            for(int Idx = elements.Count-1; Idx >= 0; --Idx)
+            {
+                UIMouseResponder selected = elements[Idx].GetMouseHover(childMousePos);
+                if (selected != null)
+                    return selected;
+            }
+
+            return null;
+        }
+
         public override void Update(InputState inputState, Vector2 origin)
         {
             Vector2 newOrigin = origin + this.origin;
@@ -49,6 +68,11 @@ namespace LRCEngine
         public void Add(UIElement element)
         {
             elements.Add(element);
+        }
+
+        public void Remove(UIElement element)
+        {
+            elements.Remove(element);
         }
     }
 }

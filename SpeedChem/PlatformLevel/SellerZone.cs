@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class SellerZone : WorldObject
+    class SellerZone : PlatformObject
     {
         ChemicalSignature signature;
         int sellPrice;
@@ -17,17 +17,17 @@ namespace SpeedChem
 
         public SellerZone(ChemicalSignature signature, int sellPrice, FactoryCommandType sellAction, Vector2 pos, Vector2 size) : base(null, pos, size)
         {
-            objectType = WorldObjectType.Trigger;
+            objectType = PlatformObjectType.Trigger;
             this.signature = signature;
             this.sellPrice = sellPrice;
             this.sellAction = sellAction;
         }
 
-        public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             Vectangle myBounds = bounds;
 
-            foreach (WorldObject obj in allObjects)
+            foreach (PlatformObject obj in allObjects)
             {
                 if (obj is ChemBlock && !obj.destroyed && myBounds.Intersects(obj.bounds))
                 {
@@ -40,9 +40,9 @@ namespace SpeedChem
                     if (signature != block.chemGrid.GetSignature())
                         continue;
 
-                    Game1.instance.level.Record(sellAction, sellPrice);
+                    Game1.instance.platformLevel.Record(sellAction, sellPrice);
                     block.chemGrid.DestroyAll();
-                    Game1.instance.level.UpdateAnyBlocksLeft();
+                    Game1.instance.platformLevel.UpdateAnyBlocksLeft();
                 }
             }
         }

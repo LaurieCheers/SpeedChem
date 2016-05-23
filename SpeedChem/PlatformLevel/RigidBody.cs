@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    public class RigidBody: WorldObject
+    public class RigidBody: PlatformObject
     {
         public RigidBody[] connected;
         public int connectedID;
@@ -35,15 +35,15 @@ namespace SpeedChem
             connectedID = nextUnusedConnectID++;
         }
 
-        public bool IgnoreCollisions(WorldObject obj)
+        public bool IgnoreCollisions(PlatformObject obj)
         {
             if (obj is RigidBody)
                 return ((RigidBody)obj).connectedID == connectedID;
 
-            return obj.objectType == WorldObjectType.Trigger;
+            return obj.objectType == PlatformObjectType.Trigger;
         }
 
-        public virtual void HandleColliding(WorldObject obj, Vector2 move)
+        public virtual void HandleColliding(PlatformObject obj, Vector2 move)
         {
         }
 
@@ -91,7 +91,7 @@ namespace SpeedChem
             }
         }
 
-        public void RunMovement(List<WorldObject> allObjects)
+        public void RunMovement(List<PlatformObject> allObjects)
         {
             Vector2 moveY = new Vector2(0, velocity.Y);
             bool newOnGround = false;
@@ -120,13 +120,13 @@ namespace SpeedChem
             }
         }
 
-        protected Vector2 CheckMove(RigidBody parentObject, Vector2 currentMove, List<WorldObject> allObjects, ref bool onGround)
+        protected Vector2 CheckMove(RigidBody parentObject, Vector2 currentMove, List<PlatformObject> allObjects, ref bool onGround)
         {
             const float EPSILON = 0.01f;
             Vectangle moveBoundsX = GetMoveBoundsX(currentMove);
             Vectangle moveBoundsY = GetMoveBoundsY(currentMove);
 
-            foreach (WorldObject obj in allObjects)
+            foreach (PlatformObject obj in allObjects)
             {
                 if (obj == this || IgnoreCollisions(obj))
                     continue;

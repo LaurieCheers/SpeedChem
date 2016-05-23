@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class CuttingBeam: WorldObject
+    class CuttingBeam: PlatformObject
     {
         Texture2D inactiveTexture;
         Texture2D activeTexture;
@@ -18,10 +18,10 @@ namespace SpeedChem
         {
             this.inactiveTexture = inactiveTexture;
             this.activeTexture = activeTexture;
-            objectType = WorldObjectType.Trigger;
+            objectType = PlatformObjectType.Trigger;
         }
 
-        public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
 /*            foreach (WorldObject obj in allObjects)
             {

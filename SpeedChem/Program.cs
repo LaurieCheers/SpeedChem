@@ -15,7 +15,7 @@ namespace SpeedChem
         static void Main()
         {
             using (var game = new Game1())
-                game.Run();
+               game.Run();
         }
     }
 #endif

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class PushButton: WorldObject
+    class PushButton: PlatformObject
     {
         bool isPushed = false;
         Texture2D pushedTexture;
@@ -21,7 +21,7 @@ namespace SpeedChem
             this.target = target;
             this.pushedTexture = pushedTexture;
             this.unpushedTexture = unpushedTexture;
-            objectType = WorldObjectType.Trigger;
+            objectType = PlatformObjectType.Trigger;
         }
 
         public PushButton(Command target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size, Color color) : base(unpushedTexture, pos, size, color)
@@ -29,16 +29,16 @@ namespace SpeedChem
             this.target = target;
             this.pushedTexture = pushedTexture;
             this.unpushedTexture = unpushedTexture;
-            objectType = WorldObjectType.Trigger;
+            objectType = PlatformObjectType.Trigger;
         }
 
-        public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             bool wasPushed = isPushed;
             isPushed = false;
             Vectangle myBounds = bounds;
 
-            foreach (WorldObject obj in allObjects)
+            foreach (PlatformObject obj in allObjects)
             {
                 if(obj is RigidBody)
                 {

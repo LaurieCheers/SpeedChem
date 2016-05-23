@@ -9,18 +9,18 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    public class ChemicalSilo: MetaGameObject
+    public class ChemicalSilo: CityObject
     {
         UIContainer ui;
         ChemicalSignature signature;
         public int amount;
 
-        public ChemicalSilo(Vector2 pos) : base(Game1.textures.silo, pos, Game1.textures.silo.Size())
+        public ChemicalSilo(CityLevel cityLevel, Vector2 pos) : base(cityLevel, Game1.textures.silo, pos, Game1.textures.silo.Size())
         {
             Init();
         }
 
-        public ChemicalSilo(ChemicalSignature signature, int amount, Vector2 pos): base(Game1.textures.silo, pos, Game1.textures.silo.Size())
+        public ChemicalSilo(CityLevel cityLevel, ChemicalSignature signature, int amount, Vector2 pos): base(cityLevel, Game1.textures.silo, pos, Game1.textures.silo.Size())
         {
             this.signature = signature;
             this.amount = amount;
@@ -98,9 +98,9 @@ namespace SpeedChem
             return null;
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
         {
-            base.Draw(spriteBatch);
+            base.Draw(spriteBatch, blackboard);
             Vector2 pos = bounds.Origin;
             if(signature != null)
                 signature.Draw(spriteBatch, new Vector2(pos.X+16-4*signature.width, pos.Y-8*signature.height), true);

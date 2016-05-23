@@ -11,12 +11,12 @@ namespace SpeedChem
 {
     public class PipeSocket
     {
-        public readonly MetaGameObject parent;
+        public readonly CityObject parent;
         public readonly Vector2 offset;
         int maxConnections;
         public HashSet<OutputPipe> connectedPipes = new HashSet<OutputPipe>();
 
-        public PipeSocket(MetaGameObject parent, Vector2 offset, int maxConnections)
+        public PipeSocket(CityObject parent, Vector2 offset, int maxConnections)
         {
             this.parent = parent;
             this.offset = offset;
@@ -63,28 +63,36 @@ namespace SpeedChem
         }
     }
 
-    public class OutputPipe
+    public class OutputPipe: UIMouseResponder
     {
-        public MetaGameObject source;
+        public CityObject source;
         public Vector2 sourceOffset { get; private set;  }
         public PipeSocket connectedTo { get; private set; }
 
         Vector2 cachedSource;
         Vector2 cachedOffset;
+        Vector2 cachedDirection;
         float cachedRotation;
         int cachedLength;
         Rectangle cachedHandleRect;
         SpriteEffects cachedEffects;
 
-        float animatingPip;
+        List<float> animatingPips = new List<float>();
 
         bool dragging;
+        public bool movable;
 
-        public OutputPipe(MetaGameObject source, Vector2 offset)
+        public OutputPipe(CityObject source, Vector2 offset)
         {
             this.source = source;
             this.sourceOffset = offset;
+            this.movable = true;
             ShowDisconnected();
+        }
+
+        public UIMouseResponder GetMouseHover(Vector2 localMousePos)
+        {
+            return movable && cachedHandleRect.Contains(localMousePos) ? this : null;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -96,10 +104,24 @@ namespace SpeedChem
             else
                 UpdateForTargetPos(sourcePos + cachedOffset);
 
-            spriteBatch.Draw(Game1.textures.pipe, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, cachedLength, 16),
-                null, Color.White, cachedRotation, new Vector2(0, 8), cachedEffects, 0.0f);
+            if (movable)
+            {
+                spriteBatch.Draw(Game1.textures.pipe, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, cachedLength, 16),
+                    null, Color.White, cachedRotation, new Vector2(0, 8), cachedEffects, 0.0f);
+            }
+            else
+            {
+                int pipeTextureLength = Game1.textures.grassy_pipe.Width;
+                Vector2 currentPos = sourcePos;
+                Vector2 step = cachedOffset*pipeTextureLength / (float)cachedLength;
+                for (int lenSoFar = 0; lenSoFar < cachedLength; lenSoFar += pipeTextureLength)
+                {
+                    spriteBatch.Draw(Game1.textures.grassy_pipe, currentPos, null, Color.White, cachedRotation, new Vector2(0, 8), 1.0f, cachedEffects, 0.0f);
+                    currentPos += step;
+                }
+            }
 
-            if(animatingPip > 0.0f)
+            foreach (float animatingPip in animatingPips)
             {
                 Vector2 targetOffset = cachedOffset;
                 targetOffset.Normalize();
@@ -108,7 +130,8 @@ namespace SpeedChem
                 spriteBatch.Draw(Game1.textures.chemIcon, new Rectangle((int)(sourcePos.X + targetOffset.X - 2), (int)(sourcePos.Y + targetOffset.Y - 2), 4, 4), Color.Yellow);
             }
 
-            spriteBatch.Draw(Game1.textures.pipeHandle, cachedHandleRect, Color.White);
+            if(movable)
+                spriteBatch.Draw(Game1.textures.pipeHandle, cachedHandleRect, Color.White);
         }
 
         void UpdateForTargetPos(Vector2 targetPos)
@@ -120,6 +143,8 @@ namespace SpeedChem
                 Vector2 dir = offset / length;
                 cachedOffset = offset;
                 cachedLength = (int)length;
+                cachedDirection = cachedOffset;
+                cachedDirection.Normalize();
                 cachedRotation = offset.ToAngle();
                 Vector2 handlePos;
                 if (length < 64.0f)
@@ -147,11 +172,15 @@ namespace SpeedChem
 
                 if (newSocket != null)
                 {
-                    if(!newSocket.AddConnection(this))
+                    if (!newSocket.AddConnection(this))
                     {
                         connectedTo = null;
                         ShowDisconnected();
                     }
+                }
+                else
+                {
+                    ShowDisconnected();
                 }
             }
         }
@@ -161,43 +190,51 @@ namespace SpeedChem
             UpdateForTargetPos(sourcePos + new Vector2(0, 32));
         }
 
-        public void Update(InputState inputState, MetaGame metaGame, ref object selectedObject)
+        public void Run()
         {
             const float PIPSPEED = 5.0f;
-            if(animatingPip > 0.0f)
+            for(int Idx = animatingPips.Count-1; Idx >= 0; --Idx)
             {
-                animatingPip += PIPSPEED;
-                if(animatingPip >= cachedLength)
+                animatingPips[Idx] += PIPSPEED;
+                if (animatingPips[Idx] >= cachedLength)
                 {
-                    animatingPip = 0.0f;
+                    animatingPips[Idx] = animatingPips.Last();
+                    animatingPips.RemoveAt(animatingPips.Count - 1);
                 }
             }
+        }
 
-            bool inBounds = cachedHandleRect.Contains(inputState.MousePos);
-            if (inBounds && inputState.WasMouseLeftJustPressed())
+        public void Update(CityLevel metaGame, CityUIBlackboard blackboard)
+        {
+            if (!movable)
+                return;
+
+            bool inBounds = blackboard.inputState.hoveringElement == this;// cachedHandleRect.Contains(blackboard.inputState.MousePos);
+            if (inBounds && blackboard.inputState.WasMouseLeftJustPressed())
             {
                 dragging = true;
+                blackboard.selectedObject = null;
             }
 
             if(dragging)
             {
                 ConnectTo(null);
-                if (inputState.mouseLeft.pressed)
+                if (blackboard.inputState.mouseLeft.isDown)
                 {
-                    MetaGameObject overObject = metaGame.GetObjectAt(inputState.MousePos);
+                    CityObject overObject = metaGame.GetObjectAt(blackboard.inputState.MousePos);
                     if (overObject != null && overObject.pipeSocket != null)
                     {
                         UpdateForTargetPos(overObject.pipeSocket.pos);
                     }
                     else
                     {
-                        UpdateForTargetPos(inputState.MousePos);
+                        UpdateForTargetPos(blackboard.inputState.MousePos);
                     }
                 }
                 else
                 {
                     dragging = false;
-                    MetaGameObject overObject = metaGame.GetObjectAt(inputState.MousePos);
+                    CityObject overObject = metaGame.GetObjectAt(blackboard.inputState.MousePos);
                     if (overObject != null && overObject != source && overObject.pipeSocket != null)
                     {
                         ConnectTo(overObject.pipeSocket);
@@ -212,7 +249,7 @@ namespace SpeedChem
 
         public void AnimatePip()
         {
-            animatingPip = 0.01f;
+            animatingPips.Add(0.01f);
         }
     }
 }

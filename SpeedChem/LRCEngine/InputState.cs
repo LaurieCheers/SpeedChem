@@ -17,7 +17,7 @@ namespace LRCEngine
     public class MouseButtonState
     {
         public MouseButton button;
-        public bool pressed;
+        public bool isDown;
         public bool dragged;
         public int durationFrames;
         public Vector2 initialMousePos;
@@ -28,7 +28,7 @@ namespace LRCEngine
         public MouseButtonState(MouseButton button, MouseState initialState)
         {
             this.button = button;
-            pressed = IsButtonPressed(initialState);
+            isDown = IsButtonPressed(initialState);
             durationFrames = 100;
             initialMousePos = new Vector2(initialState.X, initialState.Y);
         }
@@ -36,9 +36,9 @@ namespace LRCEngine
         public void Update(MouseState state)
         {
             bool newPressed = IsButtonPressed(state);
-            if( pressed != newPressed )
+            if( isDown != newPressed )
             {
-                pressed = newPressed;
+                isDown = newPressed;
                 durationFrames = 0;
                 dragged = false;
                 initialMousePos = new Vector2(state.X, state.Y);
@@ -47,7 +47,7 @@ namespace LRCEngine
             {
                 durationFrames++;
 
-                if (pressed && !dragged && (initialMousePos - new Vector2(state.X, state.Y)).LengthSquared() > DRAG_THRESHOLD * DRAG_THRESHOLD)
+                if (isDown && !dragged && (initialMousePos - new Vector2(state.X, state.Y)).LengthSquared() > DRAG_THRESHOLD * DRAG_THRESHOLD)
                 {
                     dragged = true;
                 }
@@ -82,6 +82,7 @@ namespace LRCEngine
         public bool pauseMouse { get; private set; }
         bool preFirstUpdate = true;
         bool firstUpdate = true;
+        public UIMouseResponder hoveringElement;
 
         public MouseButtonState mouseLeft;
         public MouseButtonState mouseMiddle;
@@ -89,7 +90,8 @@ namespace LRCEngine
 
         public void Update()
         {
-            if(firstUpdate && !preFirstUpdate)
+            hoveringElement = null;
+            if (firstUpdate && !preFirstUpdate)
                 firstUpdate = false;
             preFirstUpdate = false;
             oldKeyboard = keyboard;
@@ -129,25 +131,40 @@ namespace LRCEngine
         }
 
         public Vector2 MousePos { get { return new Vector2(mouse.X, mouse.Y); } }
+        public Vector2 OldMousePos { get { return new Vector2(oldMouse.X, oldMouse.Y); } }
+        public Vector2 MouseDelta { get { return new Vector2(mouse.X-oldMouse.X, mouse.Y-oldMouse.Y); } }
+
+        public void UpdateMouseHover(IReadOnlyList<UIMouseResponder> list)
+        {
+            if (hoveringElement != null)
+                return;
+
+            for (int Idx = list.Count - 1; Idx >= 0; --Idx)
+            {
+                hoveringElement = list[Idx].GetMouseHover(MousePos);
+                if (hoveringElement != null)
+                    break;
+            }
+        }
 
         public bool WasMouseLeftJustPressed()
         {
-            return mouseLeft.pressed && mouseLeft.duration == 0;
+            return mouseLeft.isDown && mouseLeft.duration == 0;
         }
 
         public bool WasMouseLeftJustReleased()
         {
-            return !mouseLeft.pressed && mouseLeft.duration == 0;
+            return !mouseLeft.isDown && mouseLeft.duration == 0;
         }
 
         public bool WasMouseRightJustPressed()
         {
-            return mouseRight.pressed && mouseRight.duration == 0;
+            return mouseRight.isDown && mouseRight.duration == 0;
         }
 
         public bool WasMouseRightJustReleased()
         {
-            return !mouseRight.pressed && mouseRight.duration == 0;
+            return !mouseRight.isDown && mouseRight.duration == 0;
         }
 
         public bool WasKeyJustPressed(Keys key)

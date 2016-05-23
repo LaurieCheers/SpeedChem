@@ -11,15 +11,15 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    interface Weapon
+    public interface Weapon
     {
-        void Update(InputState input, PlatformCharacter shooter, List<WorldObject> allObjects, List<Projectile> projectiles);
+        void Update(InputState input, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles);
         void Draw(SpriteBatch spriteBatch);
     }
 
     class Weapon_Rivetgun: Weapon
     {
-        public void Update(InputState input, PlatformCharacter shooter, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public void Update(InputState input, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             if (input.WasMouseRightJustReleased())
             {
@@ -50,14 +50,14 @@ namespace SpeedChem
         const float BEAMSPACING = 32;
         const float BEAMLENGTH = 100;
 
-        public void Update(InputState input, PlatformCharacter shooter, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public void Update(InputState input, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             if (beamTraceDuration > 0)
                 beamTraceDuration--;
 
             if (input.WasMouseRightJustReleased())
             {
-                Game1.instance.level.Record(FactoryCommandType.SPENDCRYSTAL);
+                Game1.instance.platformLevel.Record(FactoryCommandType.SPENDCRYSTAL);
 
                 beamTraceDuration = 20;
                 beamTraceAngle = beamAngle;
@@ -75,7 +75,7 @@ namespace SpeedChem
                 }
             }
 
-            if (input.mouseRight.pressed)
+            if (input.mouseRight.isDown)
             {
                 // preview beam
                 beamSource = shooter.bounds.Center;
@@ -111,10 +111,10 @@ namespace SpeedChem
             }
         }
 
-        public void Cut(Vectangle area, List<WorldObject> objects)
+        public void Cut(Vectangle area, List<PlatformObject> objects)
         {
             HashSet<ChemGrid> gridsChecked = new HashSet<ChemGrid>();
-            foreach(WorldObject obj in objects)
+            foreach(PlatformObject obj in objects)
             {
                 ChemBlock block = obj as ChemBlock;
                 if (block != null && !gridsChecked.Contains(block.chemGrid) && block.bounds.Intersects(area))
@@ -140,18 +140,18 @@ namespace SpeedChem
         }
     }
 
-    class PlatformCharacter: RigidBody
+    public class PlatformCharacter: RigidBody
     {
         Weapon weapon = new Weapon_Rivetgun();
 
         public PlatformCharacter(Texture2D texture, Vector2 pos, Vector2 size): base(texture, pos, size)
         {
-            objectType = WorldObjectType.Character;
+            objectType = PlatformObjectType.Character;
         }
 
         public PlatformCharacter(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion) : base(texture, pos, size, color, textureRegion)
         {
-            objectType = WorldObjectType.Character;
+            objectType = PlatformObjectType.Character;
         }
 
         public void SelectWeapon(Weapon weapon)
@@ -159,14 +159,15 @@ namespace SpeedChem
             this.weapon = weapon;
         }
 
-        public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             const float ACCEL = 0.2f;
             const float DAMPINGX = 0.97f;
             const float DAMPINGY = 1.0f;
             const float BRAKES_DAMPINGX = 0.75f;
             const float GRAVITY = 0.35f;
-            const float JUMP_VEL = -7.2f;
+            const float JUMP_XVEL = 1.7f;
+            const float JUMP_YVEL = -7.7f;
             const float JUMP_DAMPINGY = 0.5f;
             const float FLOAT_DAMPINGY = 0.75f;
 
@@ -204,11 +205,7 @@ namespace SpeedChem
                 velocity.X *= BRAKES_DAMPINGX;
             }
 
-            if (velocity.Y > 0 && input.IsKeyDown(Keys.Space))
-            {
-                velocity.Y *= FLOAT_DAMPINGY;
-            }
-            else if (velocity.Y > 0 || input.IsKeyDown(Keys.Space))
+            if (velocity.Y > 0 || input.IsKeyDown(Keys.Space))
             {
                 velocity.Y *= DAMPINGY;
             }
@@ -219,13 +216,17 @@ namespace SpeedChem
 
             if (onGround && input.WasKeyJustPressed(Keys.Space))
             {
-                velocity.Y = JUMP_VEL;
+                if (input.IsKeyDown(Keys.A))
+                    velocity.X -= JUMP_XVEL;
+                else if (input.IsKeyDown(Keys.D))
+                    velocity.X += JUMP_XVEL;
+                velocity.Y = JUMP_YVEL;
             }
 
             if(input.WasKeyJustPressed(Keys.LeftShift))
             {
                 Vectangle grabZone = GetGrabZone();
-                foreach(WorldObject obj in allObjects)
+                foreach(PlatformObject obj in allObjects)
                 {
                     if(obj is ChemBlock && grabZone.Intersects(obj.bounds))
                     {

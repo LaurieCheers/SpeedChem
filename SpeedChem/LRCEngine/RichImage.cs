@@ -223,6 +223,25 @@ namespace LRCEngine
         }
     }
 
+    class DrawMode_TiledProgressBar : IDrawMode
+    {
+        public void Draw(SpriteBatch spriteBatch, Rectangle rect, Texture2D texture, Color color, Rotation90 rotation)
+        {
+            int endWidth = texture.Width / 4;
+            int tileSize = texture.Width/2;
+            int tiledAreaWidth = rect.Width - endWidth * 2;
+            int tileCount = (int)Math.Round((float)tiledAreaWidth / tileSize);
+            int tileSpacing = (int)Math.Ceiling((float)tiledAreaWidth / tileCount);
+
+            spriteBatch.Draw(texture, new Rectangle(rect.X, rect.Y, endWidth, rect.Height), new Rectangle(0,0,endWidth,texture.Height), color);
+            for(int X = 0; X < tiledAreaWidth; X+=tileSpacing)
+            {
+                spriteBatch.Draw(texture, new Rectangle(rect.X + endWidth + X, rect.Y, tileSpacing, rect.Height), new Rectangle(endWidth, 0, tileSize, texture.Height), color);
+            }
+            spriteBatch.Draw(texture, new Rectangle(rect.X + rect.Width-endWidth, rect.Y, endWidth, rect.Height), new Rectangle(texture.Width-endWidth, 0, endWidth, texture.Height), color);
+        }
+    }
+
     public interface RichImageLayer
     {
         void Draw(SpriteBatch spriteBatch, Rectangle rect, Color col, Rotation90 rotation);
@@ -237,6 +256,7 @@ namespace LRCEngine
         TILED,
         TILED9GRID,
         STRETCHED9GRID,
+        TILEDPROGRESSBAR,
     };
 
     public class RichImageLayer_Texture : RichImageLayer
@@ -255,7 +275,8 @@ namespace LRCEngine
             {"fitted", new DrawMode_Fitted()},
             {"tiled", new DrawMode_Tiled()},
             {"tiled9grid", new DrawMode_Tiled9Grid()},
-            {"stretched9grid", new DrawMode_Stretch9Grid()}
+            {"stretched9grid", new DrawMode_Stretch9Grid()},
+            {"tiledprogressbar", new DrawMode_TiledProgressBar()}
         };
         static Dictionary<RichImageDrawMode, IDrawMode> drawModes = new Dictionary<RichImageDrawMode, IDrawMode> {
             {RichImageDrawMode.DEFAULT, new DrawMode_Stretched()},
@@ -264,7 +285,8 @@ namespace LRCEngine
             {RichImageDrawMode.FITTED, new DrawMode_Fitted()},
             {RichImageDrawMode.TILED, new DrawMode_Tiled()},
             {RichImageDrawMode.TILED9GRID, new DrawMode_Tiled9Grid()},
-            {RichImageDrawMode.STRETCHED9GRID, new DrawMode_Stretch9Grid()}
+            {RichImageDrawMode.STRETCHED9GRID, new DrawMode_Stretch9Grid()},
+            {RichImageDrawMode.TILEDPROGRESSBAR, new DrawMode_TiledProgressBar()}
         };
 
         public RichImageLayer_Texture(Texture2D aTexture, Color aColor, RichImageDrawMode aDrawMode, int aPadding, Rotation90 aRotation)

@@ -25,6 +25,10 @@ namespace LRCEngine
         public float layerDepth;
         public SpriteEffects spriteEffects = SpriteEffects.None;
 
+        public SpriteObject(Texture2D texture, Vector2 pos): this(texture, pos, texture.Size())
+        {
+        }
+
         public SpriteObject(Texture2D texture, Vector2 pos, Vector2 size)
         {
             this.texture = texture;

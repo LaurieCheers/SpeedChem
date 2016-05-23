@@ -9,6 +9,6 @@ namespace SpeedChem
     interface Command
     {
         void Run();
-        void Update(List<WorldObject> objects);
+        void Update(List<PlatformObject> objects);
     }
 }

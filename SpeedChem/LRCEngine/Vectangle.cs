@@ -52,13 +52,26 @@ namespace LRCEngine
         public float MaxX { get { return X + Width; } }
         public float MaxY { get { return Y + Height; } }
 
+        public Vector2 XY { get { return new Vector2(X, Y); } }
         public Vectangle LeftSide { get { return new Vectangle(X, Y, 0, Height); } }
         public Vectangle RightSide { get { return new Vectangle(X+Width, Y, 0, Height); } }
         public Vectangle TopSide { get { return new Vectangle(X, Y, Width, 0); } }
         public Vectangle BottomSide { get { return new Vectangle(X, Y+Height, Width, 0); } }
+        public float Top { get { return Y; } }
+        public float Bottom { get { return Y + Height; } }
+        public float Left { get { return X; } }
+        public float Right { get { return X + Width; } }
         public float CenterX { get { return X + Width / 2; } }
         public float CenterY { get { return Y + Height / 2; } }
+        public Vector2 TopLeft { get { return new Vector2(Left, Top); } }
+        public Vector2 TopCenter { get { return new Vector2(CenterX, Top); } }
+        public Vector2 TopRight { get { return new Vector2(Right, Top); } }
+        public Vector2 CenterLeft { get { return new Vector2(Left, CenterY); } }
         public Vector2 Center { get { return new Vector2(CenterX, CenterY); } }
+        public Vector2 CenterRight { get { return new Vector2(Right, CenterY); } }
+        public Vector2 BottomLeft { get { return new Vector2(Left, Bottom); } }
+        public Vector2 BottomCenter { get { return new Vector2(CenterX, Bottom); } }
+        public Vector2 BottomRight { get { return new Vector2(Right, Bottom); } }
     }
 
     public static class Extensions

@@ -9,12 +9,19 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class ChemicalOutbox : MetaGameObject
+    class ChemicalOutbox : CityObject
     {
         ChemicalSignature signature;
         int price;
 
-        public ChemicalOutbox(ChemicalSignature signature, int price, Vector2 pos) : base(Game1.textures.outbox, pos, Game1.textures.outbox.Size())
+        public ChemicalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, Game1.textures.outbox, template.getVector2("pos"), Game1.textures.outbox.Size())
+        {
+            this.signature = new ChemicalSignature(template.getArray("chemical"));
+            this.price = template.getInt("price");
+            Init();
+        }
+
+        public ChemicalOutbox(CityLevel cityLevel, ChemicalSignature signature, int price, Vector2 pos) : base(cityLevel, Game1.textures.outbox, pos, Game1.textures.outbox.Size())
         {
             this.signature = signature;
             this.price = price;
@@ -30,7 +37,8 @@ namespace SpeedChem
         {
             if (this.signature == signature)
             {
-                Game1.instance.metaGame.GainMoney(price, bounds.Center);
+                Game1.instance.inventory.GainMoney(price, bounds.Center, cityLevel);
+                didOutput = true;
                 return true;
             }
 
@@ -42,13 +50,13 @@ namespace SpeedChem
             return signature;
         }
 
-        public override void Update(InputState inputState, ref object selectedObject)
+        public override void Update(CityUIBlackboard blackboard)
         {
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
         {
-            base.Draw(spriteBatch);
+            base.Draw(spriteBatch, blackboard);
             Vector2 pos = new Vector2(bounds.X, bounds.Y + bounds.Height);
             Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
 

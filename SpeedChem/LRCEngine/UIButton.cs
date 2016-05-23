@@ -45,14 +45,15 @@ namespace LRCEngine
             this.font = font;
             this.textColor = textColor;
             this.image = image;
+            this.fillColor = Color.White;
             this.textOffset = textOffset;
         }
 
         public void Draw(SpriteBatch spriteBatch, string label, Rectangle frame)
         {
             image.Draw(spriteBatch, frame, fillColor);
-//            MagicUI.Draw9Grid(spriteBatch, texture, frame, fillColor);
-//            spriteBatch.Draw(texture, frame, fillColor);
+            //            MagicUI.Draw9Grid(spriteBatch, texture, frame, fillColor);
+            //            spriteBatch.Draw(texture, frame, fillColor);
             if (font != null)
             {
                 Vector2 labelSize = font.MeasureString(label);
@@ -61,16 +62,17 @@ namespace LRCEngine
         }
     }
 
-    public class UIButton :UIElement
+    public class UIButton : UIElement
     {
         public string label;
         public readonly Rectangle frame;
         public readonly UIButtonStyle styles;
         public readonly OnPressDelegate onPress;
-        public delegate void OnPressDelegate();
         bool mouseInside;
         bool pressedInside;
         bool enabled = true;
+
+        public delegate void OnPressDelegate();
 
         public static UIButtonStyle GetDefaultStyle(ContentManager Content)
         {
@@ -95,6 +97,11 @@ namespace LRCEngine
             this.onPress = onPress;
         }
 
+        public override UIMouseResponder GetMouseHover(Vector2 localMousePos)
+        {
+            return frame.Contains(localMousePos) ? this : null;
+        }
+
         public override void Update(InputState inputState, Vector2 origin)
         {
             if (!enabled)
@@ -104,30 +111,36 @@ namespace LRCEngine
                 return;
             }
 
-            mouseInside = frame.Contains(inputState.MousePos-origin);
-            if(mouseInside && inputState.WasMouseLeftJustPressed())
+            mouseInside = inputState.hoveringElement == this;// frame.Contains(inputState.MousePos - origin);
+            if (mouseInside && inputState.WasMouseLeftJustPressed())
             {
                 pressedInside = true;
             }
 
-            if (!inputState.mouseLeft.pressed)
+            if (!inputState.mouseLeft.isDown)
             {
-                if(mouseInside && pressedInside)
+                if (mouseInside && pressedInside)
                 {
-                    onPress();
+                    Pressed();
                 }
                 pressedInside = false;
             }
         }
 
+        protected virtual void Pressed()
+        {
+            if(onPress != null)
+                onPress();
+        }
+
         public override void Draw(SpriteBatch spriteBatch, Vector2 origin)
         {
             UIButtonAppearance currentStyle;
-            if(!enabled)
+            if (!enabled)
             {
                 currentStyle = styles.disabled;
             }
-            else if(mouseInside)
+            else if (mouseInside)
             {
                 if (pressedInside)
                     currentStyle = styles.pressed;
@@ -139,12 +152,67 @@ namespace LRCEngine
                 currentStyle = styles.normal;
             }
 
-            currentStyle.Draw(spriteBatch, label, new Rectangle(frame.X+(int)origin.X, frame.Y+(int)origin.Y, frame.Width, frame.Height));
+            currentStyle.Draw(spriteBatch, label, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
         }
 
         public void SetEnabled(bool enabled)
         {
             this.enabled = enabled;
+        }
+    }
+
+    public class UIRadioButtonGroup<T>
+    {
+        public UIRadioButton<T> selectedButton;
+        public T selectedValue { get { return selectedButton.value; } }
+    }
+
+    public class UIRadioButton<T>: UIButton
+    {
+        public readonly UIRadioButtonGroup<T> group;
+        public readonly T value;
+        UIButtonAppearance activeAppearance;
+        public readonly OnRadioPressDelegate onRadioPress;
+
+        public delegate void OnRadioPressDelegate(T value);
+
+        public UIRadioButton(string label, T value, UIRadioButtonGroup<T> group, Rectangle frame, UIButtonStyle styles, UIButtonAppearance activeAppearance, OnPressDelegate onPress) :
+            base(label, frame, styles, onPress)
+        {
+            this.group = group;
+            this.value = value;
+            this.activeAppearance = activeAppearance;
+        }
+
+        public UIRadioButton(string label, T value, UIRadioButtonGroup<T> group, Rectangle frame, UIButtonStyle styles, UIButtonAppearance activeAppearance, OnRadioPressDelegate onRadioPress) :
+            base(label, frame, styles, null)
+        {
+            this.group = group;
+            this.value = value;
+            this.activeAppearance = activeAppearance;
+            this.onRadioPress = onRadioPress;
+        }
+
+        protected override void Pressed()
+        {
+            group.selectedButton = this;
+
+            if(onRadioPress != null)
+                onRadioPress(value);
+
+            base.Pressed();
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, Vector2 origin)
+        {
+            if (group.selectedButton == this)
+            {
+                activeAppearance.Draw(spriteBatch, label, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
+            }
+            else
+            {
+                base.Draw(spriteBatch, origin);
+            }
         }
     }
 }

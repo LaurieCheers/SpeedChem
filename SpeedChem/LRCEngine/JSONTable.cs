@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using Microsoft.Xna.Framework;
 
 namespace LRCEngine
 {
@@ -219,14 +220,21 @@ namespace LRCEngine
     {
         Dictionary<string, System.Object> dictionary;
 
+        public JSONTable()
+        {
+            dictionary = new Dictionary<string, System.Object>();
+        }
+
         public JSONTable(Dictionary<string, System.Object> inDictionary)
         {
             dictionary = inDictionary;
         }
 
-        public JSONTable()
+        public JSONTable(string filename)
         {
-            dictionary = new Dictionary<string, System.Object>();
+            System.IO.StreamReader configReader = new System.IO.StreamReader(System.IO.File.OpenRead(filename));
+            int idx = 0;
+            dictionary = (Dictionary<string, System.Object>)parseValue(configReader.ReadToEnd(), ref idx);
         }
 
         public Dictionary<string, System.Object>.KeyCollection Keys
@@ -361,6 +369,14 @@ namespace LRCEngine
             return (string)dictionary[name];
         }
 
+        public Vector2 getVector2(string name)
+        {
+            JSONArray array = getArray(name);
+            if (array.Length != 2)
+                LogError("getVector2 - array length is " + array.Length);
+            return array.toVector2();
+        }
+
         public bool getBool(string name)
         {
             if (!dictionary.ContainsKey(name))
@@ -380,13 +396,6 @@ namespace LRCEngine
             if (!dictionary.ContainsKey(name))
                 LogError("Table has no subtable called " + name);
             return new JSONTable((Dictionary<string, System.Object>)dictionary[name]);
-        }
-
-        public static JSONTable parse(string json)
-        {
-            int idx = 0;
-            Dictionary<string, System.Object> result = (Dictionary<string, System.Object>)parseValue(json, ref idx);
-            return new JSONTable(result);
         }
 
         static System.Object parseValue(string json, ref int idx)
@@ -430,8 +439,10 @@ namespace LRCEngine
                     }
                     else if (json[idx] != ',')
                     {
-                        ReportError(json, idx, "Expected a comma, got: " + json[idx] + "");
-                        return null;
+                        //ReportError(json, idx, "Expected a comma, got: " + json[idx] + "");
+                        //return null;
+                        // permit missing commas - {"foo":1 "bar":1 } is legal
+                        idx--;
                     }
                 }
             }

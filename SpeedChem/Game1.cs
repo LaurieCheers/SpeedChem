@@ -6,6 +6,12 @@ using System.Collections.Generic;
 
 namespace SpeedChem
 {
+    public interface SpeedChemScreen
+    {
+        void Update(InputState inputState);
+        void Draw(SpriteBatch spriteBatch);
+    }
+
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
@@ -20,9 +26,11 @@ namespace SpeedChem
         InputState inputState = new InputState();
         public static SpriteFont font;
         public SplashManager splashes;
+        public Inventory inventory = new Inventory();
 
-        public MetaGame metaGame;
-        public GameLevel level;
+        public SpeedChemScreen currentScreen;
+        public WorldLevel worldLevel;
+        public PlatformLevel platformLevel;
 
         public Game1()
         {
@@ -54,11 +62,14 @@ namespace SpeedChem
             // Create a new SpriteBatch, which can be used to draw textures.
             font = Content.Load<SpriteFont>("Arial");
 
+            JSONTable settings = new JSONTable("Content/Settings.json");
+
             spriteBatch = new SpriteBatch(GraphicsDevice);
             textures = new TextureCache(Content);
             buttonStyle = UIButton.GetDefaultStyle(Content);
-            metaGame = new MetaGame();
-            level = new GameLevel();
+            worldLevel = new WorldLevel(settings.getJSON("cities"));
+            platformLevel = new PlatformLevel();
+            currentScreen = worldLevel;
             splashes = new SplashManager();
         }
 
@@ -80,8 +91,9 @@ namespace SpeedChem
         {
             inputState.Update();
 
-            level.Update(inputState);
-            metaGame.Update(inputState, level.active);
+            worldLevel.Run();
+            currentScreen.Update(inputState);
+
             splashes.Update();
 
             base.Update(gameTime);
@@ -96,15 +108,9 @@ namespace SpeedChem
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-
-            spriteBatch.Draw(textures.grass, new Rectangle(0, 0, 800, 600), Color.White);
-
-            if (level.active)
-                level.Draw(spriteBatch);
-            else
-                metaGame.Draw(spriteBatch);
-
-            splashes.Draw(spriteBatch);
+                currentScreen.Draw(spriteBatch);
+                inventory.Draw(spriteBatch);
+                splashes.Draw(spriteBatch);
             spriteBatch.End();
             // TODO: Add your drawing code here
 
@@ -113,7 +119,18 @@ namespace SpeedChem
 
         public void ViewFactory(ChemicalFactory factory)
         {
-            level.Open(factory);
+            platformLevel.Open(factory);
+            this.currentScreen = platformLevel;
+        }
+
+        public void ViewCity(CityLevel cityLevel)
+        {
+            this.currentScreen = cityLevel;
+        }
+
+        public void ViewWorld()
+        {
+            this.currentScreen = worldLevel;
         }
     }
 }

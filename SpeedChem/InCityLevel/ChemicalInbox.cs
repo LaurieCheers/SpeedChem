@@ -9,12 +9,19 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class ChemicalInbox: MetaGameObject
+    class ChemicalInbox: CityObject
     {
         ChemicalSignature signature;
         int price;
 
-        public ChemicalInbox(ChemicalSignature signature, int price, Vector2 pos) : base(Game1.textures.inbox, pos, Game1.textures.inbox.Size())
+        public ChemicalInbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, Game1.textures.inbox, template.getVector2("pos"), Game1.textures.inbox.Size())
+        {
+            this.signature = new ChemicalSignature(template.getArray("chemical"));
+            this.price = template.getInt("price");
+            Init();
+        }
+
+        public ChemicalInbox(CityLevel cityLevel, ChemicalSignature signature, int price, Vector2 pos) : base(cityLevel, Game1.textures.inbox, pos, Game1.textures.inbox.Size())
         {
             this.signature = signature;
             this.price = price;
@@ -24,13 +31,13 @@ namespace SpeedChem
         void Init()
         {
             //AddPipeSocket(new Vector2(16, 24));
-            AddOutputPipe(new Vector2(16, 24));
+            AddOutputPipe(new Vector2(16, 20));
             unlimitedPipes = true;
         }
 
         public override ChemicalSignature RequestOutput(OutputPipe pipe)
         {
-            if(Game1.instance.metaGame.PayMoney(price, bounds.Center))
+            if(Game1.instance.inventory.PayMoney(price, bounds.Center, cityLevel))
             {
                 pipe.AnimatePip();
                 return signature;
@@ -44,14 +51,14 @@ namespace SpeedChem
             return signature;
         }
 
-        public override void Update(InputState inputState, ref object selectedObject)
+        public override void Update(CityUIBlackboard blackboard)
         {
-            HandleUnlimitedPipes();
+            UpdateUnlimitedPipes();
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
         {
-            base.Draw(spriteBatch);
+            base.Draw(spriteBatch, blackboard);
             Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
 
             string text = "$" + price;

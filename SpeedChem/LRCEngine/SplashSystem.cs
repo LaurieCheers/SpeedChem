@@ -11,6 +11,7 @@ namespace LRCEngine
     public class Splash
     {
         string text;
+        TextAlignment alignment;
         SpriteFont font;
         Texture2D icon;
         Vector2 pos;
@@ -21,9 +22,10 @@ namespace LRCEngine
         float gravity;
         public bool alive { get; private set; }
 
-        public Splash(string text, SpriteFont font, Color color, Vector2 pos, Vector2 velocity, float drag, float gravity, float lifeSeconds)
+        public Splash(string text, TextAlignment alignment, SpriteFont font, Color color, Vector2 pos, Vector2 velocity, float drag, float gravity, float lifeSeconds)
         {
             this.text = text;
+            this.alignment = alignment;
             this.font = font;
             this.color = color;
             this.pos = pos;
@@ -50,7 +52,7 @@ namespace LRCEngine
         public void Draw(SpriteBatch spriteBatch)
         {
             if (text != null)
-                spriteBatch.DrawString(font, text, pos, color);
+                spriteBatch.DrawString(font, text, pos, alignment, color);
 
             if (icon != null)
                 spriteBatch.Draw(icon, new Rectangle((int)pos.X, (int)pos.Y, icon.Width, icon.Height), color);

@@ -9,22 +9,22 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class OutputZone: WorldObject
+    class OutputZone: PlatformObject
     {
         ChemicalSignature signature;
         int sellPrice;
 
         public OutputZone(ChemicalSignature signature, Vector2 pos, Vector2 size) : base(null, pos, size)
         {
-            objectType = WorldObjectType.Trigger;
+            objectType = PlatformObjectType.Trigger;
             this.signature = signature;
         }
 
-        public override void Update(InputState input, List<WorldObject> allObjects, List<Projectile> projectiles)
+        public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             Vectangle myBounds = bounds;
 
-            foreach (WorldObject obj in allObjects)
+            foreach (PlatformObject obj in allObjects)
             {
                 if (obj is ChemBlock && obj.bounds.Intersects(myBounds) && !obj.destroyed)
                 {

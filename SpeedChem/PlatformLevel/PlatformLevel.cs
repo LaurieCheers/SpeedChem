@@ -9,24 +9,26 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    public class GameLevel
+    public class PlatformLevel: SpeedChemScreen
     {
-        List<WorldObject> objects;
+        List<PlatformObject> objects;
         List<Projectile> projectiles;
         List<Command> triggerables;
         UIContainer ui;
-        public bool active { get; private set; }
         ChemicalFactory factory;
         public UIButton saveButton;
         List<FactoryCommand> recordedCommands = new List<FactoryCommand>();
         PlatformCharacter player;
         Weapon rivetGun = new Weapon_Rivetgun();
         Weapon cuttingBeam = new Weapon_CuttingBeam();
+        UIRadioButtonGroup<Weapon> weaponButtons = new UIRadioButtonGroup<Weapon>();
+        UIRadioButton<Weapon> rivetGunButton;
+        UIRadioButton<Weapon> cuttingBeamButton;
         int currentTime;
         bool paused;
         bool timerRunning = false;
 
-        public GameLevel()
+        public PlatformLevel()
         {
             //InitObjects();
 
@@ -37,21 +39,36 @@ namespace SpeedChem
             saveButton = new UIButton("Save", new Rectangle(500, 150, 100, 50), Game1.buttonStyle, button_Save);
             ui.Add(saveButton);
 
-            ui.Add(new UIButton("Rivet Gun", new Rectangle(500, 220, 100, 50), Game1.buttonStyle, button_SelectRivetGun));
-            ui.Add(new UIButton("Cutting Beam", new Rectangle(500, 270, 100, 50), Game1.buttonStyle, button_SelectCuttingBeam));
+            UIButtonStyle weaponButtonStyle = new UIButtonStyle(
+                new UIButtonAppearance(Game1.font, Color.White, Game1.textures.castIronButton, Color.White, new Vector2(20,0)),
+                new UIButtonAppearance(Game1.font, Color.White, Game1.textures.castIronButton_hover, Color.White, new Vector2(20, 0)),
+                new UIButtonAppearance(Game1.font, Color.White, Game1.textures.castIronButton_pressed, Color.White, new Vector2(20, 0)),
+                new UIButtonAppearance(Game1.font, Color.White, Game1.textures.castIronButton, Color.White, new Vector2(20, 0))
+            );
+
+            UIButtonAppearance weaponSelectedStyle = new UIButtonAppearance(Game1.font, Color.Black, Game1.textures.castIronButton_active, Color.White, new Vector2(20, 0));
+
+            rivetGunButton = new UIRadioButton<Weapon>("Rivet Gun", rivetGun, weaponButtons, new Rectangle(500, 220, 170, 50), weaponButtonStyle, weaponSelectedStyle, button_SelectWeapon);
+            cuttingBeamButton = new UIRadioButton<Weapon>("Cutting Beam", cuttingBeam, weaponButtons, new Rectangle(500, 270, 170, 50), weaponButtonStyle, weaponSelectedStyle, button_SelectWeapon);
+            ui.Add(rivetGunButton);
+        }
+
+        public void UnlockCuttingBeam()
+        {
+            ui.Add(cuttingBeamButton);
         }
 
         void InitObjects()
         {
-            objects = new List<WorldObject>();
-            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(-16, 0), new Vector2(32, 136)));
-            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(0, 136), new Vector2(32, 136)));
-            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(384, 0), new Vector2(32, 128)));
-            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(384, 128), new Vector2(32, 128)));
-            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(384, 256), new Vector2(32, 128)));
-            objects.Add(new WorldObject(Game1.textures.buttonHood, new Vector2(16, 204), new Vector2(32, 32)));
-            objects.Add(new WorldObject(Game1.textures.woodFloor, new Vector2(0, 272), new Vector2(192, 32)));
-            objects.Add(new WorldObject(Game1.textures.cement, new Vector2(192, 272), new Vector2(32, 128)));
+            objects = new List<PlatformObject>();
+            objects.Add(new PlatformObject(Game1.textures.cement, new Vector2(-16, 0), new Vector2(32, 136)));
+            objects.Add(new PlatformObject(Game1.textures.cement, new Vector2(0, 136), new Vector2(32, 136)));
+            objects.Add(new PlatformObject(Game1.textures.cement, new Vector2(384, 0), new Vector2(32, 128)));
+            objects.Add(new PlatformObject(Game1.textures.cement, new Vector2(384, 128), new Vector2(32, 128)));
+            objects.Add(new PlatformObject(Game1.textures.cement, new Vector2(384, 256), new Vector2(32, 128)));
+            objects.Add(new PlatformObject(Game1.textures.buttonHood, new Vector2(16, 204), new Vector2(32, 32)));
+            objects.Add(new PlatformObject(Game1.textures.woodFloor, new Vector2(0, 272), new Vector2(192, 32)));
+            objects.Add(new PlatformObject(Game1.textures.cement, new Vector2(192, 272), new Vector2(32, 128)));
 
             if (factory.internalSeller != null)
             {
@@ -71,26 +88,27 @@ namespace SpeedChem
             }
 
             triggerables = new List<Command>();
-            Command_Spawn spawner = new Command_Spawn(new Vectangle(92, 32, 78, -36), factory, 0);
+            Command_Spawn spawner = new Command_Spawn(new Vectangle(92, -36, 78, 32), factory, 0);
             triggerables.Add(spawner);
 
             objects.Add(new PushButton(spawner, Game1.textures.clear, Game1.textures.white, new Vector2(32, 240), new Vector2(8, 32), Color.Red));
 
             if (factory.pipeSocket.connectedPipes.Count > 1)
             {
-                objects.Add(new WorldObject(Game1.textures.buttonHood, new Vector2(366, 28), new Vector2(32, 32)));
-                objects.Add(new WorldObject(Game1.textures.woodFloor, new Vector2(192, 96), new Vector2(192, 32)));
+                objects.Add(new PlatformObject(Game1.textures.buttonHood, new Vector2(366, 28), new Vector2(32, 32)));
+                objects.Add(new PlatformObject(Game1.textures.woodFloor, new Vector2(192, 96), new Vector2(192, 32)));
 
-                Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, 32, 78, -36), factory, 1);
+                Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, -36, 78, 32), factory, 1);
                 triggerables.Add(spawner2);
                 objects.Add(new PushButton(spawner2, Game1.textures.clear, Game1.textures.white, new Vector2(384 - 8, 64), new Vector2(8, 32), Color.Red));
             }
 
-            player = new PlatformCharacter(Game1.textures.character, new Vector2(50, 200), new Vector2(22, 32), Color.White, new Rectangle(10, 0, 22, 32));
+            player = new PlatformCharacter(Game1.textures.character, new Vector2(50, 200), new Vector2(14, 32), Color.White, new Rectangle(9, 0, 14, 32));
             objects.Add(player);
 
+            weaponButtons.selectedButton = rivetGunButton;
+
             projectiles = new List<Projectile>();
-            active = true;
             paused = false;
             recordedCommands.Clear();
             currentTime = 0;
@@ -120,30 +138,22 @@ namespace SpeedChem
 
         public void button_Cancel()
         {
-            active = false;
+            Game1.instance.ViewCity(factory.cityLevel);
         }
 
         public void button_Save()
         {
             factory.SaveRecording(recordedCommands);
-            active = false;
+            Game1.instance.ViewCity(factory.cityLevel);
         }
 
-        public void button_SelectCuttingBeam()
+        public void button_SelectWeapon(Weapon weapon)
         {
-            player.SelectWeapon(cuttingBeam);
-        }
-
-        public void button_SelectRivetGun()
-        {
-            player.SelectWeapon(rivetGun);
+            player.SelectWeapon(weapon);
         }
 
         public void Update(InputState inputState)
         {
-            if (!active)
-                return;
-
             if (paused)
             {
                 if (inputState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.A)
@@ -162,7 +172,7 @@ namespace SpeedChem
                     currentTime++;
 
                 bool needsDestroy = false;
-                foreach (WorldObject obj in objects)
+                foreach (PlatformObject obj in objects)
                 {
                     obj.Update(inputState, objects, projectiles);
                     if (obj.destroyed)
@@ -194,15 +204,15 @@ namespace SpeedChem
                 }
             }
 
+            inputState.hoveringElement = ui.GetMouseHover(inputState.MousePos);
             ui.Update(inputState);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (!active)
-                return;
+            spriteBatch.Draw(Game1.textures.levelbg, new Rectangle(0, 0, 800, 600), Color.White);
 
-            foreach (WorldObject obj in objects)
+            foreach (PlatformObject obj in objects)
             {
                 obj.Draw(spriteBatch);
             }
@@ -213,8 +223,45 @@ namespace SpeedChem
 
             ui.Draw(spriteBatch);
 
+            spriteBatch.Draw(Game1.textures.rivetgun, new Vector2(508, 228), Color.White);
+            spriteBatch.Draw(Game1.textures.cutting_laser, new Vector2(508, 278), Color.White);
+
             spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(500, 10), timerRunning ? Color.Yellow: Color.White);
             spriteBatch.Draw(timerRunning ? Game1.textures.hourglass : Game1.textures.hourglass_frozen, new Vector2(475, 0), Color.White);
+
+            int currentMultiplier = NumThreadsForTime(currentTime/60.0f);
+
+            int testTime = ChemicalFactory.TIME_PER_CORE;
+            int testMultiplier = NumThreadsForTime(testTime);
+            int lastMultiplier = 0;
+
+            Vector2 currentPos = new Vector2(508, 400);
+            while (true)
+            {
+                if (testMultiplier != lastMultiplier)
+                {
+                    spriteBatch.DrawString(Game1.font, (testMultiplier == 1) ? "Normal" : ("Under " + testTime + " seconds: "+testMultiplier + "x speed"), currentPos, (currentMultiplier == testMultiplier)? Color.White: Color.Gray);
+                    currentPos.Y += 15;
+                    lastMultiplier = testMultiplier;
+                }
+                if (testMultiplier == 1)
+                {
+                    break;
+                }
+
+                testTime += ChemicalFactory.TIME_PER_CORE;
+                testMultiplier = NumThreadsForTime(testTime);
+            }
+        }
+
+        public int NumThreadsForTime(float duration)
+        {
+            float currentCoresPerThread = (float)Math.Ceiling(duration / (float)ChemicalFactory.TIME_PER_CORE);
+            int currentNumThreads = (int)(factory.numCores / currentCoresPerThread);
+            if (currentNumThreads == 0)
+                currentNumThreads = 1;
+
+            return currentNumThreads;
         }
 
         public void ProduceChemical(ChemicalSignature signature)
@@ -237,7 +284,7 @@ namespace SpeedChem
         public void UpdateAnyBlocksLeft()
         {
             timerRunning = false;
-            foreach (WorldObject obj in objects)
+            foreach (PlatformObject obj in objects)
             {
                 if (obj is ChemBlock && !obj.destroyed)
                 {
@@ -245,7 +292,7 @@ namespace SpeedChem
                     break;
                 }
             }
-            Game1.instance.level.saveButton.SetEnabled(!timerRunning);
+            Game1.instance.platformLevel.saveButton.SetEnabled(!timerRunning && recordedCommands.Count > 0);
         }
 
         public static string TimeToString(int time)
