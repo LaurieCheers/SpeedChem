@@ -91,6 +91,7 @@ namespace SpeedChem
         {
             inputState.Update();
 
+            inventory.Update();
             worldLevel.Run();
             currentScreen.Update(inputState);
 

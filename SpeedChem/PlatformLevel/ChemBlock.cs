@@ -18,6 +18,7 @@ namespace SpeedChem
         RED,
         BLUE,
         GLASS,
+        STEEL,
     };
 
     public static class ChemicalExtension
@@ -36,6 +37,8 @@ namespace SpeedChem
                     return Color.Blue;
                 case ChemicalElement.GLASS:
                     return Color.White;
+                case ChemicalElement.STEEL:
+                    return new Color(178, 178, 178);
                 default:
                     return Color.Black;
             }
@@ -59,6 +62,8 @@ namespace SpeedChem
                 {
                     case ChemicalElement.GLASS:
                         return Game1.textures.glassBlock;
+                    case ChemicalElement.STEEL:
+                        return Game1.textures.steelBlock;
                     default:
                         return Game1.textures.block;
                 }
@@ -109,6 +114,7 @@ namespace SpeedChem
                 case 'B': return ChemicalElement.BLUE;
                 case 'R': return ChemicalElement.RED;
                 case 'G': return ChemicalElement.GLASS;
+                case 'S': return ChemicalElement.STEEL;
                 default: return ChemicalElement.NONE;
             }
         }

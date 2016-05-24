@@ -26,6 +26,7 @@ namespace SpeedChem
         public Texture2D inbox;
         public Texture2D outbox;
         public Texture2D warning;
+        public Texture2D steelBlock;
         public Texture2D glassBlock;
         public Texture2D glassIcon;
         public Texture2D cement;
@@ -70,6 +71,7 @@ namespace SpeedChem
             outbox = Content.Load<Texture2D>("hq");
             warning = Content.Load<Texture2D>("warning");
             glassBlock = Content.Load<Texture2D>("glassblock");
+            steelBlock = Content.Load<Texture2D>("steel");
             glassIcon = Content.Load<Texture2D>("glassicon");
             cement = Content.Load<Texture2D>("cement");
             woodFloor = Content.Load<Texture2D>("woodfloor");

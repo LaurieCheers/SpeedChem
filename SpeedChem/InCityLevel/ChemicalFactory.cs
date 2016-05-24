@@ -75,6 +75,8 @@ namespace SpeedChem
         public const int DEFAULT_NUM_CORES = 6;
         public const int CORES_BOX_WIDTH = 30;
         public const int CORES_BOX_HEIGHT = 20;
+        public const int FRAMES_BETWEEN_OUTPUTS = 10;
+        public int framesBeforeNextOutput = 0;
 
         public ChemicalFactory(CityLevel cityLevel, JSONTable template): base(
             cityLevel,
@@ -311,6 +313,9 @@ namespace SpeedChem
         public override void Run()
         {
             bool allFinished = true;
+            if (framesBeforeNextOutput > 0)
+                framesBeforeNextOutput--;
+
             foreach (FactoryThread thread in threads)
             {
                 int oldTime = thread.currentTime;
@@ -329,8 +334,9 @@ namespace SpeedChem
                                 }
                                 break;
                             case FactoryCommandType.OUTPUT:
-                                if (PushOutput(command.signature))
+                                if (framesBeforeNextOutput == 0 && PushOutput(command.signature))
                                 {
+                                    framesBeforeNextOutput = FRAMES_BETWEEN_OUTPUTS;
                                     thread.currentTime++;
                                     thread.nextCommandIdx++;
                                 }

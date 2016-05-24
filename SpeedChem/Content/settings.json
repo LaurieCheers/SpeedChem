@@ -53,5 +53,24 @@
         }
 	  }
     }
+	
+	"city3":
+    {
+      "name":"Sheffield"
+      "pos":[530,90]
+	  "price":20000
+	  "unlocks":{
+        "start":
+        {
+		  "BUY_FACTORY":true
+		  "BUY_SILO":true
+          "inbox1":{"type":"inbox","chemical":["G"], "price":156, "pos":[150,30]}
+          "inbox2":{"type":"inbox","chemical":["S"], "price":1200, "pos":[250,30]}
+          "outbox1":{"type":"outbox","chemical":["S","G"], "price":1400, "pos":[20,380]}
+          "outbox2":{"type":"outbox","chemical":["G","S"], "price":3200, "pos":[120,380]}
+          "outbox3":{"type":"outbox","chemical":[" S ","SGS"," S "], "price":3200, "pos":[220,380]}
+  	    }
+	  }
+    }
   }
 }
