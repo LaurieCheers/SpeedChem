@@ -62,7 +62,7 @@ namespace SpeedChem
             // Create a new SpriteBatch, which can be used to draw textures.
             font = Content.Load<SpriteFont>("Arial");
 
-            JSONTable settings = new JSONTable("Content/Settings.json");
+            JSONTable settings = new JSONTable("Settings.json");
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
             textures = new TextureCache(Content);
