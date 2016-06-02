@@ -17,6 +17,13 @@ namespace LRCEngine
         public Vector2 Origin { get { return new Vector2(X, Y); } set { X = value.X; Y = value.Y; } }
         public Vector2 Size { get { return new Vector2(Width, Height); } set { Width = value.X; Height = value.Y; } }
 
+        public static Vectangle BoundingBox(Vector2 a, Vector2 b)
+        {
+            Vector2 origin = new Vector2(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
+            Vector2 botRight = new Vector2(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
+            return new Vectangle(origin, botRight - origin);
+        }
+
         public bool Contains(Vector2 point)
         {
             return X <= point.X && Y <= point.Y && X + Width > point.X && Y + Height > point.Y;

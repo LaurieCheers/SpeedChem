@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using LRCEngine;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,12 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
+    public enum ProjectileAction
+    {
+        RIVET,
+        BUBBLE,
+    }
+
     public class Projectile
     {
         Texture2D texture;
@@ -16,13 +23,15 @@ namespace SpeedChem
         float rotation;
         Vector2 velocity;
         public bool destroyed = false;
+        ProjectileAction action;
 
-        public Projectile(Texture2D texture, Vector2 pos, Vector2 size, Vector2 velocity)
+        public Projectile(Texture2D texture, Vector2 pos, Vector2 size, Vector2 velocity, ProjectileAction action)
         {
             this.texture = texture;
             this.pos = pos;
             this.size = size;
             this.velocity = velocity;
+            this.action = action;
 
             UpdateRotation();
         }
@@ -53,23 +62,97 @@ namespace SpeedChem
             if(pos.X < 0 || pos.Y < 0 || windowSize.X < pos.X || windowSize.Y < pos.Y)
                 destroyed = true;
 
-            foreach(PlatformObject obj in allObjects)
+            PlatformObject collisionObj = null;
+            foreach (PlatformObject obj in allObjects)
             {
-                if(CanCollide(obj) && obj.bounds.Contains(pos))
+                if (CanCollide(obj) && obj.bounds.Contains(pos))
                 {
-                    const float VELOCITY_TRANSFER = 0.2f;
-                    // hit this thing
-                    if(obj is ChemBlock)
+                    collisionObj = obj;
+                }
+            }
+
+            if (collisionObj == null)
+                return;
+
+            destroyed = true;
+
+            const float VELOCITY_TRANSFER = 0.2f;
+            // hit this thing
+            switch (action)
+            {
+                case ProjectileAction.RIVET:
+                    if (collisionObj is ChemBlock)
                     {
-                        ChemBlock body = (ChemBlock)obj;
+                        ChemBlock body = (ChemBlock)collisionObj;
                         Vector2 nailDirection = velocity;
                         nailDirection.Normalize();
                         body.Nailed(nailDirection);
-                        body.velocity += velocity* VELOCITY_TRANSFER;
+                        body.velocity += velocity * VELOCITY_TRANSFER;
                         body.UpdatedVelocity();
                     }
-                    destroyed = true;
+                    break;
+
+                case ProjectileAction.BUBBLE:
+                    SpawnBubble(collisionObj, pos, GetCollisionNormal(collisionObj.bounds, pos - velocity, pos), allObjects);
+                    break;
+            }
+        }
+
+        Vector2 GetCollisionNormal(Vectangle bounds, Vector2 oldPos, Vector2 newPos)
+        {
+            Vectangle boundingBox = Vectangle.BoundingBox(oldPos, newPos);
+            if(bounds.LeftSide.Intersects(boundingBox))
+            {
+                return new Vector2(-1, 0);
+            }
+            if (bounds.RightSide.Intersects(boundingBox))
+            {
+                return new Vector2(1, 0);
+            }
+            if (bounds.TopSide.Intersects(boundingBox))
+            {
+                return new Vector2(0, -1);
+            }
+            if (bounds.BottomSide.Intersects(boundingBox))
+            {
+                return new Vector2(0, 1);
+            }
+            return new Vector2(1, 0);
+        }
+
+        void SpawnBubble(PlatformObject objectHit, Vector2 pos, Vector2 direction, List<PlatformObject> allObjects)
+        {
+            Vectangle objectBounds = objectHit.bounds;
+            if (objectHit is ChemBlock)
+            {
+                pos = objectBounds.Center + direction*16;
+            }
+
+            while (objectBounds.Contains(pos))
+                pos += direction;
+
+            pos += direction * 17;
+            Vectangle bubbleBounds = new Vectangle(pos - new Vector2(16, 16), new Vector2(32, 32));
+
+            bool failed = false;
+            foreach(PlatformObject obj in allObjects)
+            {
+                if (obj.bounds.Intersects(bubbleBounds))
+                {
+                    failed = true;
+                    break;
                 }
+            }
+
+            if (!failed)
+            {
+                ChemicalElement c = ChemicalElement.WHITE;
+                ChemBlock newBlock = new ChemBlock(c, c.ToTexture(false), bubbleBounds.TopLeft, bubbleBounds.Size, c.ToColor());
+                if (objectHit is ChemBlock)
+                {
+                    newBlock.NailOnto((ChemBlock)objectHit);
+                }
+                allObjects.Add(newBlock);
             }
         }
 

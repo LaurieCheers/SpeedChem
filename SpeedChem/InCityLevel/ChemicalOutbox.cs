@@ -13,6 +13,7 @@ namespace SpeedChem
     {
         ChemicalSignature signature;
         int price;
+        public override int inputPrice { get { return price; } }
 
         public ChemicalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, Game1.textures.outbox, template.getVector2("pos"), Game1.textures.outbox.Size())
         {

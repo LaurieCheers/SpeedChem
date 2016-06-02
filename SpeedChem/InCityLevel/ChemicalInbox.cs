@@ -13,6 +13,7 @@ namespace SpeedChem
     {
         ChemicalSignature signature;
         int price;
+        public override int outputPrice { get { return price; } }
 
         public ChemicalInbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, Game1.textures.inbox, template.getVector2("pos"), Game1.textures.inbox.Size())
         {
@@ -35,7 +36,7 @@ namespace SpeedChem
             unlimitedPipes = true;
         }
 
-        public override ChemicalSignature RequestOutput(OutputPipe pipe)
+        public override ChemicalSignature RequestOutput(OutputPipe pipe, ref string errorMessage)
         {
             if(Game1.instance.inventory.PayMoney(price, bounds.Center, cityLevel))
             {
@@ -43,6 +44,7 @@ namespace SpeedChem
                 return signature;
             }
 
+            errorMessage = "Not enough money";
             return null;
         }
 

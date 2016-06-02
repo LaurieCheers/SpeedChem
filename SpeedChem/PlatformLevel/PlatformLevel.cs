@@ -21,9 +21,11 @@ namespace SpeedChem
         PlatformCharacter player;
         Weapon rivetGun = new Weapon_Rivetgun();
         Weapon cuttingBeam = new Weapon_CuttingBeam();
+        Weapon bubblegun = new Weapon_BubbleGun();
         UIRadioButtonGroup<Weapon> weaponButtons = new UIRadioButtonGroup<Weapon>();
         UIRadioButton<Weapon> rivetGunButton;
         UIRadioButton<Weapon> cuttingBeamButton;
+        UIRadioButton<Weapon> bubblegunButton;
         int currentTime;
         bool paused;
         bool timerRunning = false;
@@ -49,8 +51,10 @@ namespace SpeedChem
             UIButtonAppearance weaponSelectedStyle = new UIButtonAppearance(Game1.font, Color.Black, Game1.textures.castIronButton_active, Color.White, new Vector2(20, 0));
 
             rivetGunButton = new UIRadioButton<Weapon>("Rivet Gun", rivetGun, weaponButtons, new Rectangle(500, 220, 170, 50), weaponButtonStyle, weaponSelectedStyle, button_SelectWeapon);
-            cuttingBeamButton = new UIRadioButton<Weapon>("Cutting Beam", cuttingBeam, weaponButtons, new Rectangle(500, 270, 170, 50), weaponButtonStyle, weaponSelectedStyle, button_SelectWeapon);
             ui.Add(rivetGunButton);
+            cuttingBeamButton = new UIRadioButton<Weapon>("Cutting Beam", cuttingBeam, weaponButtons, new Rectangle(500, 270, 170, 50), weaponButtonStyle, weaponSelectedStyle, button_SelectWeapon);
+            bubblegunButton = new UIRadioButton<Weapon>("Bubblegun", bubblegun, weaponButtons, new Rectangle(500, 320, 170, 50), weaponButtonStyle, weaponSelectedStyle, button_SelectWeapon);
+            ui.Add(bubblegunButton);
         }
 
         public void UnlockCuttingBeam()

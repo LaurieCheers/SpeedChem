@@ -30,6 +30,7 @@ namespace SpeedChem
 
             pipe.ConnectTo(null);
             connectedPipes.Remove(pipe);
+            parent.UpdatePipes();
         }
 
         public bool AddConnection(OutputPipe newPipe)
@@ -47,6 +48,7 @@ namespace SpeedChem
             }
 
             connectedPipes.Add(newPipe);
+            parent.UpdatePipes();
             return true;
         }
 
@@ -182,6 +184,8 @@ namespace SpeedChem
                 {
                     ShowDisconnected();
                 }
+
+                source.UpdatePipes();
             }
         }
 

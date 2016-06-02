@@ -12,6 +12,7 @@ namespace SpeedChem
     public class WorldLevel: SpeedChemScreen
     {
         List<WorldObject> objects = new List<WorldObject>();
+        public float incomePerSecond = 0;
 
         public WorldLevel()
         {
@@ -29,7 +30,7 @@ namespace SpeedChem
 
         public WorldLevel(JSONTable template)
         {
-            foreach(string cityCode in template.Keys)
+            foreach (string cityCode in template.Keys)
             {
                 objects.Add(new WorldObject_City(new CityLevel(template.getJSON(cityCode))));
             }
@@ -37,9 +38,11 @@ namespace SpeedChem
 
         public void Run()
         {
+            incomePerSecond = 0;
             foreach (WorldObject obj in objects)
             {
                 obj.Run();
+                incomePerSecond += obj.incomePerSecond;
             }
         }
 

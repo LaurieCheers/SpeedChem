@@ -14,24 +14,25 @@ namespace SpeedChem
         public int money { get; private set; }
         public int crystals { get; private set; }
         public bool cityJustUnlocked = false;
-        const int HISTORY_LENGTH_SECS = 20;
+
+/*        const int HISTORY_LENGTH_SECS = 20;
         const int HISTORY_LENGTH_FRAMES = 60 * HISTORY_LENGTH_SECS;
         const int HISTORY_HALF_LENGTH_FRAMES = HISTORY_LENGTH_FRAMES / 2;
         int[] moneyHistory;
         int nextHistoryIdx = 0;
         long moneyTotal20_10 = 0;
-        long moneyTotal10_00 = 0;
+        long moneyTotal10_00 = 0;*/
         float incomePerSecond;
         bool showIncomePerSecond = false;
         bool showCrystals = false;
 
         public Inventory()
         {
-            moneyHistory = new int[HISTORY_LENGTH_FRAMES];
+/*            moneyHistory = new int[HISTORY_LENGTH_FRAMES];
             for(int Idx = 0; Idx < moneyHistory.Length; ++Idx)
             {
                 moneyHistory[Idx] = 0;
-            }
+            }*/
         }
 
         public bool PayMoney(int amount, Vector2 splashPos, SpeedChemScreen screen)
@@ -79,17 +80,18 @@ namespace SpeedChem
 
         public void Update()
         {
-            moneyTotal20_10 -= moneyHistory[nextHistoryIdx];
-            moneyHistory[nextHistoryIdx] = money;
-            moneyTotal10_00 += money;
-            nextHistoryIdx = (nextHistoryIdx+1)% HISTORY_LENGTH_FRAMES;
+            /*            moneyTotal20_10 -= moneyHistory[nextHistoryIdx];
+                        moneyHistory[nextHistoryIdx] = money;
+                        moneyTotal10_00 += money;
+                        nextHistoryIdx = (nextHistoryIdx+1)% HISTORY_LENGTH_FRAMES;
 
-            int halfwayValue = moneyHistory[(nextHistoryIdx + HISTORY_HALF_LENGTH_FRAMES) % HISTORY_LENGTH_FRAMES];
-            moneyTotal10_00 -= halfwayValue;
-            moneyTotal20_10 += halfwayValue;
+                        int halfwayValue = moneyHistory[(nextHistoryIdx + HISTORY_HALF_LENGTH_FRAMES) % HISTORY_LENGTH_FRAMES];
+                        moneyTotal10_00 -= halfwayValue;
+                        moneyTotal20_10 += halfwayValue;
 
-            incomePerSecond = (moneyTotal10_00 - moneyTotal20_10) / (10.0f*HISTORY_HALF_LENGTH_FRAMES);
-
+                        incomePerSecond = (moneyTotal10_00 - moneyTotal20_10) / (10.0f*HISTORY_HALF_LENGTH_FRAMES);
+            */
+            incomePerSecond = Game1.instance.worldLevel.incomePerSecond;
             if (incomePerSecond >= 1.0f)
                 showIncomePerSecond = true;
 

@@ -133,5 +133,10 @@ namespace SpeedChem
         {
             this.currentScreen = worldLevel;
         }
+
+        public static float FramesToSeconds(int frames)
+        {
+            return frames / 60.0f;
+        }
     }
 }

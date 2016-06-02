@@ -13,6 +13,7 @@ namespace SpeedChem
     {
         SpriteObject sprite;
         public Vectangle bounds;
+        public virtual float incomePerSecond { get { return 0; } }
 
         public WorldObject(Texture2D texture, Vector2 pos, Vector2 size)
         {

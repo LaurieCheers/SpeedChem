@@ -28,7 +28,7 @@ namespace SpeedChem
             switch(e)
             {
                 case ChemicalElement.WHITE:
-                    return Color.Pink;
+                    return Color.White;
                 case ChemicalElement.GREEN:
                     return Color.Green;
                 case ChemicalElement.RED:
@@ -52,6 +52,8 @@ namespace SpeedChem
                 {
                     case ChemicalElement.GLASS:
                         return Game1.textures.glassIcon;
+                    case ChemicalElement.WHITE:
+                        return Game1.textures.bubbleIcon;
                     default:
                         return Game1.textures.chemIcon;
                 }
@@ -60,6 +62,8 @@ namespace SpeedChem
             {
                 switch (e)
                 {
+                    case ChemicalElement.WHITE:
+                        return Game1.textures.bubbleBlock;
                     case ChemicalElement.GLASS:
                         return Game1.textures.glassBlock;
                     case ChemicalElement.STEEL:

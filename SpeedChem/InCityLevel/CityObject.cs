@@ -22,6 +22,8 @@ namespace SpeedChem
         public bool canDrag = true;
         public bool didOutput = false;
         public Vectangle bounds;
+        public virtual int outputPrice { get { return 0; } }
+        public virtual int inputPrice { get { return 0; } }
 
         public CityObject(CityLevel cityLevel, Texture2D texture, Vector2 pos, Vector2 size)
         {
@@ -68,7 +70,7 @@ namespace SpeedChem
             return false;
         }
 
-        public virtual ChemicalSignature RequestOutput(OutputPipe pipe)
+        public virtual ChemicalSignature RequestOutput(OutputPipe pipe, ref string errorMessage)
         {
             return null;
         }
@@ -122,6 +124,11 @@ namespace SpeedChem
             UpdateUnlimitedPipes();
 
             selected = (blackboard.selectedObject == this);
+        }
+
+        public virtual void UpdatePipes()
+        {
+
         }
 
         public void UpdateUnlimitedPipes()

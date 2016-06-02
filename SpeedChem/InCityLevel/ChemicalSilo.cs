@@ -75,7 +75,7 @@ namespace SpeedChem
             return false;
         }
 
-        public override ChemicalSignature RequestOutput(OutputPipe pipe)
+        public override ChemicalSignature RequestOutput(OutputPipe pipe, ref string errorMessage)
         {
             if (amount > 0)
             {
@@ -86,7 +86,8 @@ namespace SpeedChem
 
             foreach (OutputPipe pipe2 in pipeSocket.connectedPipes)
             {
-                ChemicalSignature result = pipe2.source.RequestOutput(pipe);
+                string unused = "";
+                ChemicalSignature result = pipe2.source.RequestOutput(pipe, ref unused);
                 if(result != null)
                 {
                     pipe.AnimatePip();
@@ -95,6 +96,7 @@ namespace SpeedChem
                 }
             }
 
+            errorMessage = "Silo is empty";
             return null;
         }
 

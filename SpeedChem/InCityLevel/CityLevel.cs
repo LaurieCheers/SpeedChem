@@ -136,6 +136,7 @@ namespace SpeedChem
         public readonly string name;
         public readonly Vector2 pos;
         public readonly int price;
+        public float incomePerSecond = 0;
 
         public CityLevel(JSONTable template)
         {
@@ -151,11 +152,11 @@ namespace SpeedChem
             JSONTable unlockTable = template.getJSON("unlocks", null);
             if (unlockTable != null)
             {
-                List<UIElement> newUI = new List<UIElement>();
                 foreach (string unlockName in unlockTable.Keys)
                 {
                     JSONTable unlockTemplates = unlockTable.getJSON(unlockName);
                     List<CityObject> newObjects = new List<CityObject>();
+                    List<UIElement> newUI = new List<UIElement>();
                     foreach (string objectName in unlockTemplates.Keys)
                     {
                         switch(objectName)
@@ -211,7 +212,6 @@ namespace SpeedChem
                                 OutputPipe pipe = sourceObject.pipes.Last();
                                 pipe.ConnectTo(targetObject.pipeSocket);
                                 pipe.movable = false;
-                                sourceObject.UpdateUnlimitedPipes();
                             }
                         }
                     }
@@ -558,15 +558,21 @@ namespace SpeedChem
 
         public void Run()
         {
+            incomePerSecond = 0;
             foreach (CityObject obj in objects)
             {
-                if (obj is ChemicalFactory)
-                    (obj as ChemicalFactory).Run();
+                ChemicalFactory factory = obj as ChemicalFactory;
+                if (factory != null)
+                {
+                    factory.Run();
+                    incomePerSecond += factory.incomePerSecond;
+                }
 
                 foreach (OutputPipe pipe in obj.pipes)
                 {
                     pipe.Run();
                 }
+
             }
         }
 

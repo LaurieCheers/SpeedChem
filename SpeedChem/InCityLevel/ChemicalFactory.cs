@@ -58,10 +58,28 @@ namespace SpeedChem
     {
         class FactoryThread
         {
-            public int currentTime;
+            public int actualElapsedFrames;
+            public int internalTime;
             public int nextCommandIdx;
             public bool stalled;
-        };
+            public int stalledForFrames;
+
+            Sampler.Float durationSamples = new Sampler.Float(4);
+
+            public void ClearDuration()
+            {
+                durationSamples.Clear();
+            }
+
+            public void AddDurationSample()
+            {
+                durationSamples.AddSample(Game1.FramesToSeconds(actualElapsedFrames));
+            }
+            public float averageDurationSecs { get
+            {
+                return durationSamples.average;
+            } }
+        }
         UIContainer ui;
         bool paused = false;
         public ChemicalSignature queuedOutput;
@@ -77,6 +95,10 @@ namespace SpeedChem
         public const int CORES_BOX_HEIGHT = 20;
         public const int FRAMES_BETWEEN_OUTPUTS = 10;
         public int framesBeforeNextOutput = 0;
+        string warningTriangleMessage = "Test Error";
+        public bool showErrorMessage;
+        int incomePerLoop = 0;
+        public float incomePerSecond = 0;
 
         public ChemicalFactory(CityLevel cityLevel, JSONTable template): base(
             cityLevel,
@@ -150,7 +172,7 @@ namespace SpeedChem
             Game1.instance.ViewFactory(this);
         }
 
-        public bool PushOutput(ChemicalSignature signature)
+        public bool PushOutput(ChemicalSignature signature, ref string errorMessage)
         {
             foreach (OutputPipe pipe in pipes)
             {
@@ -167,6 +189,7 @@ namespace SpeedChem
                         }
                         else
                         {
+                            errorMessage = "Output pipe is full";
                             return false;
                         }
                     }
@@ -183,6 +206,7 @@ namespace SpeedChem
             // failed to output - try to queue it
             if (queuedOutput != null)
             {
+                errorMessage = "Output not connected";
                 return false;
             }
 
@@ -204,23 +228,29 @@ namespace SpeedChem
             return pipe.source.GetOutputChemical();
         }
 
-        public ChemicalSignature ConsumeInput(int inputIndex)
+        public ChemicalSignature ConsumeInput(int inputIndex, ref string warningTriangleMessage)
         {
             if (pipeSocket.connectedPipes.Count <= inputIndex)
+            {
+                warningTriangleMessage = "Input disconnected";
                 return null;
+            }
 
             List<OutputPipe> sortedPipes = pipeSocket.connectedPipes.OrderBy(o => o.sourcePos.X).ToList();
 
             OutputPipe pipe = sortedPipes[inputIndex];
             if (pipe == null || pipe.source == null)
+            {
+                warningTriangleMessage = "Input disconnected";
                 return null;
+            }
 
-            ChemicalSignature signature = pipe.source.RequestOutput(pipe);
+            ChemicalSignature signature = pipe.source.RequestOutput(pipe, ref warningTriangleMessage);
 
             return signature;
         }
 
-        public ChemicalSignature ConsumeInput(ChemicalSignature specificInput)
+        public ChemicalSignature ConsumeInput(ChemicalSignature specificInput, ref string errorMessage)
         {
             OutputPipe pipe = null;
             foreach (OutputPipe currentPipe in pipeSocket.connectedPipes)
@@ -233,14 +263,17 @@ namespace SpeedChem
             }
 
             if (pipe == null)
+            {
+                errorMessage = "Input not connected";
                 return null;
+            }
 
-            ChemicalSignature signature = pipe.source.RequestOutput(pipe);
+            ChemicalSignature signature = pipe.source.RequestOutput(pipe, ref errorMessage);
 
             return signature;
         }
 
-        public override ChemicalSignature RequestOutput(OutputPipe pipe)
+        public override ChemicalSignature RequestOutput(OutputPipe pipe, ref string errorMessage)
         {
             if (queuedOutput != null)
             {
@@ -251,6 +284,7 @@ namespace SpeedChem
                 return result;
             }
 
+            errorMessage = "Waiting for input";
             return null;
         }
 
@@ -308,6 +342,52 @@ namespace SpeedChem
             for (int Idx = 0; Idx < numThreads; ++Idx)
                 threads.Add(new FactoryThread());
             queuedOutput = null;
+
+            CalcIncomePerLoop();
+        }
+
+        public override void UpdatePipes()
+        {
+            base.UpdatePipes();
+            CalcIncomePerLoop();
+        }
+
+        void CalcIncomePerLoop()
+        {
+            incomePerLoop = 0;
+            foreach(FactoryCommand command in commands)
+            {
+                // for each command, iterate through all inputs and outputs, determine money spent/received
+                // add up 
+                switch(command.type)
+                {
+                    case FactoryCommandType.EARNMONEY:
+                        incomePerLoop += command.amount;
+                        break;
+
+                    case FactoryCommandType.INPUT:
+                        foreach (OutputPipe pipe in pipeSocket.connectedPipes)
+                        {
+                            if (pipe.source.GetOutputChemical() == command.signature)
+                            {
+                                incomePerLoop -= pipe.source.outputPrice;
+                                break;
+                            }
+                        }
+                        break;
+
+                    case FactoryCommandType.OUTPUT:
+                        foreach (OutputPipe pipe in pipes)
+                        {
+                            if (pipe.connectedTo != null && pipe.connectedTo.parent.GetInputChemical() == command.signature)
+                            {
+                                incomePerLoop += pipe.connectedTo.parent.inputPrice;
+                                break;
+                            }
+                        }
+                        break;
+                }
+            }
         }
 
         public override void Run()
@@ -316,65 +396,81 @@ namespace SpeedChem
             if (framesBeforeNextOutput > 0)
                 framesBeforeNextOutput--;
 
+            bool newSample = false;
+
             foreach (FactoryThread thread in threads)
             {
-                int oldTime = thread.currentTime;
+                thread.actualElapsedFrames++;
+                int oldTime = thread.internalTime;
                 if (thread.nextCommandIdx != -1 && commands.Count > thread.nextCommandIdx)
                 {
                     FactoryCommand command = commands[thread.nextCommandIdx];
-                    if (command.time == thread.currentTime)
+                    if (command.time == thread.internalTime)
                     {
                         switch (command.type)
                         {
                             case FactoryCommandType.INPUT:
-                                if (ConsumeInput(command.signature) != null)
+                                if (ConsumeInput(command.signature, ref warningTriangleMessage) != null)
                                 {
-                                    thread.currentTime++;
+                                    thread.internalTime++;
                                     thread.nextCommandIdx++;
                                 }
                                 break;
                             case FactoryCommandType.OUTPUT:
-                                if (framesBeforeNextOutput == 0 && PushOutput(command.signature))
+                                if (framesBeforeNextOutput == 0 && PushOutput(command.signature, ref warningTriangleMessage))
                                 {
                                     framesBeforeNextOutput = FRAMES_BETWEEN_OUTPUTS;
-                                    thread.currentTime++;
+                                    thread.internalTime++;
                                     thread.nextCommandIdx++;
                                 }
                                 break;
                             case FactoryCommandType.EARNMONEY:
                                 Game1.instance.inventory.GainMoney(command.amount, this.bounds.Center, cityLevel);
                                 didOutput = true;
-                                thread.currentTime++;
+                                thread.internalTime++;
                                 thread.nextCommandIdx++;
                                 break;
                             case FactoryCommandType.GAINCRYSTAL:
                                 Game1.instance.inventory.GainCrystals(1);
-                                thread.currentTime++;
+                                thread.internalTime++;
                                 thread.nextCommandIdx++;
                                 break;
                             case FactoryCommandType.SPENDCRYSTAL:
                                 if (Game1.instance.inventory.SpendCrystals(1))
                                 {
-                                    thread.currentTime++;
+                                    thread.internalTime++;
                                     thread.nextCommandIdx++;
+                                }
+                                else
+                                {
+                                    warningTriangleMessage = "Not enough crystals";
                                 }
                                 break;
                         }
                     }
                     else
                     {
-                        thread.currentTime++;
+                        thread.internalTime++;
                     }
 
                     allFinished = false;
-                    thread.stalled = (thread.currentTime == oldTime && commands.Count > 0);
+                    thread.stalled = (thread.internalTime == oldTime && commands.Count > 0);
+                    if (thread.stalled)
+                        thread.stalledForFrames++;
+                    else
+                        thread.stalledForFrames = 0;
                 }
                 else
                 {
+                    thread.AddDurationSample();
+                    newSample = true;
                     thread.nextCommandIdx = 0;
-                    thread.currentTime = 0;
+                    thread.internalTime = 0;
+                    thread.actualElapsedFrames = 0;
                 }
             }
+
+            CalcIncomePerSecond();
 
 /*            if (allFinished)
             {
@@ -385,6 +481,18 @@ namespace SpeedChem
                 }
             }
             */
+        }
+
+        public void CalcIncomePerSecond()
+        {
+            incomePerSecond = 0;
+            foreach (FactoryThread thread in threads)
+            {
+                if (thread.averageDurationSecs > 0 && (!thread.stalled || Game1.FramesToSeconds(thread.stalledForFrames) < thread.averageDurationSecs))
+                {
+                    incomePerSecond += incomePerLoop / thread.averageDurationSecs;
+                }
+            }
         }
 
         public void AddCores(int numExtraCores)
@@ -409,10 +517,18 @@ namespace SpeedChem
 
             base.Update(blackboard);
 
+            showErrorMessage = false;
+
             if (selected)
             {
                 ui.origin = bounds.Origin;
                 ui.Update(blackboard.inputState);
+            }
+
+            if (blackboard.inputState.hoveringElement == this &&
+                GetWarningRect().Contains(blackboard.inputState.MousePos))
+            {
+                showErrorMessage = true;
             }
 
             if (blackboard.selectedObject != null
@@ -423,6 +539,11 @@ namespace SpeedChem
             {
                 blackboard.draggingOntoObject = this;
             }
+        }
+
+        public Vectangle GetWarningRect()
+        {
+            return new Vectangle(bounds.X, bounds.Y, 16, 16);
         }
 
         public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
@@ -438,7 +559,13 @@ namespace SpeedChem
             {
                 if (thread.stalled)
                 {
-                    spriteBatch.Draw(Game1.textures.warning, new Rectangle((int)bounds.X, (int)bounds.Y, 16, 16), Color.White);
+                    Vectangle warningRect = GetWarningRect();
+                    spriteBatch.Draw(Game1.textures.warning, warningRect, Color.White);
+
+                    if(showErrorMessage)
+                    {
+                        spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT, Color.Red);
+                    }
                     break;
                 }
             }
@@ -490,7 +617,7 @@ namespace SpeedChem
                 if (commands.Count > 0)
                 {
                     int recordingDurationFrames = commands.Last().time;
-                    float recordingDurationSeconds = recordingDurationFrames / 60.0f;
+                    float recordingDurationSeconds = Game1.FramesToSeconds(recordingDurationFrames);
 
                     int numCoresDrawnThisLine = 0;
                     int numCoresPerThread = (int)Math.Ceiling(recordingDurationSeconds / TIME_PER_CORE);
@@ -500,7 +627,7 @@ namespace SpeedChem
                         float maxTimeFraction = 1.0f;//recordingDurationSeconds / (numCoresPerThread * TIME_PER_CORE);
                         spriteBatch.Draw(Game1.textures.white, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.Black);
                         spriteBatch.Draw(Game1.textures.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * maxTimeFraction), CORE_SIZE), new Color(100,100,100));
-                        float progressFraction = thread.currentTime / (recordingDurationSeconds * 60.0f); // (60.0f* numCoresPerThread * TIME_PER_CORE);
+                        float progressFraction = thread.internalTime / (recordingDurationSeconds * 60.0f); // (60.0f* numCoresPerThread * TIME_PER_CORE);
                         spriteBatch.Draw(Game1.textures.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * progressFraction), CORE_SIZE), thread.stalled ? Color.Red : new Color(100,200,0));// new Color(120,170,255));
                         spriteBatch.Draw(thread.stalled? Game1.textures.bad_cores_bar: Game1.textures.cores_bar, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.White);
 

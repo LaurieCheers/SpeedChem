@@ -63,7 +63,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="InCityLevel\ChemicalInbox.cs" />
@@ -89,6 +89,7 @@
     <Compile Include="PlatformLevel\OutputZone.cs" />
     <Compile Include="PlatformLevel\PlatformCharacter.cs" />
     <Compile Include="InCityLevel\CityObject.cs" />
+    <Compile Include="PlatformLevel\Weapon.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PlatformLevel\Projectile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="PlatformLevel\RigidBody.cs" />
     <Compile Include="PlatformLevel\Command_Spawn.cs" />
     <Compile Include="LRCEngine\SpriteObject.cs" />
+    <Compile Include="Sampler.cs" />
     <Compile Include="TextureCache.cs" />
     <Compile Include="PlatformLevel\Command.cs" />
     <Compile Include="LRCEngine\Vectangle.cs" />
@@ -122,6 +124,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\brunel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bubble.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\bubbleicon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\button3d.png">
