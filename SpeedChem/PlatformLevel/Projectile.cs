@@ -18,6 +18,7 @@ namespace SpeedChem
     public class Projectile
     {
         Texture2D texture;
+        Color color;
         public Vector2 pos;
         Vector2 size;
         float rotation;
@@ -25,9 +26,10 @@ namespace SpeedChem
         public bool destroyed = false;
         ProjectileAction action;
 
-        public Projectile(Texture2D texture, Vector2 pos, Vector2 size, Vector2 velocity, ProjectileAction action)
+        public Projectile(Texture2D texture, Color color, Vector2 pos, Vector2 size, Vector2 velocity, ProjectileAction action)
         {
             this.texture = texture;
+            this.color = color;
             this.pos = pos;
             this.size = size;
             this.velocity = velocity;
@@ -170,7 +172,7 @@ namespace SpeedChem
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, new Rectangle((int)pos.X, (int)pos.Y, (int)size.X, (int)size.Y), null, Color.Yellow, rotation, new Vector2(size.X/2, size.Y/2), SpriteEffects.None, 0);
+            spriteBatch.Draw(texture, new Rectangle((int)pos.X, (int)pos.Y, (int)size.X, (int)size.Y), null, color, rotation, new Vector2(size.X/2, size.Y/2), SpriteEffects.None, 0);
         }
     }
 }

@@ -108,17 +108,17 @@ namespace SpeedChem
 
             if (movable)
             {
-                spriteBatch.Draw(Game1.textures.pipe, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, cachedLength, 16),
+                spriteBatch.Draw(TextureCache.pipe, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, cachedLength, 16),
                     null, Color.White, cachedRotation, new Vector2(0, 8), cachedEffects, 0.0f);
             }
             else
             {
-                int pipeTextureLength = Game1.textures.grassy_pipe.Width;
+                int pipeTextureLength = TextureCache.grassy_pipe.Width;
                 Vector2 currentPos = sourcePos;
                 Vector2 step = cachedOffset*pipeTextureLength / (float)cachedLength;
                 for (int lenSoFar = 0; lenSoFar < cachedLength; lenSoFar += pipeTextureLength)
                 {
-                    spriteBatch.Draw(Game1.textures.grassy_pipe, currentPos, null, Color.White, cachedRotation, new Vector2(0, 8), 1.0f, cachedEffects, 0.0f);
+                    spriteBatch.Draw(TextureCache.grassy_pipe, currentPos, null, Color.White, cachedRotation, new Vector2(0, 8), 1.0f, cachedEffects, 0.0f);
                     currentPos += step;
                 }
             }
@@ -129,11 +129,11 @@ namespace SpeedChem
                 targetOffset.Normalize();
                 targetOffset *= animatingPip;
 
-                spriteBatch.Draw(Game1.textures.chemIcon, new Rectangle((int)(sourcePos.X + targetOffset.X - 2), (int)(sourcePos.Y + targetOffset.Y - 2), 4, 4), Color.Yellow);
+                spriteBatch.Draw(TextureCache.chemIcon, new Rectangle((int)(sourcePos.X + targetOffset.X - 2), (int)(sourcePos.Y + targetOffset.Y - 2), 4, 4), Color.Yellow);
             }
 
             if(movable)
-                spriteBatch.Draw(Game1.textures.pipeHandle, cachedHandleRect, Color.White);
+                spriteBatch.Draw(TextureCache.pipeHandle, cachedHandleRect, Color.White);
         }
 
         void UpdateForTargetPos(Vector2 targetPos)

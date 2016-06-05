@@ -71,6 +71,14 @@ namespace LRCEngine
         public float duration {
             get { return durationFrames * FRAMERATE; }
         }
+
+        public bool justPressed {
+            get { return isDown && durationFrames == 0; }
+        }
+
+        public bool justReleased {
+            get { return !isDown && durationFrames == 0; }
+        }
     }
 
     public class InputState

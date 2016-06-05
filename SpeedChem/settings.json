@@ -9,7 +9,6 @@
           "inbox1": {
             "type": "inbox",
             "chemical": [ "W" ],
-            "price": 0,
             "pos": [ 100, 30 ],
             "pipes": [ "factory1" ]
           },
@@ -27,12 +26,16 @@
           }
         },
         "outbox1": {
-          "inbox2": {
-            "type": "inbox",
-            "chemical": [ "B" ],
-            "price": 8,
-            "pos": [ 200, 30 ]
-          },
+		  "build2": {
+              "type": "buildingSite",
+              "pos": [ 200, 20 ],
+			  "price":6,
+			  "built": {
+				"type": "inbox",
+				"chemical": [ "B" ],
+				"pos": [ 200, 30 ]
+			  },
+		  },
           "factory2": {
             "type": "factory",
             "movable": false,
@@ -42,7 +45,7 @@
           "outbox2": {
             "type": "outbox",
             "chemical": [ "B", "B" ],
-            "price": 18,
+            "price": 2,
             "pos": [ 120, 380 ]
           }
         },
@@ -56,21 +59,25 @@
           "outbox3": {
             "type": "outbox",
             "chemical": [ "BWB" ],
-            "price": 35,
+            "price": 10,
             "pos": [ 220, 380 ]
           }
         },
         "outbox3": {
-          "inbox4": {
-            "type": "inbox",
-            "chemical": [ "RRR" ],
-            "price": 250,
-            "pos": [ 300, 30 ]
-          },
+		  "build4": {
+            "type": "buildingSite",
+            "pos": [ 300, 20 ],
+			"price":250,
+            "built":{
+              "type": "inbox",
+              "chemical": [ "RRR" ],
+              "pos": [ 300, 30 ]
+            },
+		  },
           "outbox4": {
             "type": "outbox",
             "chemical": [ "B B", "RRR", " W " ],
-            "price": 330,
+            "price": 30,
             "pos": [ 320, 380 ]
           },
           "BUY_FACTORY": true
@@ -78,10 +85,67 @@
       }
     }
 
+    "city2": {
+      "name": "Liverpool",
+      "pos": [ 300, 70 ],
+      "price": 500,
+      "unlocks": {
+        "start": {
+          "inbox1": {
+              "type": "inbox",
+              "chemical": [ "BGB" ],
+              "pos": [ 150, 30 ]
+              "pipes": [ "factory3" ]
+          },
+          "factory1": {
+              "type": "factory",
+              "pos": [ 180, 95 ]
+			  "movable": false,
+              "pipes": [ "silo3" ]
+	      }
+          "silo1": {
+              "type": "silo",
+              "chemical": [ "B" ],
+			  "movable": false,
+              "pos": [ 110, 160 ]
+          },
+          "outbox1": {
+            "type": "outbox",
+            "chemical": [ "B", "B", "B" ],
+            "price": 10,
+            "pos": [ 150, 380 ]
+          },
+          "BUY_FACTORY": true,
+		},
+		"outbox1":{
+          "inbox2": {
+            "type": "inbox",
+            "chemical": [ "G" ],
+            "pos": [ 250, 30 ]
+          },
+          "outbox2": {
+            "type": "outbox",
+            "chemical": [ "BG", "GB" ],
+            "price": 20,
+            "pos": [ 250, 380 ]
+          },
+        },
+        "outbox2":
+        {
+		  "outbox3": {
+			"type": "outbox",
+			"chemical": [ " B ", "BGB", "G G" ],
+			"price": 70,
+			"pos": [ 350, 380 ]
+		  },
+        },
+      }
+    }
+
     "city4": {
       "name": "Cardiff",
       "pos": [ 100, 310 ],
-      "price": 500,
+      "price": 5000,
       "unlocks": {
         "start": {
           "BUY_FACTORY": true,
@@ -89,7 +153,6 @@
           "inbox1": {
             "type": "inbox",
             "chemical": [ "W" ],
-            "price": 0,
             "pos": [ 150, 30 ]
           },
           "outbox1": {
@@ -100,78 +163,34 @@
           }
         }
         "outbox1": {
+		  "BUBBLEGUN":true,
           "inbox2": {
-            "type": "inbox",
-            "chemical": [ "B" ],
-            "price": 8,
-            "pos": [ 250, 30 ]
+		    "type": "buildingSite",
+            "pos": [ 250, 20 ],
+			"price":500,
+			"built": {
+				"type": "inbox",
+				"chemical": [ "R","R","R" ],
+				"pos": [ 250, 30 ]
+			}
           },
           "outbox2": {
             "type": "outbox",
-            "chemical": [ "WB", " BW", " W" ],
-            "price": 1325,
+            "chemical": [ " R ", "WRW", " R " ],
+            "price": 48,
             "pos": [ 220, 380 ]
           }
-        }
+        },
+		"outbox2":{
+          "outbox3": {
+            "type": "outbox",
+            "chemical": [ "R R R", "RWRWR", "R R R" ],
+            "price": 68,
+            "pos": [ 320, 380 ]
+          }
+		},
       }
     },
-
-    "city2": {
-      "name": "Liverpool",
-      "pos": [ 300, 70 ],
-      "price": 5000,
-      "unlocks": {
-        "start": {
-          "BUY_FACTORY": true,
-          "inbox1": {
-            "type": "inbox",
-            "chemical": [ "G" ],
-            "price": 156,
-            "pos": [ 150, 30 ]
-          },
-          "inbox2": {
-            "type": "inbox",
-            "chemical": [ "R" ],
-            "price": 600,
-            "pos": [ 250, 30 ]
-          },
-          "outbox1": {
-            "type": "outbox",
-            "chemical": [ "RG", "GR" ],
-            "price": 1400,
-            "pos": [ 20, 380 ]
-          },
-        },
-        "outbox1":
-        {
-          "BUY_SILO": true,
-          "inbox3": {
-            "type": "inbox",
-            "chemical": [ "BGWGB" ],
-            "price": 5300,
-            "pos": [ 350, 30 ]
-          },
-          "outbox2": {
-            "type": "outbox",
-            "chemical": [ "B B", "WGB" ],
-            "price": 13500,
-            "pos": [ 120, 380 ]
-          },
-        "outbox3": {
-          "type": "outbox",
-          "chemical": [ "RR", "BB" ],
-          "price": 10700,
-          "pos": [ 220, 380 ]
-        },
-        "outbox4": {
-          "type": "outbox",
-          "chemical": [ "B B", "RRR", " B " ],
-          "price": 10700,
-          "pos": [ 320, 380 ]
-        }
-      }
-    }
-  }
 
     "city3": {
       "name": "Sheffield",
@@ -184,13 +203,11 @@
           "inbox1": {
             "type": "inbox",
             "chemical": [ "G" ],
-            "price": 156,
             "pos": [ 150, 30 ]
           },
           "inbox2": {
             "type": "inbox",
             "chemical": [ "S" ],
-            "price": 1200,
             "pos": [ 250, 30 ]
           },
           "outbox1": {

@@ -15,12 +15,24 @@ namespace SpeedChem
         ChemicalSignature signature;
         public int amount;
 
-        public ChemicalSilo(CityLevel cityLevel, Vector2 pos) : base(cityLevel, Game1.textures.silo, pos, Game1.textures.silo.Size())
+        public ChemicalSilo(CityLevel cityLevel, JSONTable template): base(
+            cityLevel,
+            template.getBool("movable", true)? TextureCache.silo : TextureCache.grassy_silo,
+            template.getVector2("pos"),
+            TextureCache.silo.Size()
+          )
+        {
+            this.signature = new ChemicalSignature(template.getArray("chemical"));
+            canDrag = template.getBool("movable", true);
+            Init();
+        }
+
+        public ChemicalSilo(CityLevel cityLevel, Vector2 pos) : base(cityLevel, TextureCache.silo, pos, TextureCache.silo.Size())
         {
             Init();
         }
 
-        public ChemicalSilo(CityLevel cityLevel, ChemicalSignature signature, int amount, Vector2 pos): base(cityLevel, Game1.textures.silo, pos, Game1.textures.silo.Size())
+        public ChemicalSilo(CityLevel cityLevel, ChemicalSignature signature, int amount, Vector2 pos): base(cityLevel, TextureCache.silo, pos, TextureCache.silo.Size())
         {
             this.signature = signature;
             this.amount = amount;

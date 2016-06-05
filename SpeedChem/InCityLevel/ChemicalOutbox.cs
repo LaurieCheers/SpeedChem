@@ -15,14 +15,14 @@ namespace SpeedChem
         int price;
         public override int inputPrice { get { return price; } }
 
-        public ChemicalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, Game1.textures.outbox, template.getVector2("pos"), Game1.textures.outbox.Size())
+        public ChemicalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.outbox, template.getVector2("pos"), TextureCache.outbox.Size())
         {
             this.signature = new ChemicalSignature(template.getArray("chemical"));
             this.price = template.getInt("price");
             Init();
         }
 
-        public ChemicalOutbox(CityLevel cityLevel, ChemicalSignature signature, int price, Vector2 pos) : base(cityLevel, Game1.textures.outbox, pos, Game1.textures.outbox.Size())
+        public ChemicalOutbox(CityLevel cityLevel, ChemicalSignature signature, int price, Vector2 pos) : base(cityLevel, TextureCache.outbox, pos, TextureCache.outbox.Size())
         {
             this.signature = signature;
             this.price = price;

@@ -197,8 +197,12 @@ namespace SpeedChem
                     return new ChemicalOutbox(cityLevel, template);
                 case "factory":
                     return new ChemicalFactory(cityLevel, template);
+                case "silo":
+                    return new ChemicalSilo(cityLevel, template);
                 case "crystalOutbox":
                     return new CrystalOutbox(cityLevel, template);
+                case "buildingSite":
+                    return new BuildingSite(cityLevel, template);
                 default:
                     throw new ArgumentException("Unknown CityObject type \"" + type + "\"");
             }

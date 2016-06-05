@@ -16,7 +16,7 @@ namespace SpeedChem
         bool justUnlocked = false;
         public override float incomePerSecond { get { return cityLevel.incomePerSecond; } }
 
-        public WorldObject_City(CityLevel cityLevel) : base(Game1.textures.city, cityLevel.pos)
+        public WorldObject_City(CityLevel cityLevel) : base(TextureCache.city, cityLevel.pos)
         {
             this.cityLevel = cityLevel;
         }

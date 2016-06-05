@@ -11,28 +11,45 @@ namespace SpeedChem
 {
     public class Inventory
     {
+        public class WeaponSlot
+        {
+            public Weapon weapon;
+
+            public WeaponSlot(Weapon weapon) { this.weapon = weapon; }
+        }
+
+        public WeaponSlot leftWeapon;
+        public WeaponSlot rightWeapon;
+        public Dictionary<string, Weapon> unlockableWeapons = new Dictionary<string, Weapon>() {
+            { "RIVETGUN", new Weapon_Rivetgun() },
+            { "CUTTINGBEAM", new Weapon_CuttingBeam() },
+            { "BUBBLEGUN", new Weapon_BubbleGun() }
+        };
+        public List<Weapon> availableWeapons;
+        public bool newWeaponAdded = false;
+
         public int money { get; private set; }
         public int crystals { get; private set; }
         public bool cityJustUnlocked = false;
 
-/*        const int HISTORY_LENGTH_SECS = 20;
-        const int HISTORY_LENGTH_FRAMES = 60 * HISTORY_LENGTH_SECS;
-        const int HISTORY_HALF_LENGTH_FRAMES = HISTORY_LENGTH_FRAMES / 2;
-        int[] moneyHistory;
-        int nextHistoryIdx = 0;
-        long moneyTotal20_10 = 0;
-        long moneyTotal10_00 = 0;*/
         float incomePerSecond;
         bool showIncomePerSecond = false;
         bool showCrystals = false;
 
         public Inventory()
         {
-/*            moneyHistory = new int[HISTORY_LENGTH_FRAMES];
-            for(int Idx = 0; Idx < moneyHistory.Length; ++Idx)
-            {
-                moneyHistory[Idx] = 0;
-            }*/
+            Weapon rivetGun = unlockableWeapons["RIVETGUN"];
+
+            leftWeapon = new WeaponSlot(rivetGun);
+            rightWeapon = new WeaponSlot(null);
+            availableWeapons = new List<Weapon> { rivetGun };
+        }
+
+        public void UnlockWeapon(Weapon newWeapon)
+        {
+            availableWeapons.Add(newWeapon);
+            rightWeapon.weapon = newWeapon;
+            newWeaponAdded = true;
         }
 
         public bool PayMoney(int amount, Vector2 splashPos, SpeedChemScreen screen)
@@ -41,7 +58,7 @@ namespace SpeedChem
             {
                 money -= amount;
 
-                if (Game1.instance.currentScreen == screen)
+                if (amount > 0 && Game1.instance.currentScreen == screen)
                 {
                     Game1.instance.splashes.Add(new Splash("-$" + amount, TextAlignment.LEFT, Game1.font, Color.Red, splashPos, new Vector2(0, -2), 1.0f, 0.0f, 0.5f));
                 }
@@ -80,23 +97,28 @@ namespace SpeedChem
 
         public void Update()
         {
-            /*            moneyTotal20_10 -= moneyHistory[nextHistoryIdx];
-                        moneyHistory[nextHistoryIdx] = money;
-                        moneyTotal10_00 += money;
-                        nextHistoryIdx = (nextHistoryIdx+1)% HISTORY_LENGTH_FRAMES;
-
-                        int halfwayValue = moneyHistory[(nextHistoryIdx + HISTORY_HALF_LENGTH_FRAMES) % HISTORY_LENGTH_FRAMES];
-                        moneyTotal10_00 -= halfwayValue;
-                        moneyTotal20_10 += halfwayValue;
-
-                        incomePerSecond = (moneyTotal10_00 - moneyTotal20_10) / (10.0f*HISTORY_HALF_LENGTH_FRAMES);
-            */
             incomePerSecond = Game1.instance.worldLevel.incomePerSecond;
             if (incomePerSecond >= 1.0f)
                 showIncomePerSecond = true;
 
             if (crystals > 0)
                 showCrystals = true;
+        }
+
+        public void UpdateWeapons(InputState input, PlatformCharacter character, List<PlatformObject> allObjects, List<Projectile> projectiles)
+        {
+            if (leftWeapon.weapon != null)
+                leftWeapon.weapon.Update(input.hoveringElement == null ? input.mouseLeft : null, input.MousePos, character, allObjects, projectiles);
+            if (rightWeapon.weapon != null)
+                rightWeapon.weapon.Update(input.hoveringElement == null ? input.mouseRight : null, input.MousePos, character, allObjects, projectiles);
+        }
+
+        public void DrawWeapons(SpriteBatch spriteBatch)
+        {
+            if (leftWeapon.weapon != null)
+                leftWeapon.weapon.Draw(spriteBatch);
+            if (rightWeapon.weapon != null)
+                rightWeapon.weapon.Draw(spriteBatch);
         }
 
         public void Draw(SpriteBatch spriteBatch)

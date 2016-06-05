@@ -55,6 +55,11 @@ namespace LRCEngine
             return rect.Contains(new Point((int)pos.X, (int)pos.Y));
         }
 
+        public static Vector2 XY(this Rectangle rect)
+        {
+            return new Vector2(rect.X, rect.Y);
+        }
+
         public static void Draw(this SpriteBatch spriteBatch, RichImage image, Rectangle rect, Color col)
         {
             image.Draw(spriteBatch, rect, col);

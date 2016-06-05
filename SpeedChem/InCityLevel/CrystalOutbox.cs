@@ -14,14 +14,14 @@ namespace SpeedChem
         ChemicalSignature signature;
         int numCrystals;
 
-        public CrystalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, Game1.textures.outbox, template.getVector2("pos"), Game1.textures.outbox.Size())
+        public CrystalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.outbox, template.getVector2("pos"), TextureCache.outbox.Size())
         {
             this.signature = new ChemicalSignature(template.getArray("chemical"));
             this.numCrystals = template.getInt("crystals", 1);
             Init();
         }
 
-        public CrystalOutbox(CityLevel cityLevel, ChemicalSignature signature, Vector2 pos) : base(cityLevel, Game1.textures.depot, pos, Game1.textures.depot.Size())
+        public CrystalOutbox(CityLevel cityLevel, ChemicalSignature signature, Vector2 pos) : base(cityLevel, TextureCache.depot, pos, TextureCache.depot.Size())
         {
             this.signature = signature;
             Init();

@@ -15,11 +15,13 @@ namespace SpeedChem
 
         List<CityObject> objectsUnlocked;
         List<UIElement> uiUnlocked;
+        List<Weapon> weapons;
 
-        public UnlockRule(List<UIElement> uiUnlocked, List<CityObject> objectsUnlocked)
+        public UnlockRule(List<UIElement> uiUnlocked, List<CityObject> objectsUnlocked, List<Weapon> weapons)
         {
             this.uiUnlocked = uiUnlocked;
             this.objectsUnlocked = objectsUnlocked;
+            this.weapons = weapons;
         }
 
         public UnlockRule(List<CityObject> objectsUnlocked)
@@ -51,6 +53,13 @@ namespace SpeedChem
                 foreach (UIElement ui in uiUnlocked)
                 {
                     metaGame.AddUI(ui);
+                }
+            }
+            if(weapons != null)
+            {
+                foreach(Weapon w in weapons)
+                {
+                    Game1.instance.inventory.UnlockWeapon(w);
                 }
             }
             objectsUnlocked = null;
@@ -101,7 +110,7 @@ namespace SpeedChem
         {
             this.watching = watching;
         }
-        public UnlockRule_Output(CityObject watching, List<UIElement> ui, List<CityObject> objects) : base(ui, objects)
+        public UnlockRule_Output(CityObject watching, List<UIElement> ui, List<CityObject> objects, List<Weapon> weapons) : base(ui, objects, weapons)
         {
             this.watching = watching;
         }
@@ -122,14 +131,15 @@ namespace SpeedChem
     public class CityLevel: SpeedChemScreen
     {
         List<CityObject> objects = new List<CityObject>();
-        List<CityObject> objectsToAdd = new List<CityObject>();
+        List<CityObject> nextObjects = null;
         UIContainer ui;
         public CityUIBlackboard blackboard = new CityUIBlackboard();
         //Vector2 nextSiloPos = new Vector2(100,300);
         //Dictionary<ChemicalSignature, ChemicalSilo> chemicals = new Dictionary<ChemicalSignature, ChemicalSilo>();
         int nextFactoryPrice = 16;
         int cuttingBeamPrice = 400;
-        UIButton newFactoryButton;
+        Dictionary<string, UIElement> unlockableUI;
+        UIBuyButton newFactoryButton;
         UIButton newSiloButton;
         UIButton buyCuttingBeamButton;
         List<UnlockRule> unlockRules = new List<UnlockRule>();
@@ -157,21 +167,22 @@ namespace SpeedChem
                     JSONTable unlockTemplates = unlockTable.getJSON(unlockName);
                     List<CityObject> newObjects = new List<CityObject>();
                     List<UIElement> newUI = new List<UIElement>();
+                    List<Weapon> newWeapons = new List<Weapon>();
                     foreach (string objectName in unlockTemplates.Keys)
                     {
-                        switch(objectName)
+                        if(unlockableUI.ContainsKey(objectName))
                         {
-                            case "BUY_FACTORY":
-                                newUI.Add(newFactoryButton);
-                                break;
-                            case "BUY_SILO":
-                                newUI.Add(newSiloButton);
-                                break;
-                            default:
-                                CityObject newObj = CityObject.FromTemplate(this, unlockTemplates.getJSON(objectName));
-                                objectsByName[objectName] = newObj;
-                                newObjects.Add(newObj);
-                                break;
+                            newUI.Add(unlockableUI[objectName]);
+                        }
+                        else if(Game1.instance.inventory.unlockableWeapons.ContainsKey(objectName))
+                        {
+                            newWeapons.Add(Game1.instance.inventory.unlockableWeapons[objectName]);
+                        }
+                        else
+                        {
+                            CityObject newObj = CityObject.FromTemplate(this, unlockTemplates.getJSON(objectName));
+                            objectsByName[objectName] = newObj;
+                            newObjects.Add(newObj);
                         }
                     }
 
@@ -188,7 +199,7 @@ namespace SpeedChem
                     }
                     else
                     {
-                        unlockRules.Add( new UnlockRule_Output(objectsByName[unlockName], newUI, newObjects) );
+                        unlockRules.Add( new UnlockRule_Output(objectsByName[unlockName], newUI, newObjects, newWeapons) );
                     }
                 }
 
@@ -198,7 +209,7 @@ namespace SpeedChem
                     JSONTable unlockTemplates = unlockTable.getJSON(unlockName);
                     foreach (string objectName in unlockTemplates.Keys)
                     {
-                        if (objectName == "BUY_FACTORY" || objectName == "BUY_SILO")
+                        if (unlockableUI.ContainsKey(objectName) || Game1.instance.inventory.unlockableWeapons.ContainsKey(objectName))
                             continue;
 
                         JSONTable objectTemplate = unlockTemplates.getJSON(objectName);
@@ -312,7 +323,8 @@ namespace SpeedChem
                 {
                     new ChemicalInbox(this, new ChemicalSignature(1, new ChemicalElement[] { ChemicalElement.GLASS }), 80, new Vector2(nextInputX, 30)),
                     outbox4
-                }
+                },
+                new List<Weapon>() { }
             ));
 
             //========================
@@ -351,6 +363,9 @@ namespace SpeedChem
                         2600,
                         new Vector2(nextOutputX, 380)
                     )
+                },
+                new List<Weapon>()
+                {
                 }
             ));
 
@@ -476,9 +491,14 @@ namespace SpeedChem
         {
             ui = new UIContainer();
 
-            newFactoryButton = new UIButton(GetFactoryButtonLabel(), new Rectangle(600, 100, 170, 40), Game1.buttonStyle, button_SpawnFactory);
+            newFactoryButton = new UIBuyButton("Build Factory", nextFactoryPrice, new Rectangle(600, 100, 170, 40), Game1.buttonStyle, button_SpawnFactory);
             newSiloButton = new UIButton("New Silo", new Rectangle(600, 150, 120, 40), Game1.buttonStyle, button_SpawnSilo);
-            buyCuttingBeamButton = new UIButton("Buy Cutter ($" + cuttingBeamPrice + ")", new Rectangle(600, 50, 170, 40), Game1.buttonStyle, button_BuyCuttingBeam);
+
+            unlockableUI = new Dictionary<string, UIElement>()
+            {
+                { "BUY_FACTORY", newFactoryButton },
+                { "BUY_SILO", newSiloButton },
+            };
 
             ui.Add(new UIButton("Back to Map", new Rectangle(600, 10, 170, 40), Game1.buttonStyle, button_GoToMap));
             ui.Add(new UIButton("Cheat:Unlocks", new Rectangle(600, 370, 170, 40), Game1.buttonStyle, button_Unlocks));
@@ -492,7 +512,23 @@ namespace SpeedChem
 
         public void AddObjectDeferred(CityObject obj)
         {
-            objectsToAdd.Add(obj);
+            if (nextObjects == null)
+                nextObjects = objects.ToList();
+
+            nextObjects.Add(obj);
+        }
+
+        public void RemoveObject(CityObject obj)
+        {
+            objects.Remove(obj);
+        }
+
+        public void RemoveObjectDeferred(CityObject obj)
+        {
+            if (nextObjects == null)
+                nextObjects = objects.ToList();
+
+            nextObjects.Remove(obj);
         }
 
         public void AddUI(UIElement element)
@@ -503,21 +539,9 @@ namespace SpeedChem
         public void button_SpawnFactory()
         {
             Vector2 factoryPos = new Vector2(50, 200);
-            if (Game1.instance.inventory.PayMoney(nextFactoryPrice, factoryPos, this))
-            {
-                objects.Add(new ChemicalFactory(this, factoryPos, true));
-                nextFactoryPrice = (int)(nextFactoryPrice * 5f);
-                newFactoryButton.label = GetFactoryButtonLabel();
-            }
-        }
-
-        public void button_BuyCuttingBeam()
-        {
-            if (Game1.instance.inventory.PayMoney(cuttingBeamPrice, buyCuttingBeamButton.frame.Center.ToVector2(), this))
-            {
-                ui.Remove(buyCuttingBeamButton);
-                Game1.instance.platformLevel.UnlockCuttingBeam();
-            }
+            objects.Add(new ChemicalFactory(this, factoryPos, true));
+            nextFactoryPrice = (int)(nextFactoryPrice * 5);
+            newFactoryButton.price = nextFactoryPrice;
         }
 
         string GetFactoryButtonLabel()
@@ -553,6 +577,10 @@ namespace SpeedChem
                 {
                     (obj as ChemicalOutbox).didOutput = true;
                 }
+                else if (obj is CrystalOutbox)
+                {
+                    (obj as CrystalOutbox).didOutput = true;
+                }
             }
         }
 
@@ -578,8 +606,6 @@ namespace SpeedChem
 
         public void Update(InputState inputState)
         {
-            newFactoryButton.SetEnabled(Game1.instance.inventory.money >= nextFactoryPrice);
-
             blackboard.inputState = inputState;
             blackboard.draggingOntoObject = null;
 
@@ -609,9 +635,9 @@ namespace SpeedChem
 
             if (inputState.hoveringElement == null)
             {
-                for(int Idx = objects.Count-1; Idx >= 0; --Idx)
+                for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
                 {
-                    inputState.hoveringElement = objects[Idx].GetMouseHover(inputState.MousePos);
+                    inputState.hoveringElement = objects[Idx].GetPipeMouseHover(inputState.MousePos);
                     if (inputState.hoveringElement != null)
                         break;
                 }
@@ -619,9 +645,9 @@ namespace SpeedChem
 
             if (inputState.hoveringElement == null)
             {
-                for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
+                for(int Idx = objects.Count-1; Idx >= 0; --Idx)
                 {
-                    inputState.hoveringElement = objects[Idx].GetPipeMouseHover(inputState.MousePos);
+                    inputState.hoveringElement = objects[Idx].GetMouseHover(inputState.MousePos);
                     if (inputState.hoveringElement != null)
                         break;
                 }
@@ -654,16 +680,16 @@ namespace SpeedChem
                     blackboard.selectedObject = null;
             }
 
-            foreach(CityObject obj in objectsToAdd)
+            if(nextObjects != null)
             {
-                objects.Add(obj);
+                objects = nextObjects;
+                nextObjects = null;
             }
-            objectsToAdd.Clear();
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Game1.textures.grass, new Rectangle(0, 0, 800, 600), Color.White);
+            spriteBatch.Draw(TextureCache.grass, new Rectangle(0, 0, 800, 600), Color.White);
 
             foreach (CityObject obj in objects)
             {
@@ -694,7 +720,7 @@ namespace SpeedChem
         {
             if(!chemicals.ContainsKey(signature))
             {
-                ChemicalSilo newSilo = new ChemicalSilo(signature, amount, Game1.textures.silo, nextSiloPos, new Vector2(32, 32));
+                ChemicalSilo newSilo = new ChemicalSilo(signature, amount, TextureCache.silo, nextSiloPos, new Vector2(32, 32));
                 objects.Add(newSilo);
                 chemicals[signature] = newSilo;
                 nextSiloPos.X += 50;

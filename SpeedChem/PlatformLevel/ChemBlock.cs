@@ -51,11 +51,11 @@ namespace SpeedChem
                 switch (e)
                 {
                     case ChemicalElement.GLASS:
-                        return Game1.textures.glassIcon;
+                        return TextureCache.glassIcon;
                     case ChemicalElement.WHITE:
-                        return Game1.textures.bubbleIcon;
+                        return TextureCache.bubbleIcon;
                     default:
-                        return Game1.textures.chemIcon;
+                        return TextureCache.chemIcon;
                 }
             }
             else
@@ -63,13 +63,13 @@ namespace SpeedChem
                 switch (e)
                 {
                     case ChemicalElement.WHITE:
-                        return Game1.textures.bubbleBlock;
+                        return TextureCache.bubbleBlock;
                     case ChemicalElement.GLASS:
-                        return Game1.textures.glassBlock;
+                        return TextureCache.glassBlock;
                     case ChemicalElement.STEEL:
-                        return Game1.textures.steelBlock;
+                        return TextureCache.steelBlock;
                     default:
-                        return Game1.textures.block;
+                        return TextureCache.block;
                 }
             }
         }
@@ -484,7 +484,7 @@ namespace SpeedChem
             Point origin = GetOrigin().ToPoint();
             foreach(Point curPos in horizontalBonds)
             {
-                spriteBatch.Draw(Game1.textures.white, new Rectangle(
+                spriteBatch.Draw(TextureCache.white, new Rectangle(
                     origin.X + curPos.X * (int)Game1.BLOCKSIZE + 25,
                     origin.Y + curPos.Y * (int)Game1.BLOCKSIZE + 15,
                     15,
@@ -494,7 +494,7 @@ namespace SpeedChem
             }
             foreach (Point curPos in verticalBonds)
             {
-                spriteBatch.Draw(Game1.textures.white, new Rectangle(
+                spriteBatch.Draw(TextureCache.white, new Rectangle(
                     origin.X + curPos.X * (int)Game1.BLOCKSIZE + 15,
                     origin.Y + curPos.Y * (int)Game1.BLOCKSIZE + 25,
                     3,

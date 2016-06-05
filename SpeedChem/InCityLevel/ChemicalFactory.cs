@@ -93,7 +93,7 @@ namespace SpeedChem
         public const int DEFAULT_NUM_CORES = 6;
         public const int CORES_BOX_WIDTH = 30;
         public const int CORES_BOX_HEIGHT = 20;
-        public const int FRAMES_BETWEEN_OUTPUTS = 10;
+        public const int FRAMES_BETWEEN_OUTPUTS = 9;
         public int framesBeforeNextOutput = 0;
         string warningTriangleMessage = "Test Error";
         public bool showErrorMessage;
@@ -102,9 +102,9 @@ namespace SpeedChem
 
         public ChemicalFactory(CityLevel cityLevel, JSONTable template): base(
             cityLevel,
-            template.getBool("movable", true)? Game1.textures.factory : Game1.textures.grassy_factory,
+            template.getBool("movable", true)? TextureCache.factory : TextureCache.grassy_factory,
             template.getVector2("pos"),
-            Game1.textures.factory.Size()
+            TextureCache.factory.Size()
           )
         {
             numCores = DEFAULT_NUM_CORES;
@@ -117,7 +117,7 @@ namespace SpeedChem
             unlimitedPipes = canDrag;
         }
 
-        public ChemicalFactory(CityLevel cityLevel, Vector2 pos, bool movable): base(cityLevel, movable? Game1.textures.factory: Game1.textures.grassy_factory, pos, Game1.textures.factory.Size())
+        public ChemicalFactory(CityLevel cityLevel, Vector2 pos, bool movable): base(cityLevel, movable? TextureCache.factory: TextureCache.grassy_factory, pos, TextureCache.factory.Size())
         {
             numCores = DEFAULT_NUM_CORES;
             ui = new UIContainer(pos);
@@ -130,7 +130,7 @@ namespace SpeedChem
             unlimitedPipes = true;
         }
 
-        public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, int sellerPrice, Vector2 pos) : base(cityLevel, Game1.textures.outbox, pos, Game1.textures.outbox.Size())
+        public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, int sellerPrice, Vector2 pos) : base(cityLevel, TextureCache.outbox, pos, TextureCache.outbox.Size())
         {
             numCores = DEFAULT_NUM_CORES;
             ui = new UIContainer(pos);
@@ -144,7 +144,7 @@ namespace SpeedChem
             SetPipeSocket(new Vector2(16, 48), 2);
         }
 
-        public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, FactoryCommandType sellerAction, Vector2 pos) : base(cityLevel, Game1.textures.depot, pos, Game1.textures.depot.Size())
+        public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, FactoryCommandType sellerAction, Vector2 pos) : base(cityLevel, TextureCache.depot, pos, TextureCache.depot.Size())
         {
             numCores = DEFAULT_NUM_CORES;
             ui = new UIContainer(pos);
@@ -560,7 +560,7 @@ namespace SpeedChem
                 if (thread.stalled)
                 {
                     Vectangle warningRect = GetWarningRect();
-                    spriteBatch.Draw(Game1.textures.warning, warningRect, Color.White);
+                    spriteBatch.Draw(TextureCache.warning, warningRect, Color.White);
 
                     if(showErrorMessage)
                     {
@@ -625,11 +625,11 @@ namespace SpeedChem
                     foreach (FactoryThread thread in threads)
                     {
                         float maxTimeFraction = 1.0f;//recordingDurationSeconds / (numCoresPerThread * TIME_PER_CORE);
-                        spriteBatch.Draw(Game1.textures.white, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.Black);
-                        spriteBatch.Draw(Game1.textures.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * maxTimeFraction), CORE_SIZE), new Color(100,100,100));
+                        spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.Black);
+                        spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * maxTimeFraction), CORE_SIZE), new Color(100,100,100));
                         float progressFraction = thread.internalTime / (recordingDurationSeconds * 60.0f); // (60.0f* numCoresPerThread * TIME_PER_CORE);
-                        spriteBatch.Draw(Game1.textures.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * progressFraction), CORE_SIZE), thread.stalled ? Color.Red : new Color(100,200,0));// new Color(120,170,255));
-                        spriteBatch.Draw(thread.stalled? Game1.textures.bad_cores_bar: Game1.textures.cores_bar, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.White);
+                        spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * progressFraction), CORE_SIZE), thread.stalled ? Color.Red : new Color(100,200,0));// new Color(120,170,255));
+                        spriteBatch.Draw(thread.stalled? TextureCache.bad_cores_bar: TextureCache.cores_bar, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.White);
 
                         numCoresDrawn += numCoresPerThread;
                         numCoresDrawnThisLine += numCoresPerThread;
@@ -652,14 +652,14 @@ namespace SpeedChem
 
                 while (numCores > numCoresDrawn)
                 {
-                    spriteBatch.Draw(Game1.textures.empty_core, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, CORE_SIZE, CORE_SIZE), Color.White);
+                    spriteBatch.Draw(TextureCache.empty_core, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, CORE_SIZE, CORE_SIZE), Color.White);
                     progressBarPos.X += CORE_SIZE;
                     numCoresDrawn++;
                 }
 
 /*                string text = "" + numCores;
                 Vector2 textSize = Game1.font.MeasureString(text);
-                spriteBatch.Draw(Game1.textures.outlined_square, dragBoxRect, numCores > DEFAULT_NUM_CORES? Color.Orange: Color.Gray);
+                spriteBatch.Draw(TextureCache.outlined_square, dragBoxRect, numCores > DEFAULT_NUM_CORES? Color.Orange: Color.Gray);
                 spriteBatch.DrawString(Game1.font, text, new Vector2((int)(dragBoxRect.Center.X - textSize.X / 2), (int)(dragBoxRect.Center.Y - textSize.Y / 2)), Color.Black);*/
             }
         }
@@ -679,13 +679,13 @@ namespace SpeedChem
                 Rectangle dragBoxRect = GetDragBox();
 
                 ChemicalFactory otherFactory = (blackboard.selectedObject as ChemicalFactory);
-                spriteBatch.Draw(Game1.textures.outlined_square, dragBoxRect, blackboard.draggingOntoObject==this? Color.Orange : Color.Beige);
+                spriteBatch.Draw(TextureCache.outlined_square, dragBoxRect, blackboard.draggingOntoObject==this? Color.Orange : Color.Beige);
 
                 string text = "+" + otherFactory.numCores;
                 Vector2 textSize = Game1.font.MeasureString(text);
                 spriteBatch.DrawString(Game1.font, text, new Vector2((int)(dragBoxRect.Center.X - textSize.X/2), (int)(dragBoxRect.Center.Y - textSize.Y/2)), Color.Black);
 
-                spriteBatch.Draw(Game1.textures.drag_prompt, new Vector2(dragBoxRect.X-4, dragBoxRect.Bottom-8), Color.White);
+                spriteBatch.Draw(TextureCache.drag_prompt, new Vector2(dragBoxRect.X-4, dragBoxRect.Bottom-8), Color.White);
             }
         }
     }

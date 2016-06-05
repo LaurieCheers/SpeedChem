@@ -12,51 +12,59 @@ namespace SpeedChem
 {
     public class TextureCache
     {
-        public Texture2D block;
-        public Texture2D white;
-        public Texture2D clear;
-        public Texture2D character;
-        public Texture2D factory;
-        public Texture2D grassy_factory;
-        public Texture2D silo;
-        public Texture2D chemIcon;
-        public Texture2D pipe;
-        public Texture2D grassy_pipe;
-        public Texture2D pipeHandle;
-        public Texture2D inbox;
-        public Texture2D outbox;
-        public Texture2D warning;
-        public Texture2D bubbleBlock;
-        public Texture2D steelBlock;
-        public Texture2D glassBlock;
-        public Texture2D bubbleIcon;
-        public Texture2D glassIcon;
-        public Texture2D cement;
-        public Texture2D woodFloor;
-        public Texture2D buttonHood;
-        public Texture2D cuttingBeam;
-        public Texture2D depot;
-        public Texture2D hourglass;
-        public Texture2D hourglass_frozen;
-        public Texture2D drag_prompt;
-        public Texture2D city;
-        public Texture2D mapBG;
+        public static Texture2D block;
+        public static Texture2D white;
+        public static Texture2D clear;
+        public static Texture2D character;
+        public static Texture2D factory;
+        public static Texture2D grassy_factory;
+        public static Texture2D silo;
+        public static Texture2D grassy_silo;
+        public static Texture2D building_site;
+        public static Texture2D chemIcon;
+        public static Texture2D pipe;
+        public static Texture2D grassy_pipe;
+        public static Texture2D pipeHandle;
+        public static Texture2D inbox;
+        public static Texture2D outbox;
+        public static Texture2D warning;
+        public static Texture2D bubbleBlock;
+        public static Texture2D steelBlock;
+        public static Texture2D glassBlock;
+        public static Texture2D bubbleIcon;
+        public static Texture2D glassIcon;
+        public static Texture2D cement;
+        public static Texture2D woodFloor;
+        public static Texture2D buttonHood;
+        public static Texture2D cuttingBeam;
+        public static Texture2D depot;
+        public static Texture2D hourglass;
+        public static Texture2D hourglass_frozen;
+        public static Texture2D drag_prompt;
+        public static Texture2D city;
+        public static Texture2D mapBG;
 
-        public Texture2D rivetgun;
-        public Texture2D cutting_laser;
-        public Texture2D empty_core;
+        public static Texture2D rivetgun;
+        public static Texture2D cutting_laser;
+        public static Texture2D bubblegun;
+        public static Texture2D empty_core;
 
-        public RichImage grass;
-        public RichImage levelbg;
-        public RichImage castIronButton;
-        public RichImage castIronButton_hover;
-        public RichImage castIronButton_pressed;
-        public RichImage castIronButton_active;
-        public RichImage outlined_square;
-        public RichImage cores_bar;
-        public RichImage bad_cores_bar;
+        public static Texture2D lmb;
+        public static Texture2D rmb;
 
-        public TextureCache(ContentManager Content)
+        public static RichImage grass;
+        public static RichImage levelbg;
+        public static RichImage castIronButton;
+        public static RichImage castIronButton_hover;
+        public static RichImage castIronButton_pressed;
+        public static RichImage steelButton;
+        public static RichImage steelButton_hover;
+        public static RichImage steelButton_pressed;
+        public static RichImage outlined_square;
+        public static RichImage cores_bar;
+        public static RichImage bad_cores_bar;
+
+        public static void Load(ContentManager Content)
         {
             block = Content.Load<Texture2D>("button3d");
             white = Content.Load<Texture2D>("white");
@@ -65,6 +73,8 @@ namespace SpeedChem
             factory = Content.Load<Texture2D>("factory");
             grassy_factory = Content.Load<Texture2D>("grassy_factory");
             silo = Content.Load<Texture2D>("silo");
+            grassy_silo = Content.Load<Texture2D>("grassy_silo");
+            building_site = Content.Load<Texture2D>("building_site");
             chemIcon = Content.Load<Texture2D>("chemicon");
             pipe = Content.Load<Texture2D>("pipe");
             grassy_pipe = Content.Load<Texture2D>("grassy_pipe");
@@ -81,6 +91,7 @@ namespace SpeedChem
             woodFloor = Content.Load<Texture2D>("woodfloor");
             buttonHood = Content.Load<Texture2D>("buttonhood");
             cuttingBeam = Content.Load<Texture2D>("cuttingbeam");
+            bubblegun = Content.Load<Texture2D>("bubblegun");
             depot = Content.Load<Texture2D>("depot");
             hourglass = Content.Load<Texture2D>("hourglass");
             hourglass_frozen = Content.Load<Texture2D>("hourglass_frozen");
@@ -91,6 +102,9 @@ namespace SpeedChem
             city = Content.Load<Texture2D>("city");
             mapBG = Content.Load<Texture2D>("England");
 
+            lmb = Content.Load<Texture2D>("lmb");
+            rmb = Content.Load<Texture2D>("rmb");
+
             grass = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("grass"), Color.White, RichImageDrawMode.TILED, 0, Rotation90.None));
             levelbg = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("levelbg"), Color.White, RichImageDrawMode.TILED, 0, Rotation90.None));
             cores_bar = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("cores_bar"), Color.White, RichImageDrawMode.TILEDPROGRESSBAR, 0, Rotation90.None));
@@ -98,7 +112,9 @@ namespace SpeedChem
             castIronButton = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("castIronButton"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
             castIronButton_hover = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("castIronButton_hover"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
             castIronButton_pressed = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("castIronButton_pressed"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
-            castIronButton_active = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("castIronButton_active"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
+            steelButton = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("steelButton"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
+            steelButton_hover = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("steelButton_hover"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
+            steelButton_pressed = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("steelButton_pressed"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
             outlined_square = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("outlined_square"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
         }
 

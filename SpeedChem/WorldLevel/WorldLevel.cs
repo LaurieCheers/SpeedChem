@@ -58,7 +58,7 @@ namespace SpeedChem
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Game1.textures.mapBG, Vector2.Zero, Color.White);
+            spriteBatch.Draw(TextureCache.mapBG, Vector2.Zero, Color.White);
             foreach(WorldObject obj in objects)
             {
                 obj.Draw(spriteBatch);

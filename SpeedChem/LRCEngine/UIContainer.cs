@@ -16,6 +16,7 @@ namespace LRCEngine
 
     public abstract class UIElement: UIMouseResponder
     {
+        public UIContainer parent;
         public abstract UIMouseResponder GetMouseHover(Vector2 localMousePos);
         public abstract void Update(InputState inputState, Vector2 origin);
         public void Update(InputState inputState) { Update(inputState, Vector2.Zero);  }
@@ -26,7 +27,7 @@ namespace LRCEngine
     public class UIContainer :UIElement
     {
         public Vector2 origin;
-        List<UIElement> elements = new List<UIElement>();
+        public List<UIElement> elements = new List<UIElement>();
 
         public UIContainer()
         {
@@ -68,11 +69,22 @@ namespace LRCEngine
         public void Add(UIElement element)
         {
             elements.Add(element);
+            element.parent = this;
         }
 
         public void Remove(UIElement element)
         {
             elements.Remove(element);
+            element.parent = null;
+        }
+
+        public void RemoveAll()
+        {
+            foreach(UIElement element in elements)
+            {
+                element.parent = null;
+            }
+            elements.Clear();
         }
     }
 }

@@ -19,7 +19,6 @@ namespace SpeedChem
     {
         public const float BLOCKSIZE = 32.0f;
         public static Game1 instance;
-        public static TextureCache textures;
         public static UIButtonStyle buttonStyle;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -65,7 +64,7 @@ namespace SpeedChem
             JSONTable settings = new JSONTable("Settings.json");
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            textures = new TextureCache(Content);
+            TextureCache.Load(Content);
             buttonStyle = UIButton.GetDefaultStyle(Content);
             worldLevel = new WorldLevel(settings.getJSON("cities"));
             platformLevel = new PlatformLevel();

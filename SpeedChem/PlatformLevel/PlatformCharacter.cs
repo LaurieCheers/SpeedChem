@@ -13,7 +13,10 @@ namespace SpeedChem
 {
     public class PlatformCharacter: RigidBody
     {
-        Weapon weapon = new Weapon_Rivetgun();
+        bool pressingLeft;
+        bool pressingRight;
+        int jumpGraceFrames;
+        int jumpHeldFrames;
 
         public PlatformCharacter(Texture2D texture, Vector2 pos, Vector2 size): base(texture, pos, size)
         {
@@ -23,11 +26,6 @@ namespace SpeedChem
         public PlatformCharacter(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion) : base(texture, pos, size, color, textureRegion)
         {
             objectType = PlatformObjectType.Character;
-        }
-
-        public void SelectWeapon(Weapon weapon)
-        {
-            this.weapon = weapon;
         }
 
         public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
@@ -41,6 +39,8 @@ namespace SpeedChem
             const float JUMP_YVEL = -7.7f;
             const float JUMP_DAMPINGY = 0.5f;
             const float FLOAT_DAMPINGY = 0.75f;
+            const int JUMP_GRACE_FRAMES = 5;
+            const int JUMP_HELD_FRAMES = 15;
 
             bool isGrabbing = input.IsKeyDown(Keys.LeftShift);
 
@@ -49,7 +49,9 @@ namespace SpeedChem
                 UnbondFromGroup();
             }
 
-            if (input.IsKeyDown(Keys.A))
+            pressingLeft = input.IsKeyDown(Keys.A);
+            pressingRight = input.IsKeyDown(Keys.D);
+            if (pressingLeft)
             {
                 velocity.X -= ACCEL;
                 if (velocity.X > 0)
@@ -57,10 +59,9 @@ namespace SpeedChem
                 else
                     velocity.X *= DAMPINGX;
 
-                if(!isGrabbing)
-                    spriteEffects = SpriteEffects.FlipHorizontally;
+                spriteEffects = SpriteEffects.FlipHorizontally;
             }
-            else if (input.IsKeyDown(Keys.D))
+            else if (pressingRight)
             {
                 velocity.X += ACCEL;
                 if (velocity.X < 0)
@@ -68,8 +69,7 @@ namespace SpeedChem
                 else
                     velocity.X *= DAMPINGX;
 
-                if (!isGrabbing)
-                    spriteEffects = SpriteEffects.None;
+                spriteEffects = SpriteEffects.None;
             }
             else
             {
@@ -85,53 +85,57 @@ namespace SpeedChem
                 velocity.Y *= JUMP_DAMPINGY;
             }
 
-            if (onGround && input.WasKeyJustPressed(Keys.Space))
+            if (onGround)
+            {
+                jumpGraceFrames = JUMP_GRACE_FRAMES;
+            }
+
+            if (input.WasKeyJustPressed(Keys.Space))
+            {
+                jumpHeldFrames = JUMP_HELD_FRAMES;
+            }
+
+            if (jumpGraceFrames > 0 && jumpHeldFrames > 0)
             {
                 if (input.IsKeyDown(Keys.A))
                     velocity.X -= JUMP_XVEL;
                 else if (input.IsKeyDown(Keys.D))
                     velocity.X += JUMP_XVEL;
                 velocity.Y = JUMP_YVEL;
+                jumpGraceFrames = 0;
+                jumpHeldFrames = 0;
             }
-
-            if(input.WasKeyJustPressed(Keys.LeftShift))
+            else
             {
-                Vectangle grabZone = GetGrabZone();
-                foreach(PlatformObject obj in allObjects)
-                {
-                    if(obj is ChemBlock && grabZone.Intersects(obj.bounds))
-                    {
-                        BondWith((ChemBlock)obj);
-                        break;
-                    }
-                }
+                if (jumpGraceFrames > 0)
+                    jumpGraceFrames--;
+
+                if (jumpHeldFrames > 0)
+                    jumpHeldFrames--;
             }
 
-            weapon.Update(input, this, allObjects, projectiles);
+            Game1.instance.inventory.UpdateWeapons(input, this, allObjects, projectiles);
 
             velocity.Y += GRAVITY;
 
             RunMovement(allObjects);
         }
 
-        Vectangle GetGrabZone()
+        public override void HandleColliding(PlatformObject obj, Vector2 move)
         {
-            if (spriteEffects == SpriteEffects.None)
+            const float CLIMBSPEED = -4.0f;
+
+            float objTopY = obj.bounds.Top;
+            if (!(obj is ChemBlock) && (pressingLeft || pressingRight) && bounds.Top < objTopY && bounds.Bottom > objTopY)
             {
-                // face right
-                return new Vectangle(pos.X + size.X, pos.Y, size.X / 2, size.Y / 2);
-            }
-            else
-            {
-                // face left
-                return new Vectangle(pos.X - size.X / 2, pos.Y, size.X / 2, size.Y / 2);
+                 velocity.Y = CLIMBSPEED;
             }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);
-            weapon.Draw(spriteBatch);
+            Game1.instance.inventory.DrawWeapons(spriteBatch);
         }
     }
 }

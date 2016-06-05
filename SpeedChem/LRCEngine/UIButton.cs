@@ -67,10 +67,13 @@ namespace LRCEngine
         public string label;
         public readonly Rectangle frame;
         public readonly UIButtonStyle styles;
-        public readonly OnPressDelegate onPress;
-        bool mouseInside;
-        bool pressedInside;
-        bool enabled = true;
+        public OnPressDelegate onPress
+        {
+            get; protected set;
+        }
+        public bool mouseInside;
+        public bool pressedInside;
+        public bool enabled = true;
 
         public delegate void OnPressDelegate();
 
@@ -84,7 +87,7 @@ namespace LRCEngine
             return new UIButtonStyle(
                 new UIButtonAppearance(font, Color.Black, normalImage, Color.White),
                 new UIButtonAppearance(font, Color.Black, hoverImage, Color.White),
-                new UIButtonAppearance(font, Color.Black, pressedImage, Color.White),
+                new UIButtonAppearance(font, Color.Black, pressedImage, Color.White, new Vector2(0,1)),
                 new UIButtonAppearance(font, Color.Black, normalImage, Color.Gray)
             );
         }

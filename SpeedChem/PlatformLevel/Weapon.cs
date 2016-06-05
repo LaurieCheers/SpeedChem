@@ -11,23 +11,31 @@ namespace SpeedChem
 {
     public interface Weapon
     {
-        void Update(InputState input, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles);
+        Texture2D texture { get; }
+        string name { get; }
+        string ID { get; }
+        void Update(MouseButtonState buttonState, Vector2 mousePos, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles);
         void Draw(SpriteBatch spriteBatch);
     }
 
     abstract class Weapon_Projectile : Weapon
     {
-        public void Update(InputState input, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
+        public abstract Texture2D texture { get; }
+        public abstract string name { get; }
+        public abstract string ID { get; }
+
+        public void Update(MouseButtonState buttonState, Vector2 mousePos, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
-            if (input.WasMouseRightJustReleased())
+            if (buttonState != null && buttonState.justReleased)
             {
                 Vector2 shootPos = shooter.bounds.Center;
-                Vector2 targetPos = input.MousePos;
+                Vector2 targetPos = mousePos;
                 Vector2 shootDir = (targetPos - shootPos);
                 shootDir.Normalize();
                 ShootProjectile(shooter, shootDir, projectiles);
             }
         }
+
         public abstract void ShootProjectile(PlatformCharacter shooter, Vector2 shootDir, List<Projectile> projectiles);
 
         public void Draw(SpriteBatch spriteBatch)
@@ -37,10 +45,14 @@ namespace SpeedChem
 
     class Weapon_Rivetgun : Weapon_Projectile
     {
+        public override Texture2D texture { get { return TextureCache.rivetgun; } }
+        public override string name { get { return "Rivet Gun"; } }
+        public override string ID { get { return "RIVETGUN"; } }
+
         public override void ShootProjectile(PlatformCharacter shooter, Vector2 shootDir, List<Projectile> projectiles)
         {
             const float SHOTSPEED = 10.0f;
-            projectiles.Add(new Projectile(Game1.textures.white, shooter.bounds.Center, new Vector2(15, 3), shootDir * SHOTSPEED, ProjectileAction.RIVET));
+            projectiles.Add(new Projectile(TextureCache.white, Color.Yellow, shooter.bounds.Center, new Vector2(15, 3), shootDir * SHOTSPEED, ProjectileAction.RIVET));
 
             const float RECOILSPEED = 0.0f;// 2.5f;
             shooter.velocity -= shootDir * RECOILSPEED;
@@ -49,17 +61,25 @@ namespace SpeedChem
 
     class Weapon_BubbleGun : Weapon_Projectile
     {
+        public override Texture2D texture { get { return TextureCache.bubblegun; } }
+        public override string name { get { return "Bubblegun"; } }
+        public override string ID { get { return "BUBBLEGUN"; } }
+
         public override void ShootProjectile(PlatformCharacter shooter, Vector2 shootDir, List<Projectile> projectiles)
         {
             Game1.instance.platformLevel.Record(FactoryCommandType.SPENDCRYSTAL);
 
             const float SHOTSPEED = 10.0f;
-            projectiles.Add(new Projectile(Game1.textures.white, shooter.bounds.Center, new Vector2(15, 3), shootDir * SHOTSPEED, ProjectileAction.BUBBLE));
+            projectiles.Add(new Projectile(TextureCache.white, Color.Cyan, shooter.bounds.Center, new Vector2(15, 3), shootDir * SHOTSPEED, ProjectileAction.BUBBLE));
         }
     }
 
     class Weapon_CuttingBeam : Weapon
     {
+        public Texture2D texture { get { return TextureCache.cutting_laser; } }
+        public string name { get { return "Cutting Beam"; } }
+        public string ID { get { return "CUTTINGBEAM"; } }
+
         Vector2 beamSource;
         float beamAngle;
         Vector2 beamTraceOrigin;
@@ -69,12 +89,12 @@ namespace SpeedChem
         const float BEAMSPACING = 32;
         const float BEAMLENGTH = 100;
 
-        public void Update(InputState input, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
+        public void Update(MouseButtonState buttonState, Vector2 mousePos, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
             if (beamTraceDuration > 0)
                 beamTraceDuration--;
 
-            if (input.WasMouseRightJustReleased())
+            if (buttonState != null && buttonState.justReleased)
             {
                 Game1.instance.platformLevel.Record(FactoryCommandType.SPENDCRYSTAL);
 
@@ -94,11 +114,11 @@ namespace SpeedChem
                 }
             }
 
-            if (input.mouseRight.isDown)
+            if (buttonState != null && buttonState.isDown)
             {
                 // preview beam
                 beamSource = shooter.bounds.Center;
-                beamTraceOffset = input.MousePos - beamSource;
+                beamTraceOffset = mousePos - beamSource;
 
                 if (Math.Abs(beamTraceOffset.X) > Math.Abs(beamTraceOffset.Y))
                 {
@@ -149,12 +169,12 @@ namespace SpeedChem
         {
             if (beamAngle != -1)
             {
-                spriteBatch.Draw(Game1.textures.cuttingBeam, new Rectangle((int)beamSource.X, (int)beamSource.Y, (int)BEAMLENGTH, (int)BEAMSPACING), null, Color.White, beamAngle, new Vector2(0, 16), SpriteEffects.None, 0);
+                spriteBatch.Draw(TextureCache.cuttingBeam, new Rectangle((int)beamSource.X, (int)beamSource.Y, (int)BEAMLENGTH, (int)BEAMSPACING), null, Color.White, beamAngle, new Vector2(0, 16), SpriteEffects.None, 0);
             }
 
             if (beamTraceDuration > 0)
             {
-                spriteBatch.Draw(Game1.textures.cuttingBeam, new Rectangle((int)beamTraceOrigin.X, (int)beamTraceOrigin.Y, (int)BEAMLENGTH, (int)BEAMSPACING), null, Color.Yellow, beamTraceAngle, new Vector2(0, 16), SpriteEffects.None, 0);
+                spriteBatch.Draw(TextureCache.cuttingBeam, new Rectangle((int)beamTraceOrigin.X, (int)beamTraceOrigin.Y, (int)BEAMLENGTH, (int)BEAMSPACING), null, Color.Yellow, beamTraceAngle, new Vector2(0, 16), SpriteEffects.None, 0);
             }
         }
     }
