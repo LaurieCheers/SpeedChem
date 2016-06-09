@@ -196,6 +196,10 @@ namespace SpeedChem
                         {
                             ui.Add(element);
                         }
+                        foreach(Weapon w in newWeapons)
+                        {
+                            Game1.instance.inventory.UnlockWeapon(w);
+                        }
                     }
                     else
                     {

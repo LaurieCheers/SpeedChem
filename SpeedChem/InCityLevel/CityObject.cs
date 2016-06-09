@@ -203,6 +203,8 @@ namespace SpeedChem
                     return new CrystalOutbox(cityLevel, template);
                 case "buildingSite":
                     return new BuildingSite(cityLevel, template);
+                case "plinth":
+                    return new WeaponPlinth(cityLevel, template);
                 default:
                     throw new ArgumentException("Unknown CityObject type \"" + type + "\"");
             }

@@ -436,14 +436,14 @@ namespace SpeedChem
                                 thread.nextCommandIdx++;
                                 break;
                             case FactoryCommandType.SPENDCRYSTAL:
-                                if (Game1.instance.inventory.SpendCrystals(1))
+                                if (Game1.instance.inventory.SpendCrystals(1, this.bounds.Center, cityLevel))
                                 {
                                     thread.internalTime++;
                                     thread.nextCommandIdx++;
                                 }
                                 else
                                 {
-                                    warningTriangleMessage = "Not enough crystals";
+                                    warningTriangleMessage = "Out of bubbles";
                                 }
                                 break;
                         }

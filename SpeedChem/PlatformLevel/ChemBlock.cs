@@ -19,6 +19,7 @@ namespace SpeedChem
         BLUE,
         GLASS,
         STEEL,
+        WILDCARD,
     };
 
     public static class ChemicalExtension
@@ -35,10 +36,11 @@ namespace SpeedChem
                     return Color.Red;
                 case ChemicalElement.BLUE:
                     return Color.Blue;
-                case ChemicalElement.GLASS:
-                    return Color.White;
                 case ChemicalElement.STEEL:
                     return new Color(178, 178, 178);
+                case ChemicalElement.GLASS:
+                case ChemicalElement.WILDCARD:
+                    return Color.White;
                 default:
                     return Color.Black;
             }
@@ -54,6 +56,8 @@ namespace SpeedChem
                         return TextureCache.glassIcon;
                     case ChemicalElement.WHITE:
                         return TextureCache.bubbleIcon;
+                    case ChemicalElement.WILDCARD:
+                        return TextureCache.wildcardIcon;
                     default:
                         return TextureCache.chemIcon;
                 }
@@ -68,6 +72,8 @@ namespace SpeedChem
                         return TextureCache.glassBlock;
                     case ChemicalElement.STEEL:
                         return TextureCache.steelBlock;
+                    case ChemicalElement.WILDCARD:
+                        return TextureCache.wildcardBlock;
                     default:
                         return TextureCache.block;
                 }
@@ -119,6 +125,7 @@ namespace SpeedChem
                 case 'R': return ChemicalElement.RED;
                 case 'G': return ChemicalElement.GLASS;
                 case 'S': return ChemicalElement.STEEL;
+                case '?': return ChemicalElement.WILDCARD;
                 default: return ChemicalElement.NONE;
             }
         }
@@ -154,7 +161,9 @@ namespace SpeedChem
 
             for(int Idx = 0; Idx < a.elements.Length; ++Idx)
             {
-                if (a.elements[Idx] != b.elements[Idx])
+                ChemicalElement elementA = a.elements[Idx];
+                ChemicalElement elementB = b.elements[Idx];
+                if(elementA != elementB && elementA != ChemicalElement.WILDCARD && elementB != ChemicalElement.WILDCARD)
                     return false;
             }
             return true;
@@ -635,7 +644,7 @@ namespace SpeedChem
 
         public override void CollidedX(RigidBody other)
         {
-            if (other.onGround)
+            if (other.onGround || (other is PlatformCharacter && ((PlatformCharacter)other).jetting))
             {
                 velocity.X = other.velocity.X;
                 other.velocity.X *= 0.95f;

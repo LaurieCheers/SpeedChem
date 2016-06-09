@@ -88,20 +88,20 @@
     "city2": {
       "name": "Liverpool",
       "pos": [ 300, 70 ],
-      "price": 500,
+      "price": 300,
       "unlocks": {
         "start": {
           "inbox1": {
               "type": "inbox",
               "chemical": [ "BGB" ],
               "pos": [ 150, 30 ]
-              "pipes": [ "factory3" ]
+              "pipes": [ "factory1" ]
           },
           "factory1": {
               "type": "factory",
               "pos": [ 180, 95 ]
 			  "movable": false,
-              "pipes": [ "silo3" ]
+              "pipes": [ "silo1" ]
 	      }
           "silo1": {
               "type": "silo",
@@ -118,6 +118,7 @@
           "BUY_FACTORY": true,
 		},
 		"outbox1":{
+          "BUY_SILO": true,
           "inbox2": {
             "type": "inbox",
             "chemical": [ "G" ],
@@ -145,50 +146,59 @@
     "city4": {
       "name": "Cardiff",
       "pos": [ 100, 310 ],
-      "price": 5000,
+      "price": 1500,
       "unlocks": {
         "start": {
+		  "plinth1":{
+			"type": "plinth",
+			"weapon":"BUBBLEGUN",
+			"crystals":30,
+			"pos": [ 250, 230 ],
+			"price": 3000,
+		  },
+		},
+        "plinth1": {
           "BUY_FACTORY": true,
-          "BUY_SILO": true,
-          "inbox1": {
-            "type": "inbox",
-            "chemical": [ "W" ],
-            "pos": [ 150, 30 ]
-          },
-          "outbox1": {
-            "type": "crystalOutbox",
-            "chemical": [ "WWW", "W W", "WWW" ],
-            "crystals": 9,
-            "pos": [ 120, 380 ]
-          }
-        }
-        "outbox1": {
-		  "BUBBLEGUN":true,
           "inbox2": {
-		    "type": "buildingSite",
-            "pos": [ 250, 20 ],
-			"price":500,
-			"built": {
-				"type": "inbox",
-				"chemical": [ "R","R","R" ],
-				"pos": [ 250, 30 ]
-			}
+			"type": "inbox",
+			"chemical": [ "R","R","R" ],
+			"pos": [ 150, 30 ]
+			"pipes": [ "factory2" ]
+          },
+		  "factory2": {
+            "type": "factory",
+            "movable": false,
+            "pos": [ 40, 310 ],
+            "pipes": [ "outbox2" ]
           },
           "outbox2": {
             "type": "outbox",
             "chemical": [ " R ", "WRW", " R " ],
-            "price": 48,
-            "pos": [ 220, 380 ]
+            "price": 98,
+            "pos": [ 120, 380 ]
           }
         },
 		"outbox2":{
+          "inbox3": {
+            "type": "inbox",
+            "chemical": [ "W" ],
+            "pos": [ 250, 30 ]
+          },
           "outbox3": {
-            "type": "outbox",
-            "chemical": [ "R R R", "RWRWR", "R R R" ],
-            "price": 68,
-            "pos": [ 320, 380 ]
+            "type": "crystalOutbox",
+            "chemical": [ "WWW", "W W", "WWW" ],
+            "crystals": 9,
+            "pos": [ 250, 410 ]
           }
-		},
+        },
+		"outbox3":{
+          "outbox4": {
+            "type": "outbox",
+            "chemical": [ " RWR ", " R R ", "WRWRW" ],
+            "price": 150,
+            "pos": [ 400, 380 ]
+          }
+		}
       }
     },
 
@@ -197,36 +207,58 @@
       "pos": [ 530, 90 ],
       "price": 20000,
       "unlocks": {
-        "start": {
+	    "start":{
+		  "plinth1":{
+			"type": "plinth",
+			"weapon":"JETPACK",
+			"pos": [ 250, 230 ],
+			"price": 5000,
+		  },
+		}
+        "plinth1": {
           "BUY_FACTORY": true,
           "BUY_SILO": true,
           "inbox1": {
             "type": "inbox",
-            "chemical": [ "G" ],
+            "chemical": [ "BGB" ],
             "pos": [ 150, 30 ]
           },
-          "inbox2": {
-            "type": "inbox",
-            "chemical": [ "S" ],
-            "pos": [ 250, 30 ]
-          },
-          "outbox1": {
+		  "outbox1": {
             "type": "outbox",
-            "chemical": [ "S", "G" ],
-            "price": 1400,
-            "pos": [ 20, 380 ]
-          },
-          "outbox2": {
+            "chemical": [
+			  "?",
+			  "?",
+			  "?",
+			  "?",
+			],
+            "price": 50,
+            "pos": [ 50, 380 ]
+          }
+		}
+        "outbox1": {
+		  "outbox2": {
             "type": "outbox",
-            "chemical": [ "G", "S" ],
-            "price": 3200,
-            "pos": [ 120, 380 ]
-          },
+            "chemical": [
+			  "???",
+			  "?? ",
+			  " ??",
+			  "???",
+			],
+            "price": 400,
+            "pos": [ 200, 380 ]
+          }
+		}
+        "outbox2": {
           "outbox3": {
             "type": "outbox",
-            "chemical": [ " S ", "SGS", " S " ],
-            "price": 3200,
-            "pos": [ 220, 380 ]
+            "chemical": [
+			  " ? ",
+			  "???",
+			  "???",
+			  "? ?",
+			],
+            "price": 540,
+            "pos": [ 350, 380 ]
           }
         }
       }

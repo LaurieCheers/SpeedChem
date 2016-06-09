@@ -14,7 +14,7 @@ namespace SpeedChem
         ChemicalSignature signature;
         int numCrystals;
 
-        public CrystalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.outbox, template.getVector2("pos"), TextureCache.outbox.Size())
+        public CrystalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.depot, template.getVector2("pos"), TextureCache.depot.Size())
         {
             this.signature = new ChemicalSignature(template.getArray("chemical"));
             this.numCrystals = template.getInt("crystals", 1);
@@ -59,7 +59,7 @@ namespace SpeedChem
             Vector2 pos = new Vector2(bounds.X, bounds.Y + bounds.Height);
             Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
 
-            string text = numCrystals > 1? " "+numCrystals+" crystals": " Crystal";
+            string text = numCrystals > 1? " +"+numCrystals+" bubbles": " +1 bubble";
             Vector2 textSize = Game1.font.MeasureString(text);
 
             Vector2 signaturePos = new Vector2(

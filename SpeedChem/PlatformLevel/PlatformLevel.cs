@@ -42,13 +42,17 @@ namespace SpeedChem
                 new UIButtonAppearance(Game1.font, Color.White, TextureCache.steelButton, Color.White, new Vector2(20, 0))
             );
 
-            ui.Add(new UIWeaponSlot(Game1.instance.inventory.leftWeapon, Game1.instance.inventory.availableWeapons, TextureCache.lmb, new Rectangle(50, 425, 175, 50), weaponButtonStyle));
-            rightSlotUI = new UIWeaponSlot(Game1.instance.inventory.rightWeapon, Game1.instance.inventory.availableWeapons, TextureCache.rmb, new Rectangle(250, 425, 175, 50), weaponButtonStyle);
+            ui.Add(new UIWeaponSlot(Game1.instance.inventory.leftWeapon, Game1.instance.inventory.availableWeapons, TextureCache.lmb, new Rectangle(430, 425, 175, 50), weaponButtonStyle));
+            rightSlotUI = new UIWeaponSlot(Game1.instance.inventory.rightWeapon, Game1.instance.inventory.availableWeapons, TextureCache.rmb, new Rectangle(620, 425, 175, 50), weaponButtonStyle);
 
         }
 
         void InitObjects()
         {
+            Vector2 playerPos = new Vector2(50, 200);
+            if(player != null)
+                playerPos = player.bounds.XY;
+
             objects = new List<PlatformObject>();
             objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 0), new Vector2(32, 136)));
             objects.Add(new PlatformObject(TextureCache.cement, new Vector2(0, 136), new Vector2(32, 136)));
@@ -73,7 +77,7 @@ namespace SpeedChem
                     outputChemical = receiver.parent.GetInputChemical();
                 }
 
-                objects.Add(new OutputZone(outputChemical, new Vector2(192, 300), new Vector2(160, 32)));
+                objects.Add(new OutputZone(outputChemical, new Vector2(192, 300), new Vector2(192, 32)));
             }
 
             triggerables = new List<Command>();
@@ -92,7 +96,7 @@ namespace SpeedChem
                 objects.Add(new PushButton(spawner2, TextureCache.clear, TextureCache.white, new Vector2(400 - 8, 64), new Vector2(8, 32), Color.Red));
             }
 
-            player = new PlatformCharacter(TextureCache.character, new Vector2(50, 200), new Vector2(14, 32), Color.White, new Rectangle(9, 0, 14, 32));
+            player = new PlatformCharacter(TextureCache.character, playerPos, new Vector2(14, 32), Color.White, new Rectangle(9, 0, 14, 32));
             objects.Add(player);
 
             //weaponButtons.selectedButton = rivetGunButton;
@@ -111,7 +115,7 @@ namespace SpeedChem
 
             if(Game1.instance.inventory.newWeaponAdded)
             {
-                Game1.instance.splashes.Add(new Splash("NEW WEAPON", TextAlignment.CENTER, Game1.font, Color.Orange, new Vector2(300, 425), new Vector2(0,-5), 0.90f, 0, 2));
+                Game1.instance.splashes.Add(new Splash("NEW WEAPON", TextAlignment.CENTER, Game1.font, Color.Orange, new Vector2(600, 425), new Vector2(0,-5), 0.90f, 0, 2));
                 Game1.instance.inventory.newWeaponAdded = false;
             }
         }
@@ -229,7 +233,7 @@ namespace SpeedChem
             int testMultiplier = NumThreadsForTime(testTime);
             int lastMultiplier = 0;
 
-            Vector2 currentPos = new Vector2(508, 400);
+            Vector2 currentPos = new Vector2(508, 300);
             while (true)
             {
                 if (testMultiplier != lastMultiplier)

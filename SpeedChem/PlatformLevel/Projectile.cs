@@ -148,6 +148,8 @@ namespace SpeedChem
 
             if (!failed)
             {
+                Game1.instance.platformLevel.Record(FactoryCommandType.SPENDCRYSTAL);
+
                 ChemicalElement c = ChemicalElement.WHITE;
                 ChemBlock newBlock = new ChemBlock(c, c.ToTexture(false), bubbleBounds.TopLeft, bubbleBounds.Size, c.ToColor());
                 if (objectHit is ChemBlock)

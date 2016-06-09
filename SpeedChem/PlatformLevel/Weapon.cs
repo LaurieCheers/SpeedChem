@@ -67,10 +67,28 @@ namespace SpeedChem
 
         public override void ShootProjectile(PlatformCharacter shooter, Vector2 shootDir, List<Projectile> projectiles)
         {
-            Game1.instance.platformLevel.Record(FactoryCommandType.SPENDCRYSTAL);
-
             const float SHOTSPEED = 10.0f;
             projectiles.Add(new Projectile(TextureCache.white, Color.Cyan, shooter.bounds.Center, new Vector2(15, 3), shootDir * SHOTSPEED, ProjectileAction.BUBBLE));
+        }
+    }
+
+    class Weapon_Jetpack : Weapon
+    {
+        public Texture2D texture { get { return TextureCache.jetpack; } }
+        public string name { get { return "Jetpack"; } }
+        public string ID { get { return "JETPACK"; } }
+
+        public void Update(MouseButtonState buttonState, Vector2 mousePos, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
+        {
+            if (buttonState != null && buttonState.isDown)
+            {
+                shooter.jetting = true;
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+
         }
     }
 

@@ -31,8 +31,10 @@ namespace SpeedChem
         public static Texture2D bubbleBlock;
         public static Texture2D steelBlock;
         public static Texture2D glassBlock;
+        public static Texture2D wildcardBlock;
         public static Texture2D bubbleIcon;
         public static Texture2D glassIcon;
+        public static Texture2D wildcardIcon;
         public static Texture2D cement;
         public static Texture2D woodFloor;
         public static Texture2D buttonHood;
@@ -43,10 +45,12 @@ namespace SpeedChem
         public static Texture2D drag_prompt;
         public static Texture2D city;
         public static Texture2D mapBG;
+        public static Texture2D plinth;
 
         public static Texture2D rivetgun;
         public static Texture2D cutting_laser;
         public static Texture2D bubblegun;
+        public static Texture2D jetpack;
         public static Texture2D empty_core;
 
         public static Texture2D lmb;
@@ -73,6 +77,7 @@ namespace SpeedChem
             factory = Content.Load<Texture2D>("factory");
             grassy_factory = Content.Load<Texture2D>("grassy_factory");
             silo = Content.Load<Texture2D>("silo");
+            plinth = Content.Load<Texture2D>("plinth");
             grassy_silo = Content.Load<Texture2D>("grassy_silo");
             building_site = Content.Load<Texture2D>("building_site");
             chemIcon = Content.Load<Texture2D>("chemicon");
@@ -84,14 +89,17 @@ namespace SpeedChem
             warning = Content.Load<Texture2D>("warning");
             bubbleBlock = Content.Load<Texture2D>("bubble");
             glassBlock = Content.Load<Texture2D>("glassblock");
+            wildcardBlock = Content.Load<Texture2D>("wildcard");
             steelBlock = Content.Load<Texture2D>("steel");
             bubbleIcon = Content.Load<Texture2D>("bubbleicon");
             glassIcon = Content.Load<Texture2D>("glassicon");
+            wildcardIcon = Content.Load<Texture2D>("wildcard_icon");
             cement = Content.Load<Texture2D>("cement");
             woodFloor = Content.Load<Texture2D>("woodfloor");
             buttonHood = Content.Load<Texture2D>("buttonhood");
             cuttingBeam = Content.Load<Texture2D>("cuttingbeam");
             bubblegun = Content.Load<Texture2D>("bubblegun");
+            jetpack = Content.Load<Texture2D>("jetpack");
             depot = Content.Load<Texture2D>("depot");
             hourglass = Content.Load<Texture2D>("hourglass");
             hourglass_frozen = Content.Load<Texture2D>("hourglass_frozen");
