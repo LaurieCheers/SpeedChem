@@ -14,8 +14,13 @@ namespace SpeedChem
         public class WeaponSlot
         {
             public Weapon weapon;
+            public Texture2D buttonIcon;
 
-            public WeaponSlot(Weapon weapon) { this.weapon = weapon; }
+            public WeaponSlot(Weapon weapon, Texture2D buttonIcon)
+            {
+                this.weapon = weapon;
+                this.buttonIcon = buttonIcon;
+            }
         }
 
         public WeaponSlot leftWeapon;
@@ -46,8 +51,8 @@ namespace SpeedChem
 
             Weapon rivetGun = unlockableWeapons["RIVETGUN"];
 
-            leftWeapon = new WeaponSlot(rivetGun);
-            rightWeapon = new WeaponSlot(null);
+            leftWeapon = new WeaponSlot(rivetGun, TextureCache.lmb);
+            rightWeapon = new WeaponSlot(null, TextureCache.rmb);
             availableWeapons = new List<Weapon> { rivetGun };
         }
 

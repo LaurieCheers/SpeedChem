@@ -14,7 +14,7 @@ namespace SpeedChem
         List<WorldObject> objects = new List<WorldObject>();
         public float incomePerSecond = 0;
 
-        public WorldLevel()
+/*        public WorldLevel()
         {
             objects.Add(new WorldObject_City(new CityLevel("TUTOPIA", new Vector2(100, 140))));
             objects.Add(new WorldObject_City(new CityLevel("SHEFFIELD", new Vector2(530, 90))));
@@ -26,7 +26,7 @@ namespace SpeedChem
             objects.Add(new WorldObject_City(new CityLevel("READING", new Vector2(530, 370))));
             objects.Add(new WorldObject_City(new CityLevel("OXFORD", new Vector2(480, 300))));
             objects.Add(new WorldObject_City(new CityLevel("CARDIFF", new Vector2(100, 310))));
-        }
+        }*/
 
         public WorldLevel(JSONTable template)
         {
@@ -70,7 +70,7 @@ namespace SpeedChem
                 obj.Draw(spriteBatch);
             }
 
-            spriteBatch.Draw(TextureCache.processor, new Vector2(100, 100), Color.White);
+/*            spriteBatch.Draw(TextureCache.processor, new Vector2(100, 100), Color.White);
             spoolAnimFrames++;
             if (spoolAnimFrames > 3)
             {
@@ -85,7 +85,7 @@ namespace SpeedChem
             {
                 coreIdx = (coreIdx + 1) % TextureCache.cores.Length;
                 coreAnimFrames = 0;
-            }
+            }*/
             //spriteBatch.Draw(TextureCache.cores[coreIdx], new Vector2(307, 132), Color.White);
 
 //            spriteBatch.Draw(TextureCache.core_fill, new Vector2(307, 132), Color.White);

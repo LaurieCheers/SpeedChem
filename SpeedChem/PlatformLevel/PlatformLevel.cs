@@ -15,6 +15,7 @@ namespace SpeedChem
         List<Projectile> projectiles;
         List<Command> triggerables;
         UIContainer ui;
+        UIContainer weaponSlots;
         ChemicalFactory factory;
         public UIButton saveButton;
         List<FactoryCommand> recordedCommands = new List<FactoryCommand>();
@@ -23,7 +24,7 @@ namespace SpeedChem
         bool paused;
         bool timerRunning = false;
         public bool isDoubleFactory = false;
-        UIWeaponSlot rightSlotUI;
+        UIButtonStyle weaponButtonStyle;
 
         public PlatformLevel()
         {
@@ -35,17 +36,15 @@ namespace SpeedChem
 
             saveButton = new UIButton("Save", new Rectangle(500, 150, 100, 50), Game1.buttonStyle, button_Save);
             ui.Add(saveButton);
+            weaponSlots = new UIContainer();
+            ui.Add(weaponSlots);
 
-            UIButtonStyle weaponButtonStyle = new UIButtonStyle(
+            weaponButtonStyle = new UIButtonStyle(
                 new UIButtonAppearance(Game1.font, Color.White, TextureCache.steelButton, Color.White, new Vector2(20, 0)),
                 new UIButtonAppearance(Game1.font, Color.White, TextureCache.steelButton_hover, Color.White, new Vector2(20, 0)),
                 new UIButtonAppearance(Game1.font, Color.White, TextureCache.steelButton_pressed, Color.White, new Vector2(20, 1)),
                 new UIButtonAppearance(Game1.font, Color.White, TextureCache.steelButton, Color.White, new Vector2(20, 0))
             );
-
-            ui.Add(new UIWeaponSlot(Game1.instance.inventory.leftWeapon, Game1.instance.inventory.availableWeapons, TextureCache.lmb, new Rectangle(430, 425, 175, 50), weaponButtonStyle));
-            rightSlotUI = new UIWeaponSlot(Game1.instance.inventory.rightWeapon, Game1.instance.inventory.availableWeapons, TextureCache.rmb, new Rectangle(620, 425, 175, 50), weaponButtonStyle);
-
         }
 
         void InitObjects()
@@ -101,7 +100,7 @@ namespace SpeedChem
 
             objects.Add(new PushButton(spawner, TextureCache.clear, TextureCache.white, new Vector2(32, 240), new Vector2(8, 32), Color.Red));
 
-            if (factory.pipeSocket.connectedPipes.Count > 1)
+            if (factory.rightSocket.connectedPipes.Count > 0)
             {
                 objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(382, 28), new Vector2(32, 32)));
                 objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(192, 96), new Vector2(208, 32)));
@@ -128,16 +127,26 @@ namespace SpeedChem
             currentTime = 0;
             UpdateAnyBlocksLeft();
 
-            if (rightSlotUI != null && Game1.instance.inventory.rightWeapon.weapon != null)
+/*            if (rightSlotUI != null && Game1.instance.inventory.rightWeapon.weapon != null)
             {
                 ui.Add(rightSlotUI);
                 rightSlotUI = null;
-            }
+            }*/
 
             if(Game1.instance.inventory.newWeaponAdded)
             {
                 Game1.instance.splashes.Add(new Splash("NEW WEAPON", TextAlignment.CENTER, Game1.font, Color.Orange, new Vector2(600, 425), new Vector2(0,-5), 0.90f, 0, 2));
                 Game1.instance.inventory.newWeaponAdded = false;
+            }
+
+            weaponSlots.Clear();
+            Rectangle currentRect = new Rectangle(430, 425, 175, 50);
+            int WEAPON_SPACING = 55;
+            currentRect.Y -= Game1.instance.inventory.availableWeapons.Count * WEAPON_SPACING;
+            foreach (Weapon w in Game1.instance.inventory.availableWeapons)
+            {
+                weaponSlots.Add(new UIWeaponButton(w, Game1.instance.inventory.leftWeapon, Game1.instance.inventory.rightWeapon, currentRect, weaponButtonStyle));
+                currentRect.Y += WEAPON_SPACING;
             }
         }
 
@@ -336,7 +345,7 @@ namespace SpeedChem
             ChemicalSignature signature = factory.GetInputChemical(inputIndex);
             if(signature != null)
             {
-                recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.INPUT, signature));
+                recordedCommands.Add(new FactoryCommand(currentTime, FactoryCommandType.INPUT, inputIndex, signature));
             }
             return signature;
         }

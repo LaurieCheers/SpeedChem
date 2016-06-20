@@ -26,7 +26,7 @@ namespace SpeedChem
         InputState inputState = new InputState();
         public static SpriteFont font;
         public SplashManager splashes;
-        public Inventory inventory = new Inventory();
+        public Inventory inventory;
 
         public SpeedChemScreen currentScreen;
         public WorldLevel worldLevel;
@@ -68,6 +68,7 @@ namespace SpeedChem
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
             TextureCache.Load(Content);
+            inventory = new Inventory();
             buttonStyle = UIButton.GetDefaultStyle(Content);
             worldLevel = new WorldLevel(settings.getJSON("cities"));
             platformLevel = new PlatformLevel();

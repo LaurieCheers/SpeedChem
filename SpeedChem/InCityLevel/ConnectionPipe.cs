@@ -231,12 +231,18 @@ namespace SpeedChem
             if(dragging)
             {
                 ConnectTo(null);
+                CityObject overObject = metaGame.GetObjectAt(blackboard.inputState.MousePos);
+                PipeSocket overSocket = null;
+                if (overObject != null)
+                {
+                    overSocket = overObject.GetNearestSocket(blackboard.inputState.MousePos);
+                }
+
                 if (blackboard.inputState.mouseLeft.isDown)
                 {
-                    CityObject overObject = metaGame.GetObjectAt(blackboard.inputState.MousePos);
-                    if (overObject != null && overObject.pipeSocket != null)
+                    if(overSocket != null)
                     {
-                        UpdateForTargetPos(overObject.pipeSocket.pos);
+                        UpdateForTargetPos(overSocket.pos);
                     }
                     else
                     {
@@ -246,10 +252,9 @@ namespace SpeedChem
                 else
                 {
                     dragging = false;
-                    CityObject overObject = metaGame.GetObjectAt(blackboard.inputState.MousePos);
-                    if (overObject != null && overObject != source && overObject.pipeSocket != null)
+                    if (overSocket != null && overSocket.parent != source)
                     {
-                        ConnectTo(overObject.pipeSocket);
+                        ConnectTo(overSocket);
                     }
                     else
                     {

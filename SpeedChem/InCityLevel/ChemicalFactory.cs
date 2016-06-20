@@ -33,6 +33,14 @@ namespace SpeedChem
         public readonly ChemicalSignature signature;
         public readonly int amount;
 
+        public FactoryCommand(int currentTime, FactoryCommandType type, int amount, ChemicalSignature signature)
+        {
+            this.time = currentTime;
+            this.type = type;
+            this.amount = amount;
+            this.signature = signature;
+        }
+
         public FactoryCommand(int currentTime, FactoryCommandType type, ChemicalSignature signature)
         {
             this.time = currentTime;
@@ -99,6 +107,8 @@ namespace SpeedChem
         public bool showErrorMessage;
         int incomePerLoop = 0;
         public float incomePerSecond = 0;
+        public PipeSocket leftSocket;
+        public PipeSocket rightSocket;
 
         int spoolAnimIndex = 0;
         int spoolAnimCountdown = 0;
@@ -153,7 +163,8 @@ namespace SpeedChem
             ui = new UIContainer(bounds.XY);
             ui.Add(new UIButton("Record", new Rectangle(((int)bounds.Width - 90) / 2, -40, 90, 35), Game1.buttonStyle, button_Play));
 
-            SetPipeSocket(new Vector2(16, 16), new Vector2(32, 16));
+            leftSocket = new PipeSocket(this, new Vector2(16, 16), 1);
+            rightSocket = new PipeSocket(this, new Vector2(32, 16), 1);
             AddOutputPipe(new Vector2(24, 38));
             unlimitedPipes = canDrag;
         }
@@ -170,6 +181,14 @@ namespace SpeedChem
         public void button_Play()
         {
             Game1.instance.ViewFactory(this);
+        }
+
+        public override PipeSocket GetNearestSocket(Vector2 mousePos)
+        {
+            if (leftSocket.connectedPipes.Count > 0 || mousePos.X > bounds.CenterX + 5)
+                return rightSocket;
+            else
+                return leftSocket;
         }
 
         public bool PushOutput(ChemicalSignature signature, ref string errorMessage)
@@ -221,44 +240,28 @@ namespace SpeedChem
 
         public ChemicalSignature GetInputChemical(int inputIndex)
         {
-            if (pipeSocket.connectedPipes.Count <= inputIndex)
-                return null;
-
-            List<OutputPipe> sortedPipes = pipeSocket.connectedPipes.OrderBy(o => o.sourcePos.X).ToList();
-
-            OutputPipe pipe = sortedPipes[inputIndex];
-            if (pipe == null || pipe.source == null)
-                return null;
-
-            return pipe.source.GetOutputChemical();
-        }
-
-        public ChemicalSignature ConsumeInput(int inputIndex, ref string warningTriangleMessage)
-        {
-            if (pipeSocket.connectedPipes.Count <= inputIndex)
+            PipeSocket socket = inputIndex == 0 ? leftSocket : rightSocket;
+            foreach (OutputPipe pipe in socket.connectedPipes)
             {
-                warningTriangleMessage = "Input disconnected";
-                return null;
+                if (pipe == null || pipe.source == null)
+                    continue;
+
+                ChemicalSignature signature = pipe.source.GetOutputChemical();
+                if (signature == null)
+                    continue;
+
+                return signature;
             }
 
-            List<OutputPipe> sortedPipes = pipeSocket.connectedPipes.OrderBy(o => o.sourcePos.X).ToList();
-
-            OutputPipe pipe = sortedPipes[inputIndex];
-            if (pipe == null || pipe.source == null)
-            {
-                warningTriangleMessage = "Input disconnected";
-                return null;
-            }
-
-            ChemicalSignature signature = pipe.source.RequestOutput(pipe, ref warningTriangleMessage);
-
-            return signature;
+            return null;
         }
 
-        public ChemicalSignature ConsumeInput(ChemicalSignature specificInput, ref string errorMessage)
+        public ChemicalSignature ConsumeInput(int inputIndex, ChemicalSignature specificInput, ref string errorMessage)
         {
             OutputPipe pipe = null;
-            foreach (OutputPipe currentPipe in pipeSocket.connectedPipes)
+            PipeSocket socket = inputIndex == 0 ? leftSocket : rightSocket;
+
+            foreach (OutputPipe currentPipe in socket.connectedPipes)
             {
                 if (currentPipe.source.GetOutputChemical() == specificInput)
                 {
@@ -371,12 +374,15 @@ namespace SpeedChem
                         break;
 
                     case FactoryCommandType.INPUT:
-                        foreach (OutputPipe pipe in pipeSocket.connectedPipes)
                         {
-                            if (pipe.source.GetOutputChemical() == command.signature)
+                            PipeSocket socket = command.amount == 0 ? leftSocket : rightSocket;
+                            foreach (OutputPipe pipe in socket.connectedPipes)
                             {
-                                incomePerLoop -= pipe.source.outputPrice;
-                                break;
+                                if (pipe.source.GetOutputChemical() == command.signature)
+                                {
+                                    incomePerLoop -= pipe.source.outputPrice;
+                                    break;
+                                }
                             }
                         }
                         break;
@@ -415,7 +421,7 @@ namespace SpeedChem
                         switch (command.type)
                         {
                             case FactoryCommandType.INPUT:
-                                if (ConsumeInput(command.signature, ref warningTriangleMessage) != null)
+                                if (ConsumeInput(command.amount, command.signature, ref warningTriangleMessage) != null)
                                 {
                                     thread.internalTime++;
                                     thread.nextCommandIdx++;

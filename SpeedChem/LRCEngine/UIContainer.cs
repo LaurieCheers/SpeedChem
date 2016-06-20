@@ -78,7 +78,7 @@ namespace LRCEngine
             element.parent = null;
         }
 
-        public void RemoveAll()
+        public void Clear()
         {
             foreach(UIElement element in elements)
             {

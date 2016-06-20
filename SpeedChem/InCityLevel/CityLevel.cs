@@ -229,7 +229,7 @@ namespace SpeedChem
                                 CityObject sourceObject = objectsByName[objectName];
                                 CityObject targetObject = objectsByName[pipeTarget];
                                 OutputPipe pipe = sourceObject.pipes.Last();
-                                pipe.ConnectTo(targetObject.pipeSocket);
+                                pipe.ConnectTo(targetObject.GetNearestSocket(targetObject.bounds.XY));
                                 pipe.movable = false;
                             }
                         }
@@ -238,6 +238,7 @@ namespace SpeedChem
             }
         }
 
+        /*
         public CityLevel(string name, Vector2 pos)
         {
             this.name = name;
@@ -377,7 +378,7 @@ namespace SpeedChem
                 }
             ));
 
-            nextOutputX += outputSpacingX;
+//            nextOutputX += outputSpacingX;
 /*            unlockRules.Add(new UnlockRule_Money(600,
                 new List<MetaGameObject>()
                 {
@@ -391,7 +392,7 @@ namespace SpeedChem
                         new Vector2(nextOutputX, 380)
                     )
                 }
-            ));*/
+            ));* /
 
             /*
             nextInputX += inputSpacingX;
@@ -482,7 +483,7 @@ namespace SpeedChem
                 46000,
                 new Vector2(nextOutputX, 350)
             ));
-            */
+            * /
 
             //            ChemicalFactory tutorialFactory = new ChemicalFactory(new Vector2(100, 200));
             //            objects.Add(tutorialFactory);
@@ -493,7 +494,7 @@ namespace SpeedChem
             //objects.Add(new ChemicalFactory(new Vector2(400, 200)));
 
             //            selectedObject = tutorialFactory;
-        }
+        }*/
 
         public void Init()
         {

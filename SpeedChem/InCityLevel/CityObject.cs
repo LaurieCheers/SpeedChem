@@ -78,6 +78,11 @@ namespace SpeedChem
             pipes.Add(new OutputPipe(this, offset));
         }
 
+        public virtual PipeSocket GetNearestSocket(Vector2 mousePos)
+        {
+            return pipeSocket;
+        }
+
         public virtual bool ReceiveInput(ChemicalSignature signature, ref string errorMessage)
         {
             return false;
