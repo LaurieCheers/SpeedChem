@@ -15,7 +15,7 @@ namespace SpeedChem
         public int connectedID;
         static int nextUnusedConnectID;
         public Vector2 velocity;
-        public bool onGround;
+        public PlatformObject onGround;
 
         public RigidBody(Texture2D texture, Vector2 pos, Vector2 size): base(texture, pos, size)
         {
@@ -94,7 +94,7 @@ namespace SpeedChem
         public void RunMovement(List<PlatformObject> allObjects)
         {
             Vector2 moveY = new Vector2(0, velocity.Y);
-            bool newOnGround = false;
+            PlatformObject newOnGround = null;
             foreach (RigidBody c in connected)
             {
                 moveY = c.CheckMove(this, moveY, allObjects, ref newOnGround);
@@ -120,7 +120,7 @@ namespace SpeedChem
             }
         }
 
-        protected Vector2 CheckMove(RigidBody parentObject, Vector2 currentMove, List<PlatformObject> allObjects, ref bool onGround)
+        protected Vector2 CheckMove(RigidBody parentObject, Vector2 currentMove, List<PlatformObject> allObjects, ref PlatformObject onGround)
         {
             const float EPSILON = 0.01f;
             Vectangle moveBoundsX = GetMoveBoundsX(currentMove);
@@ -167,7 +167,7 @@ namespace SpeedChem
                             currentMove.Y = objBounds.Y - (pos.Y + size.Y + EPSILON);
                             obj.CollidedY(parentObject);
                             moveBoundsY = GetMoveBoundsY(currentMove);
-                            onGround = true;
+                            onGround = obj;
                         }
                     }
                     else

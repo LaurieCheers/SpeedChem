@@ -76,6 +76,7 @@ namespace SpeedChem
                 pressingRight = input.IsKeyDown(Keys.D);
                 if (pressingLeft)
                 {
+                    Game1.instance.inventory.pressLeftTutorial = false;
                     velocity.X -= ACCEL;
                     if (velocity.X > 0)
                         velocity.X *= BRAKES_DAMPINGX;
@@ -86,6 +87,7 @@ namespace SpeedChem
                 }
                 else if (pressingRight)
                 {
+                    Game1.instance.inventory.pressRightTutorial = false;
                     velocity.X += ACCEL;
                     if (velocity.X < 0)
                         velocity.X *= BRAKES_DAMPINGX;
@@ -108,7 +110,7 @@ namespace SpeedChem
                     velocity.Y *= JUMP_DAMPINGY;
                 }
 
-                if (onGround)
+                if (onGround != null)
                 {
                     jumpGraceFrames = JUMP_GRACE_FRAMES;
                 }
@@ -120,6 +122,7 @@ namespace SpeedChem
 
                 if (jumpGraceFrames > 0 && jumpHeldFrames > 0)
                 {
+                    Game1.instance.inventory.pressJumpTutorial = false;
                     if (input.IsKeyDown(Keys.A))
                         velocity.X -= JUMP_XVEL;
                     else if (input.IsKeyDown(Keys.D))
@@ -145,8 +148,16 @@ namespace SpeedChem
 
             if (pos.Y > 700)
             {
-                pos.Y = -10;
-                pos.X = 100;
+                pos.Y = -30;
+                if (Game1.instance.platformLevel.isDoubleFactory)
+                {
+                    if (pos.X > 300)
+                        pos.X = 300;
+                }
+                else
+                {
+                    pos.X = 100;
+                }
             }
 
             jetting = false;
@@ -156,8 +167,11 @@ namespace SpeedChem
         {
             const float CLIMBSPEED = -4.0f;
 
+            float playerKnee = obj is ChemBlock ? bounds.Bottom - 8: bounds.Top;
+            float playerFeet = bounds.Bottom;
             float objTopY = obj.bounds.Top;
-            if (!(obj is ChemBlock) && (pressingLeft || pressingRight) && bounds.Top < objTopY && bounds.Bottom > objTopY)
+
+            if ((pressingLeft || pressingRight) && playerKnee < objTopY)
             {
                  velocity.Y = CLIMBSPEED;
             }
@@ -167,6 +181,24 @@ namespace SpeedChem
         {
             base.Draw(spriteBatch);
             Game1.instance.inventory.DrawWeapons(spriteBatch);
+
+            if (Game1.instance.inventory.pressLeftTutorial)
+            {
+                spriteBatch.Draw(TextureCache.keyboard_key, new Rectangle((int)bounds.X - (8 + 24), (int)bounds.Y, 24, 24), Color.White);
+                spriteBatch.DrawString(Game1.font, "A", new Vector2(bounds.X - (8 + 12), bounds.Y + 1), TextAlignment.CENTER, Color.Black);
+            }
+
+            if (Game1.instance.inventory.pressRightTutorial)
+            {
+                spriteBatch.Draw(TextureCache.keyboard_key, new Rectangle((int)bounds.Right + 8, (int)bounds.Y, 24, 24), Color.White);
+                spriteBatch.DrawString(Game1.font, "D", new Vector2(bounds.Right + 8 + 12, bounds.Y + 1), TextAlignment.CENTER, Color.Black);
+            }
+
+            if(Game1.instance.inventory.pressJumpTutorial)
+            {
+                spriteBatch.Draw(TextureCache.keyboard_key, new Rectangle((int)bounds.CenterX - (58/2), (int)bounds.Y - 32, 58, 24), Color.White);
+                spriteBatch.DrawString(Game1.font, "Space", new Vector2(bounds.CenterX, bounds.Y + 1 - 32), TextAlignment.CENTER, Color.Black);
+            }
         }
     }
 }

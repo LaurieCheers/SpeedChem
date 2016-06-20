@@ -128,7 +128,7 @@ namespace SpeedChem
         public InputState inputState;
     }
 
-    public class CityLevel: SpeedChemScreen
+    public class CityLevel: SpeedChemScreen, UIMouseResponder
     {
         List<CityObject> objects = new List<CityObject>();
         List<CityObject> nextObjects = null;
@@ -191,6 +191,10 @@ namespace SpeedChem
                         foreach (CityObject obj in newObjects)
                         {
                             objects.Add(obj);
+
+                            //tutorial hack
+                            if (obj is ChemicalFactory)
+                                blackboard.selectedObject = obj;
                         }
                         foreach (UIElement element in newUI)
                         {
@@ -496,7 +500,8 @@ namespace SpeedChem
             ui = new UIContainer();
 
             newFactoryButton = new UIBuyButton("Build Factory", nextFactoryPrice, new Rectangle(600, 100, 170, 40), Game1.buttonStyle, button_SpawnFactory);
-            newSiloButton = new UIButton("New Silo", new Rectangle(600, 150, 120, 40), Game1.buttonStyle, button_SpawnSilo);
+            //newFactoryButton = new UIBuyButton("Build Factory", 100, new Rectangle(600, 100, 170, 40), Game1.buttonStyle, button_SpawnFactory);
+            newSiloButton = new UIBuyButton("Build Silo", 150, new Rectangle(600, 150, 170, 40), Game1.buttonStyle, button_SpawnSilo);
 
             unlockableUI = new Dictionary<string, UIElement>()
             {
@@ -505,8 +510,11 @@ namespace SpeedChem
             };
 
             ui.Add(new UIButton("Back to Map", new Rectangle(600, 10, 170, 40), Game1.buttonStyle, button_GoToMap));
+
+#if DEBUG
             ui.Add(new UIButton("Cheat:Unlocks", new Rectangle(600, 370, 170, 40), Game1.buttonStyle, button_Unlocks));
             ui.Add(new UIButton("Cheat:Loadsamoney", new Rectangle(600, 420, 170, 40), Game1.buttonStyle, button_CheatMoney));
+#endif
         }
 
         public void AddObject(CityObject obj)
@@ -546,11 +554,6 @@ namespace SpeedChem
             objects.Add(new ChemicalFactory(this, factoryPos, true));
             nextFactoryPrice = (int)(nextFactoryPrice * 5);
             newFactoryButton.price = nextFactoryPrice;
-        }
-
-        string GetFactoryButtonLabel()
-        {
-            return "Build Factory ($" + nextFactoryPrice + ")";
         }
 
         public void button_SpawnSilo()
@@ -608,6 +611,35 @@ namespace SpeedChem
             }
         }
 
+        public UIMouseResponder GetMouseHover(Vector2 mousePos)
+        {
+            UIMouseResponder result = ui.GetMouseHover(mousePos);
+            if (result != null) return result;
+
+            for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
+            {
+                result = objects[Idx].GetOverlayMouseHover(mousePos);
+                if (result != null)
+                    return result;
+            }
+
+            for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
+            {
+                result = objects[Idx].GetPipeMouseHover(mousePos);
+                if (result != null)
+                    return result;
+            }
+
+            for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
+            {
+                result = objects[Idx].GetMouseHover(mousePos);
+                if (result != null)
+                    return result;
+            }
+
+            return this;
+        }
+
         public void Update(InputState inputState)
         {
             blackboard.inputState = inputState;
@@ -625,37 +657,7 @@ namespace SpeedChem
                 }
             }
 
-            inputState.hoveringElement = ui.GetMouseHover(inputState.MousePos);
-
-            if (inputState.hoveringElement == null)
-            {
-                for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
-                {
-                    inputState.hoveringElement = objects[Idx].GetOverlayMouseHover(inputState.MousePos);
-                    if (inputState.hoveringElement != null)
-                        break;
-                }
-            }
-
-            if (inputState.hoveringElement == null)
-            {
-                for (int Idx = objects.Count - 1; Idx >= 0; --Idx)
-                {
-                    inputState.hoveringElement = objects[Idx].GetPipeMouseHover(inputState.MousePos);
-                    if (inputState.hoveringElement != null)
-                        break;
-                }
-            }
-
-            if (inputState.hoveringElement == null)
-            {
-                for(int Idx = objects.Count-1; Idx >= 0; --Idx)
-                {
-                    inputState.hoveringElement = objects[Idx].GetMouseHover(inputState.MousePos);
-                    if (inputState.hoveringElement != null)
-                        break;
-                }
-            }
+            inputState.hoveringElement = GetMouseHover(inputState.MousePos);
 
             foreach (CityObject obj in objects)
             {
@@ -680,7 +682,8 @@ namespace SpeedChem
                     blackboard.draggingOntoObject = null;
                 }
 
-                if(inputState.hoveringElement != blackboard.selectedObject)
+                // when you click on the field, clear the selected object
+                if(inputState.hoveringElementMouseDown == this)
                     blackboard.selectedObject = null;
             }
 

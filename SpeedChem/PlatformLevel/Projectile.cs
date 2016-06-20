@@ -86,9 +86,9 @@ namespace SpeedChem
                     if (collisionObj is ChemBlock)
                     {
                         ChemBlock body = (ChemBlock)collisionObj;
-                        Vector2 nailDirection = velocity;
-                        nailDirection.Normalize();
-                        body.Nailed(nailDirection);
+                        //Vector2 nailDirection = velocity;
+                        //nailDirection.Normalize();
+                        body.Nailed(Vector2.Zero - GetCollisionNormal(collisionObj.bounds, pos - velocity, pos));
                         body.velocity += velocity * VELOCITY_TRANSFER;
                         body.UpdatedVelocity();
                     }

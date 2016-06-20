@@ -162,7 +162,27 @@ namespace LRCEngine
                     }
                     break;
             }
+        }
 
+        public static Rectangle GetStringBounds(this SpriteFont font, string text, Vector2 position, TextAlignment alignment)
+        {
+            Vector2 size = font.MeasureString(text);
+            switch (alignment)
+            {
+                case TextAlignment.LEFT:
+                default:
+                    return new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y);
+                case TextAlignment.RIGHT:
+                    return new Rectangle((int)(position.X - size.X), (int)position.Y, (int)size.X, (int)size.Y);
+                case TextAlignment.CENTER:
+                    return new Rectangle((int)(position.X - size.X*0.5f), (int)position.Y, (int)size.X, (int)size.Y);
+                    
+            }
+        }
+
+        public static Rectangle Bloat(this Rectangle rect, int amount)
+        {
+            return new Rectangle(rect.X - amount, rect.Y - amount, rect.Width + amount * 2, rect.Height + amount * 2);
         }
     }
 }

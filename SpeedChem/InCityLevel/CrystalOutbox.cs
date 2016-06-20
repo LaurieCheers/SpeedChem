@@ -32,7 +32,7 @@ namespace SpeedChem
             SetPipeSocket(new Vector2(16, 28), 10);
         }
 
-        public override bool ReceiveInput(ChemicalSignature signature)
+        public override bool ReceiveInput(ChemicalSignature signature, ref string errorMessage)
         {
             if (this.signature == signature)
             {
@@ -40,8 +40,11 @@ namespace SpeedChem
                 didOutput = true;
                 return true;
             }
-
-            return false;
+            else
+            {
+                errorMessage = "Wrong output chemical!";
+                return false;
+            }
         }
 
         public override ChemicalSignature GetInputChemical()

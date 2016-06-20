@@ -46,6 +46,11 @@ namespace SpeedChem
         public static Texture2D city;
         public static Texture2D mapBG;
         public static Texture2D plinth;
+        public static Texture2D core_fill;
+
+        public static Texture2D processor;
+        public static Texture2D[] spools;
+        public static Texture2D[] cores;
 
         public static Texture2D rivetgun;
         public static Texture2D cutting_laser;
@@ -67,6 +72,8 @@ namespace SpeedChem
         public static RichImage outlined_square;
         public static RichImage cores_bar;
         public static RichImage bad_cores_bar;
+        public static RichImage keyboard_key;
+        public static RichImage screw_panel;
 
         public static void Load(ContentManager Content)
         {
@@ -109,7 +116,23 @@ namespace SpeedChem
             drag_prompt = Content.Load<Texture2D>("drag_prompt");
             city = Content.Load<Texture2D>("city");
             mapBG = Content.Load<Texture2D>("England");
-
+            processor = Content.Load<Texture2D>("processor");
+            spools = new Texture2D[]
+            {
+                Content.Load<Texture2D>("spool1"),
+                Content.Load<Texture2D>("spool2"),
+                Content.Load<Texture2D>("spool3"),
+                Content.Load<Texture2D>("spool4")
+            };
+            cores = new Texture2D[]
+            {
+                Content.Load<Texture2D>("core_anim1"),
+                Content.Load<Texture2D>("core_anim2"),
+                Content.Load<Texture2D>("core_anim3"),
+                Content.Load<Texture2D>("core_anim4"),
+            };
+            core_fill = Content.Load<Texture2D>("core_fill");
+ 
             lmb = Content.Load<Texture2D>("lmb");
             rmb = Content.Load<Texture2D>("rmb");
 
@@ -124,6 +147,8 @@ namespace SpeedChem
             steelButton_hover = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("steelButton_hover"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
             steelButton_pressed = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("steelButton_pressed"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
             outlined_square = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("outlined_square"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
+            keyboard_key = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("keyboard_key"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
+            screw_panel = new RichImage(new RichImageLayer_Texture(Content.Load<Texture2D>("screw_panel"), Color.White, RichImageDrawMode.STRETCHED9GRID, 0, Rotation90.None));
         }
 
     }

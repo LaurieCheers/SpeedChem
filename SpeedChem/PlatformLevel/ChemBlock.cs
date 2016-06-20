@@ -644,7 +644,9 @@ namespace SpeedChem
 
         public override void CollidedX(RigidBody other)
         {
-            if (other.onGround || (other is PlatformCharacter && ((PlatformCharacter)other).jetting))
+            bool canPush = (other.onGround != null && (!(other.onGround is ChemBlock) || ((ChemBlock)other.onGround).chemGrid != this.chemGrid));
+
+            if (canPush || (other is PlatformCharacter && ((PlatformCharacter)other).jetting))
             {
                 velocity.X = other.velocity.X;
                 other.velocity.X *= 0.95f;

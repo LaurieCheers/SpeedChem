@@ -100,34 +100,23 @@ namespace SpeedChem
         int incomePerLoop = 0;
         public float incomePerSecond = 0;
 
+        int spoolAnimIndex = 0;
+        int spoolAnimCountdown = 0;
+
         public ChemicalFactory(CityLevel cityLevel, JSONTable template): base(
             cityLevel,
-            template.getBool("movable", true)? TextureCache.factory : TextureCache.grassy_factory,
-            template.getVector2("pos"),
-            TextureCache.factory.Size()
+            TextureCache.processor,//template.getBool("movable", true)? TextureCache.factory : TextureCache.grassy_factory,
+            template.getVector2("pos")
           )
         {
-            numCores = DEFAULT_NUM_CORES;
-            ui = new UIContainer(bounds.XY);
-            ui.Add(new UIButton("Record", new Rectangle(((int)bounds.Width - 90) / 2, -40, 90, 35), Game1.buttonStyle, button_Play));
             canDrag = template.getBool("movable", true);
-
-            SetPipeSocket(new Vector2(32, 16), 2);
-            AddOutputPipe(new Vector2(32, 16));
-            unlimitedPipes = canDrag;
+            InitPipes();
         }
 
-        public ChemicalFactory(CityLevel cityLevel, Vector2 pos, bool movable): base(cityLevel, movable? TextureCache.factory: TextureCache.grassy_factory, pos, TextureCache.factory.Size())
+        public ChemicalFactory(CityLevel cityLevel, Vector2 pos, bool movable): base(cityLevel, TextureCache.processor/*movable? TextureCache.factory: TextureCache.grassy_factory*/, pos)
         {
-            numCores = DEFAULT_NUM_CORES;
-            ui = new UIContainer(pos);
-            ui.Add(new UIButton("Record", new Rectangle(((int)bounds.Width-90)/2, -40, 90, 35), Game1.buttonStyle, button_Play));
-
             canDrag = movable;
-
-            SetPipeSocket(new Vector2(32, 16), 2);
-            AddOutputPipe(new Vector2(32, 16));
-            unlimitedPipes = true;
+            InitPipes();
         }
 
         public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, int sellerPrice, Vector2 pos) : base(cityLevel, TextureCache.outbox, pos, TextureCache.outbox.Size())
@@ -158,6 +147,17 @@ namespace SpeedChem
             SetPipeSocket(new Vector2(16, 16), 2);
         }
 
+        void InitPipes()
+        {
+            numCores = DEFAULT_NUM_CORES;
+            ui = new UIContainer(bounds.XY);
+            ui.Add(new UIButton("Record", new Rectangle(((int)bounds.Width - 90) / 2, -40, 90, 35), Game1.buttonStyle, button_Play));
+
+            SetPipeSocket(new Vector2(16, 16), new Vector2(32, 16));
+            AddOutputPipe(new Vector2(24, 38));
+            unlimitedPipes = canDrag;
+        }
+
         public override UIMouseResponder GetOverlayMouseHover(Vector2 localMousePos)
         {
             if (selected)
@@ -181,7 +181,7 @@ namespace SpeedChem
                 {
                     if (queuedOutput != null)
                     {
-                        if (socket.parent.ReceiveInput(queuedOutput))
+                        if (socket.parent.ReceiveInput(queuedOutput, ref errorMessage))
                         {
                             pipe.AnimatePip();
                             didOutput = true;
@@ -189,12 +189,11 @@ namespace SpeedChem
                         }
                         else
                         {
-                            errorMessage = "Output pipe is full";
                             return false;
                         }
                     }
 
-                    if (socket.parent.ReceiveInput(signature))
+                    if (socket.parent.ReceiveInput(signature, ref errorMessage))
                     {
                         pipe.AnimatePip();
                         didOutput = true;
@@ -212,6 +211,12 @@ namespace SpeedChem
 
             queuedOutput = signature;
             return true;
+        }
+
+        public override bool ReceiveInput(ChemicalSignature signature, ref string errorMessage)
+        {
+            errorMessage = "Waiting for output";
+            return false;
         }
 
         public ChemicalSignature GetInputChemical(int inputIndex)
@@ -405,7 +410,7 @@ namespace SpeedChem
                 if (thread.nextCommandIdx != -1 && commands.Count > thread.nextCommandIdx)
                 {
                     FactoryCommand command = commands[thread.nextCommandIdx];
-                    if (command.time == thread.internalTime)
+                    if (command.time <= thread.internalTime)
                     {
                         switch (command.type)
                         {
@@ -417,7 +422,11 @@ namespace SpeedChem
                                 }
                                 break;
                             case FactoryCommandType.OUTPUT:
-                                if (framesBeforeNextOutput == 0 && PushOutput(command.signature, ref warningTriangleMessage))
+                                if (framesBeforeNextOutput > 0)
+                                {
+                                    warningTriangleMessage = "";
+                                }
+                                else if (framesBeforeNextOutput == 0 && PushOutput(command.signature, ref warningTriangleMessage))
                                 {
                                     framesBeforeNextOutput = FRAMES_BETWEEN_OUTPUTS;
                                     thread.internalTime++;
@@ -531,6 +540,7 @@ namespace SpeedChem
                 showErrorMessage = true;
             }
 
+            /*
             if (blackboard.selectedObject != null
                 && blackboard.selectedObject != this
                 && blackboard.selectedObject is ChemicalFactory
@@ -538,7 +548,7 @@ namespace SpeedChem
                 && GetDragBox().Contains(blackboard.inputState.MousePos))
             {
                 blackboard.draggingOntoObject = this;
-            }
+            }*/
         }
 
         public Vectangle GetWarningRect()
@@ -555,22 +565,49 @@ namespace SpeedChem
 
             base.Draw(spriteBatch, blackboard);
 
-            foreach(FactoryThread thread in threads)
+            bool anyThreadRunning = false;
+            foreach (FactoryThread thread in threads)
             {
-                if (thread.stalled)
+                if (thread.stalled && warningTriangleMessage != "")
                 {
                     Vectangle warningRect = GetWarningRect();
                     spriteBatch.Draw(TextureCache.warning, warningRect, Color.White);
 
                     if(showErrorMessage)
                     {
-                        spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT, Color.Red);
+                        Vector2 messageSize = Game1.font.MeasureString(warningTriangleMessage);
+                        if (messageSize.X > warningRect.Left)
+                        {
+                            spriteBatch.Draw(TextureCache.white, Game1.font.GetStringBounds(warningTriangleMessage, warningRect.TopRight, TextAlignment.LEFT).Bloat(2), new Color(0.25f,0,0,0.5f));
+                            spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopRight, Color.Yellow);
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(TextureCache.white, Game1.font.GetStringBounds(warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT).Bloat(2), new Color(0.25f, 0, 0, 0.5f));
+                            spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT, Color.Yellow);
+                        }
                     }
                     break;
                 }
+                else
+                {
+                    anyThreadRunning = true;
+                }
             }
 
-            if(internalSeller != null)
+            if (anyThreadRunning)
+            {
+                spoolAnimCountdown--;
+                if (spoolAnimCountdown <= 0)
+                {
+                    spoolAnimIndex = (spoolAnimIndex+1)%TextureCache.spools.Length;
+                    spoolAnimCountdown = 3;
+                }
+            }
+            spriteBatch.Draw(TextureCache.spools[spoolAnimIndex], bounds.XY + new Vector2(7, 32), Color.White);
+            spriteBatch.Draw(TextureCache.spools[spoolAnimIndex], bounds.XY + new Vector2(24, 32), Color.White);
+
+            if (internalSeller != null)
             {
                 Vector2 pos = new Vector2(bounds.X, bounds.Y + bounds.Height);
                 Vector2 signatureSize = new Vector2(internalSeller.width * 8, internalSeller.height * 8);
@@ -674,6 +711,7 @@ namespace SpeedChem
 
         public override void DrawDraggingUI(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
         {
+            /*
             if(blackboard.selectedObject != this && blackboard.selectedObject is ChemicalFactory)
             {
                 Rectangle dragBoxRect = GetDragBox();
@@ -686,7 +724,7 @@ namespace SpeedChem
                 spriteBatch.DrawString(Game1.font, text, new Vector2((int)(dragBoxRect.Center.X - textSize.X/2), (int)(dragBoxRect.Center.Y - textSize.Y/2)), Color.Black);
 
                 spriteBatch.Draw(TextureCache.drag_prompt, new Vector2(dragBoxRect.X-4, dragBoxRect.Bottom-8), Color.White);
-            }
+            }*/
         }
     }
 }

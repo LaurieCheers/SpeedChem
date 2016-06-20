@@ -32,6 +32,10 @@ namespace SpeedChem
         bool showIncomePerSecond = false;
         bool showCrystals = false;
 
+        public bool pressLeftTutorial = true;
+        public bool pressRightTutorial = true;
+        public bool pressJumpTutorial = true;
+
         public Inventory()
         {
             unlockableWeapons = new Dictionary<string, Weapon>();

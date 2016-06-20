@@ -91,6 +91,7 @@ namespace LRCEngine
         bool preFirstUpdate = true;
         bool firstUpdate = true;
         public UIMouseResponder hoveringElement;
+        public UIMouseResponder hoveringElementMouseDown;
 
         public MouseButtonState mouseLeft;
         public MouseButtonState mouseMiddle;
@@ -98,7 +99,6 @@ namespace LRCEngine
 
         public void Update()
         {
-            hoveringElement = null;
             if (firstUpdate && !preFirstUpdate)
                 firstUpdate = false;
             preFirstUpdate = false;
@@ -136,6 +136,13 @@ namespace LRCEngine
                 mouseMiddle = new MouseButtonState(MouseButton.MIDDLE, mouse);
                 mouseRight = new MouseButtonState(MouseButton.RIGHT, mouse);
             }
+
+            if (mouseLeft.justPressed)
+            {
+                hoveringElementMouseDown = hoveringElement;
+            }
+
+            hoveringElement = null;
         }
 
         public Vector2 MousePos { get { return new Vector2(mouse.X, mouse.Y); } }

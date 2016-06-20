@@ -25,6 +25,14 @@ namespace SpeedChem
         public virtual int outputPrice { get { return 0; } }
         public virtual int inputPrice { get { return 0; } }
 
+        public CityObject(CityLevel cityLevel, Texture2D texture, Vector2 pos)
+        {
+            this.cityLevel = cityLevel;
+            this.sprite = new SpriteObject(texture, pos, texture.Size());
+            sprite.layerDepth = 0.0f;
+            this.bounds = new Vectangle(pos, texture.Size());
+        }
+
         public CityObject(CityLevel cityLevel, Texture2D texture, Vector2 pos, Vector2 size)
         {
             this.cityLevel = cityLevel;
@@ -60,12 +68,17 @@ namespace SpeedChem
             pipeSocket = new PipeSocket(this, offset, maxConnections);
         }
 
+        public void SetPipeSocket(Vector2 offset, Vector2 offset2)
+        {
+            pipeSocket = new PipeSocket(this, offset, offset2);
+        }
+
         public void AddOutputPipe(Vector2 offset)
         {
             pipes.Add(new OutputPipe(this, offset));
         }
 
-        public virtual bool ReceiveInput(ChemicalSignature signature)
+        public virtual bool ReceiveInput(ChemicalSignature signature, ref string errorMessage)
         {
             return false;
         }

@@ -103,33 +103,60 @@ namespace LRCEngine
     {
         public void Draw(SpriteBatch spriteBatch, Rectangle rect, Texture2D texture, Color color, Rotation90 rotation)
         {
-            int fragmentW = texture.Width / 4;
-            int fragmentH = texture.Height / 4;
-            int rightEdgeX = rect.X + rect.Width - fragmentW;
-            int bottomEdgeY = rect.Y + rect.Height - fragmentH;
+            int nonStretchWidth = texture.Width / 2;
+            int nonStretchHeight = texture.Height / 2;
+
+            int texMiddleWidth = texture.Width - nonStretchWidth * 2;
+            int texMiddleHeight = texture.Height - nonStretchHeight * 2;
+            int texRightEdgeX = texture.Width - nonStretchWidth;
+            int texBottomEdgeY = texture.Height - nonStretchHeight;
+
+            int screenMiddleWidth = rect.Width - nonStretchWidth * 2;
+            int screenMiddleHeight = rect.Height - nonStretchHeight * 2;
+            int rightEdgeX = rect.X + rect.Width - nonStretchWidth;
+            int bottomEdgeY = rect.Y + rect.Height - nonStretchHeight;
+
             // TL, top, TR
-            spriteBatch.Draw(texture, new Rectangle(rect.X, rect.Y, fragmentW, fragmentH),
-                new Rectangle(0,0, fragmentW, fragmentH), color);
-            spriteBatch.Draw(texture, new Rectangle(rect.X+fragmentW, rect.Y, rect.Width-fragmentW*2, fragmentH),
-                new Rectangle(fragmentW,0, fragmentW*2, fragmentH), color);
-            spriteBatch.Draw(texture, new Rectangle(rightEdgeX, rect.Y, fragmentW, fragmentH),
-                new Rectangle(fragmentW*3,0, fragmentW, fragmentH), color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rect.X,   rect.Y, nonStretchWidth, nonStretchHeight),
+                new Rectangle(0,        0,      nonStretchWidth, nonStretchHeight),
+                color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rect.X+ nonStretchWidth,  rect.Y, screenMiddleWidth, nonStretchHeight),
+                new Rectangle(nonStretchWidth,          0,      texMiddleWidth, nonStretchHeight),
+                color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rightEdgeX,       rect.Y, nonStretchWidth, nonStretchHeight),
+                new Rectangle(texRightEdgeX,    0,      nonStretchWidth, nonStretchHeight),
+                color);
 
             // left, center, right
-            spriteBatch.Draw(texture, new Rectangle(rect.X, rect.Y+fragmentH, fragmentW, rect.Height-fragmentH*2),
-                new Rectangle(0,fragmentH, fragmentW, fragmentH*2), color);
-            spriteBatch.Draw(texture, new Rectangle(rect.X+fragmentW, rect.Y+fragmentH, rect.Width-fragmentW*2, rect.Height-fragmentH*2),
-                new Rectangle(fragmentW,fragmentH, fragmentW*2, fragmentH*2), color);
-            spriteBatch.Draw(texture, new Rectangle(rightEdgeX, rect.Y+fragmentH, fragmentW, rect.Height-fragmentH*2),
-                new Rectangle(fragmentW*3,fragmentH, fragmentW, fragmentH*2), color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rect.X,   rect.Y+ nonStretchHeight,   nonStretchWidth, screenMiddleHeight),
+                new Rectangle(0,        nonStretchHeight,           nonStretchWidth, texMiddleHeight),
+                color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rect.X+ nonStretchWidth,  rect.Y+ nonStretchHeight,   screenMiddleWidth, screenMiddleHeight),
+                new Rectangle(nonStretchWidth,          nonStretchHeight,           texMiddleWidth, texMiddleHeight),
+                color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rightEdgeX,       rect.Y+ nonStretchHeight,   nonStretchWidth, screenMiddleHeight),
+                new Rectangle(texRightEdgeX,    nonStretchHeight,           nonStretchWidth, texMiddleHeight),
+                color);
 
             // BL, bottom, BR
-            spriteBatch.Draw(texture, new Rectangle(rect.X, bottomEdgeY, fragmentW, fragmentH),
-                new Rectangle(0,fragmentH*3, fragmentW, fragmentH), color);
-            spriteBatch.Draw(texture, new Rectangle(rect.X+fragmentW, bottomEdgeY, rect.Width-fragmentW*2, fragmentH),
-                new Rectangle(fragmentW,fragmentH*3, fragmentW*2, fragmentH), color);
-            spriteBatch.Draw(texture, new Rectangle(rightEdgeX, bottomEdgeY, fragmentW, fragmentH),
-                new Rectangle(fragmentW*3,fragmentH*3, fragmentW, fragmentH), color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rect.X,   bottomEdgeY,    nonStretchWidth, nonStretchHeight),
+                new Rectangle(0,        texBottomEdgeY, nonStretchWidth, nonStretchHeight),
+                color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rect.X+ nonStretchWidth,    bottomEdgeY,      screenMiddleWidth, nonStretchHeight),
+                new Rectangle(nonStretchWidth,            texBottomEdgeY,   texMiddleWidth, nonStretchHeight),
+                color);
+            spriteBatch.Draw(texture,
+                new Rectangle(rightEdgeX,       bottomEdgeY,    nonStretchWidth, nonStretchHeight),
+                new Rectangle(texRightEdgeX,    texBottomEdgeY, nonStretchWidth, nonStretchHeight),
+                color);
         }
     }
 

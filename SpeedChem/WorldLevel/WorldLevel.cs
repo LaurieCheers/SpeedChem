@@ -56,6 +56,12 @@ namespace SpeedChem
             }
         }
 
+        int spoolIdx = 0;
+        int spoolAnimFrames = 0;
+
+        int coreIdx = 0;
+        int coreAnimFrames = 0;
+
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(TextureCache.mapBG, Vector2.Zero, Color.White);
@@ -63,6 +69,26 @@ namespace SpeedChem
             {
                 obj.Draw(spriteBatch);
             }
+
+            spriteBatch.Draw(TextureCache.processor, new Vector2(100, 100), Color.White);
+            spoolAnimFrames++;
+            if (spoolAnimFrames > 3)
+            {
+                spoolIdx = (spoolIdx + 1) % TextureCache.spools.Length;
+                spoolAnimFrames = 0;
+            }
+            spriteBatch.Draw(TextureCache.spools[spoolIdx], new Vector2(107, 132), Color.White);
+
+
+            coreAnimFrames++;
+            if (coreAnimFrames > 2)
+            {
+                coreIdx = (coreIdx + 1) % TextureCache.cores.Length;
+                coreAnimFrames = 0;
+            }
+            //spriteBatch.Draw(TextureCache.cores[coreIdx], new Vector2(307, 132), Color.White);
+
+//            spriteBatch.Draw(TextureCache.core_fill, new Vector2(307, 132), Color.White);
 
             Game1.instance.inventory.cityJustUnlocked = false;
         }

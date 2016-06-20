@@ -23,6 +23,14 @@ namespace SpeedChem
             this.maxConnections = maxConnections;
         }
 
+        public PipeSocket(CityObject parent, Vector2 offset, Vector2 offset2)
+        {
+            this.parent = parent;
+            this.offset = offset;
+            // TODO: make two-socket objects work
+            this.maxConnections = 2;
+        }
+
         public void RemoveConnection(OutputPipe pipe)
         {
             if (!connectedPipes.Contains(pipe))

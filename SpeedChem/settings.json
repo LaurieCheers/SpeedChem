@@ -67,7 +67,7 @@
 		  "build4": {
             "type": "buildingSite",
             "pos": [ 300, 20 ],
-			"price":250,
+			"price":16,
             "built":{
               "type": "inbox",
               "chemical": [ "RRR" ],
@@ -99,7 +99,7 @@
           },
           "factory1": {
               "type": "factory",
-              "pos": [ 180, 95 ]
+              "pos": [ 30, 115 ]
 			  "movable": false,
               "pipes": [ "silo1" ]
 	      }
@@ -121,13 +121,25 @@
           "BUY_SILO": true,
           "inbox2": {
             "type": "inbox",
-            "chemical": [ "G" ],
+            "chemical": [ "GGR" ],
             "pos": [ 250, 30 ]
+          },
+          "silo2a": {
+              "type": "silo",
+              "chemical": [ "G" ],
+			  "movable": false,
+              "pos": [ 250, 160 ]
+          },
+          "silo2b": {
+              "type": "silo",
+              "chemical": [ "R" ],
+			  "movable": false,
+              "pos": [ 500, 160 ]
           },
           "outbox2": {
             "type": "outbox",
-            "chemical": [ "BG", "GB" ],
-            "price": 20,
+            "chemical": [ "GB" ],
+            "price": 10,
             "pos": [ 250, 380 ]
           },
         },
@@ -135,7 +147,7 @@
         {
 		  "outbox3": {
 			"type": "outbox",
-			"chemical": [ " B ", "BGB", "G G" ],
+			"chemical": [ "BGB", "R R" ],
 			"price": 70,
 			"pos": [ 350, 380 ]
 		  },
@@ -194,8 +206,8 @@
 		"outbox3":{
           "outbox4": {
             "type": "outbox",
-            "chemical": [ " RWR ", " R R ", "WRWRW" ],
-            "price": 150,
+            "chemical": [ "WRW", " R ", "WRW" ],
+            "price": 200,
             "pos": [ 400, 380 ]
           }
 		}
@@ -205,14 +217,14 @@
     "city3": {
       "name": "Sheffield",
       "pos": [ 530, 90 ],
-      "price": 20000,
+      "price": 10000,
       "unlocks": {
 	    "start":{
 		  "plinth1":{
 			"type": "plinth",
 			"weapon":"JETPACK",
 			"pos": [ 250, 230 ],
-			"price": 5000,
+			"price": 20000,
 		  },
 		}
         "plinth1": {
@@ -220,18 +232,25 @@
           "BUY_SILO": true,
           "inbox1": {
             "type": "inbox",
-            "chemical": [ "BGB" ],
+            "chemical": [ "BGB", " B " ],
             "pos": [ 150, 30 ]
+			"pipes": [ "factory1" ]
+          },
+          "factory1": {
+            "type": "factory",
+            "pos": [ 40, 310 ]
+			"pipes": [ "outbox1" ]
+			"movable": false,
           },
 		  "outbox1": {
             "type": "outbox",
             "chemical": [
-			  "?",
-			  "?",
-			  "?",
-			  "?",
+			  " ???",
+			  "  ? ",
+			  "??? ",
+			  " ?  ",
 			],
-            "price": 50,
+            "price": 25,
             "pos": [ 50, 380 ]
           }
 		}
@@ -241,7 +260,6 @@
             "chemical": [
 			  "???",
 			  "?? ",
-			  " ??",
 			  "???",
 			],
             "price": 400,

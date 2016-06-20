@@ -22,6 +22,7 @@ namespace SpeedChem
         int currentTime;
         bool paused;
         bool timerRunning = false;
+        public bool isDoubleFactory = false;
         UIWeaponSlot rightSlotUI;
 
         public PlatformLevel()
@@ -59,9 +60,11 @@ namespace SpeedChem
             objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 0), new Vector2(32, 128)));
             objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 128), new Vector2(32, 128)));
             objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 256), new Vector2(32, 128)));
+            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 384), new Vector2(32, 128)));
             objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(16, 204), new Vector2(32, 32)));
             objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(0, 272), new Vector2(192, 32)));
             objects.Add(new PlatformObject(TextureCache.cement, new Vector2(192, 272), new Vector2(32, 128)));
+            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(192, 400), new Vector2(32, 128)));
 
             if (factory.internalSeller != null)
             {
@@ -71,13 +74,25 @@ namespace SpeedChem
             {
                 //ChemicalSignature inputChemical = new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.GREEN });
                 ChemicalSignature outputChemical = null;
-                PipeSocket receiver = factory.pipes.First().connectedTo;
-                if (receiver != null)
+                ChemicalSignature outputChemical2 = null;
+                foreach(OutputPipe pipe in factory.pipes)
                 {
-                    outputChemical = receiver.parent.GetInputChemical();
+                    PipeSocket receiver = pipe.connectedTo;
+                    if (receiver != null)
+                    {
+                        if (outputChemical == null)
+                        {
+                            outputChemical = receiver.parent.GetInputChemical();
+                        }
+                        else
+                        {
+                            outputChemical2 = receiver.parent.GetInputChemical();
+                            break;
+                        }
+                    }
                 }
 
-                objects.Add(new OutputZone(outputChemical, new Vector2(192, 300), new Vector2(192, 32)));
+                objects.Add(new OutputZone(outputChemical, outputChemical2, new Vector2(192, 300), new Vector2(192, 32)));
             }
 
             triggerables = new List<Command>();
@@ -94,6 +109,12 @@ namespace SpeedChem
                 Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, -36, 78, 32), factory, 1);
                 triggerables.Add(spawner2);
                 objects.Add(new PushButton(spawner2, TextureCache.clear, TextureCache.white, new Vector2(400 - 8, 64), new Vector2(8, 32), Color.Red));
+
+                isDoubleFactory = true;
+            }
+            else
+            {
+                isDoubleFactory = false;
             }
 
             player = new PlatformCharacter(TextureCache.character, playerPos, new Vector2(14, 32), Color.White, new Rectangle(9, 0, 14, 32));
@@ -173,6 +194,12 @@ namespace SpeedChem
                 if(timerRunning)
                     currentTime++;
 
+                if(currentTime >= 60 * ChemicalFactory.TIME_PER_CORE * factory.numCores )
+                {
+                    Game1.instance.splashes.Add(new Splash("OUT OF TIME", TextAlignment.CENTER, Game1.font, Color.Cyan, new Vector2(200, 200), new Vector2(0, 0), 0, 0, 3));
+                    InitObjects();
+                }
+
                 bool needsDestroy = false;
                 foreach (PlatformObject obj in objects)
                 {
@@ -211,7 +238,7 @@ namespace SpeedChem
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(TextureCache.levelbg, new Rectangle(0, 0, 800, 600), Color.White);
+            spriteBatch.Draw(TextureCache.levelbg, new Rectangle(0, 0, 400, 600), Color.White);
 
             foreach (PlatformObject obj in objects)
             {
@@ -224,8 +251,10 @@ namespace SpeedChem
 
             ui.Draw(spriteBatch);
 
-            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(500, 10), timerRunning ? Color.Yellow: Color.White);
-            spriteBatch.Draw(timerRunning ? TextureCache.hourglass : TextureCache.hourglass_frozen, new Vector2(475, 0), Color.White);
+            spriteBatch.Draw(TextureCache.screw_panel, new Rectangle(0, 280, 215, 200), Color.White);
+
+            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(95, 315), timerRunning ? Color.White: Color.Black);
+            spriteBatch.Draw(timerRunning ? TextureCache.hourglass : TextureCache.hourglass_frozen, new Vector2(65, 305), Color.White);
 
             int currentMultiplier = NumThreadsForTime(currentTime/60.0f);
 
@@ -233,12 +262,12 @@ namespace SpeedChem
             int testMultiplier = NumThreadsForTime(testTime);
             int lastMultiplier = 0;
 
-            Vector2 currentPos = new Vector2(508, 300);
+            Vector2 currentPos = new Vector2(10, 400);
             while (true)
             {
                 if (testMultiplier != lastMultiplier)
                 {
-                    spriteBatch.DrawString(Game1.font, (testMultiplier == 1) ? "Normal" : ("Under " + testTime + " seconds: "+testMultiplier + "x speed"), currentPos, (currentMultiplier == testMultiplier)? Color.White: Color.Gray);
+                    spriteBatch.DrawString(Game1.font, (testMultiplier == 1) ? "Normal" : ("Under " + testTime + " seconds: "+testMultiplier + "x speed"), currentPos, (currentMultiplier == testMultiplier)? Color.White: Color.Black);
                     currentPos.Y += 15;
                     lastMultiplier = testMultiplier;
                 }
@@ -249,6 +278,39 @@ namespace SpeedChem
 
                 testTime += ChemicalFactory.TIME_PER_CORE;
                 testMultiplier = NumThreadsForTime(testTime);
+            }
+
+            int runningCore = currentTime / (60 * ChemicalFactory.TIME_PER_CORE);
+            Vector2 corePos = new Vector2(10, 350);
+            for (int coreIndex = 0; coreIndex < 6; ++coreIndex)
+            {
+                if (runningCore > coreIndex)
+                {
+                    spriteBatch.Draw(TextureCache.cores[0], corePos, Color.White);
+                    spriteBatch.Draw(TextureCache.core_fill, corePos, Color.White);
+                }
+                else if (runningCore == coreIndex)
+                {
+                    if (timerRunning)
+                    {
+                        spriteBatch.Draw(TextureCache.cores[currentTime / 2 % TextureCache.cores.Length], corePos, Color.White);
+                    }
+                    else
+                    {
+                        spriteBatch.Draw(TextureCache.cores[0], corePos, Color.White);
+                    }
+
+                    int runningProgressFrames = currentTime - (coreIndex * 60 * 4);
+                    float testAngle = (float)(Math.PI * 2 * runningProgressFrames / (60 * 4));
+
+                    Game1.instance.AddDrawInstruction(new CustomDrawInstruction_Clock(TextureCache.core_fill, corePos + new Vector2(16, 16), 16, Color.White, 0, testAngle));
+                }
+                else
+                {
+                    spriteBatch.Draw(TextureCache.cores[0], corePos, Color.Gray);
+                }
+
+                corePos.X += 32;
             }
         }
 
