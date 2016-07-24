@@ -45,17 +45,37 @@ namespace LRCEngine
             this.font = font;
             this.textColor = textColor;
             this.image = image;
-            this.fillColor = Color.White;
+            this.fillColor = fillColor;
             this.textOffset = textOffset;
         }
 
-        public void Draw(SpriteBatch spriteBatch, string label, Rectangle frame)
+        public void Draw(SpriteBatch spriteBatch, string label, Texture2D icon, Rectangle frame)
         {
             image.Draw(spriteBatch, frame, fillColor);
             //            MagicUI.Draw9Grid(spriteBatch, texture, frame, fillColor);
             //            spriteBatch.Draw(texture, frame, fillColor);
-            if (font != null)
+
+            if (icon != null)
             {
+                if (font != null)
+                {
+                    // icon and text
+                    Vector2 labelSize = font.MeasureString(label);
+                    float iconSpacing = 2;
+                    Vector2 iconOrigin = frame.Center.ToVector2() + textOffset - new Vector2(labelSize.X + icon.Width + iconSpacing, icon.Height) / 2;
+                    Vector2 textOrigin = new Vector2((int)(iconOrigin.X + icon.Width + iconSpacing), (int)(frame.Center.Y + textOffset.Y - labelSize.Y/2));
+                    spriteBatch.Draw(icon, iconOrigin, Color.White);
+                    spriteBatch.DrawString(font, label, textOrigin, textColor);
+                }
+                else
+                {
+                    // icon only
+                    spriteBatch.Draw(icon, frame.Center.ToVector2() + textOffset - icon.Size() / 2, Color.White);
+                }
+            }
+            else if (font != null)
+            {
+                // text only
                 Vector2 labelSize = font.MeasureString(label);
                 spriteBatch.DrawString(font, label, new Vector2((float)Math.Floor(frame.Center.X + textOffset.X - labelSize.X / 2), (float)Math.Floor(frame.Center.Y + textOffset.Y - labelSize.Y / 2)), textColor);
             }
@@ -65,7 +85,8 @@ namespace LRCEngine
     public class UIButton : UIElement
     {
         public string label;
-        public readonly Rectangle frame;
+        public Texture2D icon;
+        public Rectangle frame;
         public readonly UIButtonStyle styles;
         public OnPressDelegate onPress
         {
@@ -74,6 +95,7 @@ namespace LRCEngine
         public bool mouseInside;
         public bool pressedInside;
         public bool enabled = true;
+        public bool visible = true;
 
         public delegate void OnPressDelegate();
 
@@ -100,6 +122,15 @@ namespace LRCEngine
             this.onPress = onPress;
         }
 
+        public UIButton(string label, Texture2D icon, Rectangle frame, UIButtonStyle styles, OnPressDelegate onPress)
+        {
+            this.label = label;
+            this.icon = icon;
+            this.frame = frame;
+            this.styles = styles;
+            this.onPress = onPress;
+        }
+
         public override UIMouseResponder GetMouseHover(Vector2 localMousePos)
         {
             return frame.Contains(localMousePos) ? this : null;
@@ -107,7 +138,7 @@ namespace LRCEngine
 
         public override void Update(InputState inputState, Vector2 origin)
         {
-            if (!enabled)
+            if (!enabled || !visible)
             {
                 mouseInside = false;
                 pressedInside = false;
@@ -138,6 +169,9 @@ namespace LRCEngine
 
         public override void Draw(SpriteBatch spriteBatch, Vector2 origin)
         {
+            if (!visible)
+                return;
+
             UIButtonAppearance currentStyle;
             if (!enabled)
             {
@@ -155,12 +189,17 @@ namespace LRCEngine
                 currentStyle = styles.normal;
             }
 
-            currentStyle.Draw(spriteBatch, label, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
+            currentStyle.Draw(spriteBatch, label, icon, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
         }
 
         public void SetEnabled(bool enabled)
         {
             this.enabled = enabled;
+        }
+
+        public void SetVisible(bool visible)
+        {
+            this.visible = visible;
         }
     }
 
@@ -210,7 +249,7 @@ namespace LRCEngine
         {
             if (group.selectedButton == this)
             {
-                activeAppearance.Draw(spriteBatch, label, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
+                activeAppearance.Draw(spriteBatch, label, icon, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
             }
             else
             {

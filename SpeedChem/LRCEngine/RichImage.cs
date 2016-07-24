@@ -254,18 +254,19 @@ namespace LRCEngine
     {
         public void Draw(SpriteBatch spriteBatch, Rectangle rect, Texture2D texture, Color color, Rotation90 rotation)
         {
-            int endWidth = texture.Width / 4;
+            int leftEndWidth = texture.Width / 4;
             int tileSize = texture.Width/2;
-            int tiledAreaWidth = rect.Width - endWidth * 2;
+            int rightEndWidth = texture.Width - tileSize - leftEndWidth;
+            int tiledAreaWidth = rect.Width - leftEndWidth - rightEndWidth;
             int tileCount = (int)Math.Round((float)tiledAreaWidth / tileSize);
             int tileSpacing = (int)Math.Ceiling((float)tiledAreaWidth / tileCount);
 
-            spriteBatch.Draw(texture, new Rectangle(rect.X, rect.Y, endWidth, rect.Height), new Rectangle(0,0,endWidth,texture.Height), color);
+            spriteBatch.Draw(texture, new Rectangle(rect.X, rect.Y, leftEndWidth, rect.Height), new Rectangle(0,0, leftEndWidth, texture.Height), color);
             for(int X = 0; X < tiledAreaWidth; X+=tileSpacing)
             {
-                spriteBatch.Draw(texture, new Rectangle(rect.X + endWidth + X, rect.Y, tileSpacing, rect.Height), new Rectangle(endWidth, 0, tileSize, texture.Height), color);
+                spriteBatch.Draw(texture, new Rectangle(rect.X + leftEndWidth + X, rect.Y, tileSpacing, rect.Height), new Rectangle(leftEndWidth, 0, tileSize, texture.Height), color);
             }
-            spriteBatch.Draw(texture, new Rectangle(rect.X + rect.Width-endWidth, rect.Y, endWidth, rect.Height), new Rectangle(texture.Width-endWidth, 0, endWidth, texture.Height), color);
+            spriteBatch.Draw(texture, new Rectangle(rect.X + rect.Width- rightEndWidth, rect.Y, rightEndWidth, rect.Height), new Rectangle(texture.Width- rightEndWidth, 0, rightEndWidth, texture.Height), color);
         }
     }
 

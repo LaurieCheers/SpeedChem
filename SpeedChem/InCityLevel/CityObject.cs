@@ -24,21 +24,22 @@ namespace SpeedChem
         public Vectangle bounds;
         public virtual int outputPrice { get { return 0; } }
         public virtual int inputPrice { get { return 0; } }
+        public virtual float ShelfRestOffset { get { return 0; } }
 
         public CityObject(CityLevel cityLevel, Texture2D texture, Vector2 pos)
         {
             this.cityLevel = cityLevel;
-            this.sprite = new SpriteObject(texture, pos, texture.Size());
+            this.bounds = new Vectangle(ClampToShelf(pos), texture.Size());
+            this.sprite = new SpriteObject(texture, bounds.Origin, texture.Size());
             sprite.layerDepth = 0.0f;
-            this.bounds = new Vectangle(pos, texture.Size());
         }
 
         public CityObject(CityLevel cityLevel, Texture2D texture, Vector2 pos, Vector2 size)
         {
             this.cityLevel = cityLevel;
-            this.sprite = new SpriteObject(texture, pos, size);
+            this.bounds = new Vectangle(ClampToShelf(pos), size);
+            this.sprite = new SpriteObject(texture, bounds.Origin, size);
             sprite.layerDepth = 0.0f;
-            this.bounds = new Vectangle(pos, size);
         }
 
         public UIMouseResponder GetMouseHover(Vector2 localMousePos)
@@ -53,9 +54,9 @@ namespace SpeedChem
 
         public UIMouseResponder GetPipeMouseHover(Vector2 localMousePos)
         {
-            foreach(OutputPipe pipe in pipes)
+            for (int Idx = pipes.Count - 1; Idx >= 0; --Idx)
             {
-                UIMouseResponder result = pipe.GetMouseHover(localMousePos);
+                UIMouseResponder result = pipes[Idx].GetMouseHover(localMousePos);
                 if (result != null)
                     return result;
             }
@@ -126,7 +127,7 @@ namespace SpeedChem
             {
                 if (inputState.mouseLeft.isDown)
                 {
-                    bounds.Origin = inputState.MousePos - draggingOffset;
+                    bounds.Origin = ClampToShelf(inputState.MousePos - draggingOffset);
                     sprite.pos = bounds.Origin;
                 }
                 else
@@ -142,6 +143,12 @@ namespace SpeedChem
             UpdateUnlimitedPipes();
 
             selected = (blackboard.selectedObject == this);
+        }
+
+        public Vector2 ClampToShelf(Vector2 pos)
+        {
+            float shelfHeight = 80;
+            return new Vector2(pos.X, pos.Y + (shelfHeight / 2) + ShelfRestOffset - (pos.Y + (shelfHeight / 2) - ShelfRestOffset) % shelfHeight);
         }
 
         public virtual void UpdatePipes()
@@ -186,6 +193,10 @@ namespace SpeedChem
             sprite.Draw(spriteBatch);
         }
 
+        public virtual void DrawUI(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
+        {
+        }
+
         public virtual void DrawDraggingUI(SpriteBatch spriteBatch, CityUIBlackboard blackboard) { }
 
         public void DisconnectPipes()
@@ -223,6 +234,8 @@ namespace SpeedChem
                     return new BuildingSite(cityLevel, template);
                 case "plinth":
                     return new WeaponPlinth(cityLevel, template);
+                case "blueprint":
+                    return new Blueprint(cityLevel, template);
                 default:
                     throw new ArgumentException("Unknown CityObject type \"" + type + "\"");
             }

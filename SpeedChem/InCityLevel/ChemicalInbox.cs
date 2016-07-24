@@ -14,6 +14,7 @@ namespace SpeedChem
         ChemicalSignature signature;
         int price;
         public override int outputPrice { get { return price; } }
+        public override float ShelfRestOffset { get { return 4; } }
 
         public ChemicalInbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.inbox, template.getVector2("pos"), TextureCache.inbox.Size())
         {
@@ -32,7 +33,7 @@ namespace SpeedChem
         void Init()
         {
             //AddPipeSocket(new Vector2(16, 24));
-            AddOutputPipe(new Vector2(16, 20));
+            AddOutputPipe(new Vector2(16, 38));
             unlimitedPipes = true;
         }
 
@@ -63,23 +64,12 @@ namespace SpeedChem
             base.Draw(spriteBatch, blackboard);
             Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
 
-            string text = "$" + price;
-            Vector2 textSize = Game1.font.MeasureString(text);
-
             Vector2 signaturePos = new Vector2(
-                bounds.X + (bounds.Width - (signatureSize.X + textSize.X)) * 0.5f,
-                bounds.Y + (textSize.Y - signatureSize.Y)*0.5f - textSize.Y
-            );
-
-            Vector2 textPos = new Vector2(
-                signaturePos.X + signatureSize.X,
-                bounds.Y - textSize.Y
+                bounds.CenterX - signatureSize.X * 0.5f,
+                bounds.CenterY - (signatureSize.Y*0.5f + 8)
             );
 
             signature.Draw(spriteBatch, signaturePos, true);
-
-            if(price > 0)
-               spriteBatch.DrawString(Game1.font, "$" + price, textPos, Color.Yellow);
         }
     }
 }

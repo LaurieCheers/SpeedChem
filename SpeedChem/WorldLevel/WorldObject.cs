@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class WorldObject : UIMouseResponder
+    public class WorldObject : UIMouseResponder
     {
         SpriteObject sprite;
         public Vectangle bounds;

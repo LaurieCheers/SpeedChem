@@ -105,68 +105,58 @@ namespace SpeedChem
         public int framesBeforeNextOutput = 0;
         string warningTriangleMessage = "Test Error";
         public bool showErrorMessage;
+        bool anyThreadStalled;
+        public bool isBigFactory;
         int incomePerLoop = 0;
         public float incomePerSecond = 0;
         public PipeSocket leftSocket;
         public PipeSocket rightSocket;
+        public override float ShelfRestOffset { get { return 4; } }
 
         int spoolAnimIndex = 0;
         int spoolAnimCountdown = 0;
 
         public ChemicalFactory(CityLevel cityLevel, JSONTable template): base(
             cityLevel,
-            TextureCache.processor,//template.getBool("movable", true)? TextureCache.factory : TextureCache.grassy_factory,
+            template.getBool("movable", true)? TextureCache.processor : TextureCache.processor_rusty,
             template.getVector2("pos")
           )
         {
-            canDrag = template.getBool("movable", true);
+            this.canDrag = template.getBool("movable", true);
+            this.isBigFactory = template.getBool("bigFactory", false);
             InitPipes();
         }
 
-        public ChemicalFactory(CityLevel cityLevel, Vector2 pos, bool movable): base(cityLevel, TextureCache.processor/*movable? TextureCache.factory: TextureCache.grassy_factory*/, pos)
+        public ChemicalFactory(CityLevel cityLevel, Vector2 pos, bool movable, bool isBigFactory): base(cityLevel, TextureCache.processor, pos)
         {
-            canDrag = movable;
+            this.canDrag = movable;
+            this.isBigFactory = isBigFactory;
             InitPipes();
-        }
-
-        public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, int sellerPrice, Vector2 pos) : base(cityLevel, TextureCache.outbox, pos, TextureCache.outbox.Size())
-        {
-            numCores = DEFAULT_NUM_CORES;
-            ui = new UIContainer(pos);
-            ui.Add(new UIButton("Record", new Rectangle(-20, (int)bounds.Height + 54, 90, 35), Game1.buttonStyle, button_Play));
-
-            this.internalSeller = internalSeller;
-            this.sellerPrice = sellerPrice;
-            this.sellerAction = FactoryCommandType.EARNMONEY;
-            this.canDrag = false;
-
-            SetPipeSocket(new Vector2(16, 48), 2);
-        }
-
-        public ChemicalFactory(CityLevel cityLevel, ChemicalSignature internalSeller, FactoryCommandType sellerAction, Vector2 pos) : base(cityLevel, TextureCache.depot, pos, TextureCache.depot.Size())
-        {
-            numCores = DEFAULT_NUM_CORES;
-            ui = new UIContainer(pos);
-            ui.Add(new UIButton("Record", new Rectangle(-20, (int)bounds.Height+54, 90, 35), Game1.buttonStyle, button_Play));
-
-            this.canDrag = false;
-            this.internalSeller = internalSeller;
-            this.sellerPrice = 1;
-            this.sellerAction = sellerAction;
-
-            SetPipeSocket(new Vector2(16, 16), 2);
         }
 
         void InitPipes()
         {
             numCores = DEFAULT_NUM_CORES;
             ui = new UIContainer(bounds.XY);
-            ui.Add(new UIButton("Record", new Rectangle(((int)bounds.Width - 90) / 2, -40, 90, 35), Game1.buttonStyle, button_Play));
+            ui.Add(new UIButton("Record", TextureCache.record_icon, new Rectangle(((int)bounds.Width - 90) / 2, (int)bounds.Height + 5, 90, 35), Game1.buttonStyle, button_Play));
 
-            leftSocket = new PipeSocket(this, new Vector2(16, 16), 1);
-            rightSocket = new PipeSocket(this, new Vector2(32, 16), 1);
-            AddOutputPipe(new Vector2(24, 38));
-            unlimitedPipes = canDrag;
+            leftSocket = new PipeSocket(this, new Vector2(14, 14), 1);
+
+            if (canDrag)
+            {
+                rightSocket = new PipeSocket(this, new Vector2(32, 14), 1);
+            }
+
+            if (isBigFactory)
+            {
+                AddOutputPipe(new Vector2(-6, 36));
+                AddOutputPipe(new Vector2(53, 36));
+            }
+            else
+            {
+                AddOutputPipe(new Vector2(15, 39));
+            }
+            //unlimitedPipes = canDrag;
         }
 
         public override UIMouseResponder GetOverlayMouseHover(Vector2 localMousePos)
@@ -329,6 +319,13 @@ namespace SpeedChem
         {
             commands = recordedCommands.ToList();
             UpdateThreads();
+
+            int targetTime = commands.Last().time - 90;
+            FactoryThread thread = threads.First();
+            while (thread.internalTime < targetTime && !thread.stalled)
+            {
+                Run();
+            }
         }
 
         void UpdateThreads()
@@ -524,7 +521,7 @@ namespace SpeedChem
                 // unmerging a previously merged factory
                 numCores -= DEFAULT_NUM_CORES;
                 UpdateThreads();
-                ChemicalFactory newFactory = new ChemicalFactory(cityLevel, blackboard.inputState.MousePos, true);
+                ChemicalFactory newFactory = new ChemicalFactory(cityLevel, blackboard.inputState.MousePos, true, false);
                 blackboard.cityLevel.AddObjectDeferred(newFactory);
                 blackboard.selectedObject = newFactory;
                 return;
@@ -559,7 +556,7 @@ namespace SpeedChem
 
         public Vectangle GetWarningRect()
         {
-            return new Vectangle(bounds.X, bounds.Y, 16, 16);
+            return new Vectangle(bounds.X + 27, bounds.Y + 30, 16, 16);
         }
 
         public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
@@ -571,29 +568,29 @@ namespace SpeedChem
 
             base.Draw(spriteBatch, blackboard);
 
+            if (isBigFactory)
+            {
+                spriteBatch.Draw(TextureCache.sidejug, bounds.XY + new Vector2(-14, 12), Color.White);
+                spriteBatch.Draw(TextureCache.sidejug_right, bounds.XY + new Vector2(45, 12), Color.White);
+            }
+
+            bool hovering = (blackboard.inputState != null) ? (blackboard.inputState.hoveringElement == this) : false;
+            if (hovering || selected)
+            {
+                spriteBatch.Draw(
+                    TextureCache.processor_highlight,
+                    bounds,
+                    selected ? new Color(0.8f,0.8f,0.8f, 0.5f) : new Color(0.75f,0.75f,0.0f, 0.5f)
+                );
+            }
+
+            anyThreadStalled = false;
             bool anyThreadRunning = false;
             foreach (FactoryThread thread in threads)
             {
-                if (thread.stalled && warningTriangleMessage != "")
+                if (thread.stalled)
                 {
-                    Vectangle warningRect = GetWarningRect();
-                    spriteBatch.Draw(TextureCache.warning, warningRect, Color.White);
-
-                    if(showErrorMessage)
-                    {
-                        Vector2 messageSize = Game1.font.MeasureString(warningTriangleMessage);
-                        if (messageSize.X > warningRect.Left)
-                        {
-                            spriteBatch.Draw(TextureCache.white, Game1.font.GetStringBounds(warningTriangleMessage, warningRect.TopRight, TextAlignment.LEFT).Bloat(2), new Color(0.25f,0,0,0.5f));
-                            spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopRight, Color.Yellow);
-                        }
-                        else
-                        {
-                            spriteBatch.Draw(TextureCache.white, Game1.font.GetStringBounds(warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT).Bloat(2), new Color(0.25f, 0, 0, 0.5f));
-                            spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT, Color.Yellow);
-                        }
-                    }
-                    break;
+                    anyThreadStalled = true;
                 }
                 else
                 {
@@ -606,11 +603,15 @@ namespace SpeedChem
                 spoolAnimCountdown--;
                 if (spoolAnimCountdown <= 0)
                 {
-                    spoolAnimIndex = (spoolAnimIndex+1)%TextureCache.spools.Length;
+                    spoolAnimIndex = (spoolAnimIndex + 1) % TextureCache.spools.Length;
                     spoolAnimCountdown = 3;
                 }
             }
-            spriteBatch.Draw(TextureCache.spools[spoolAnimIndex], bounds.XY + new Vector2(7, 32), Color.White);
+
+            if (isBigFactory)
+            {
+                spriteBatch.Draw(TextureCache.spools[spoolAnimIndex], bounds.XY + new Vector2(7, 32), Color.White);
+            }
             spriteBatch.Draw(TextureCache.spools[spoolAnimIndex], bounds.XY + new Vector2(24, 32), Color.White);
 
             if (internalSeller != null)
@@ -619,7 +620,7 @@ namespace SpeedChem
                 Vector2 signatureSize = new Vector2(internalSeller.width * 8, internalSeller.height * 8);
 
                 string text = "";
-                switch(sellerAction)
+                switch (sellerAction)
                 {
                     case FactoryCommandType.EARNMONEY:
                         text = "$" + sellerPrice;
@@ -645,59 +646,88 @@ namespace SpeedChem
                 spriteBatch.DrawString(Game1.font, text, textPos, Color.Yellow);
             }
 
+            const int CORE_SIZE = 5;
+            const int MAX_CORES_PER_LINE = 5;
+            int numCoresDrawn = 0;
+            Vector2 initialBarPos = bounds.Center + new Vector2(-16, 1);// new Vector2((int)bounds.CenterX + 2 - CORE_SIZE*3, (int)(bounds.Bottom + 2));
+            Vector2 progressBarPos = initialBarPos;
+            int recordingDurationFrames = 0;
+
+            if (commands.Count > 0)
+            {
+                recordingDurationFrames = commands.Last().time;
+            }
+            float recordingDurationSeconds = Game1.FramesToSeconds(recordingDurationFrames);
+
+            int numCoresDrawnThisLine = 0;
+            int numCoresPerThread = (int)Math.Ceiling(recordingDurationSeconds / TIME_PER_CORE);
+            int progressBarInternalWidth = (1 + numCoresPerThread * CORE_SIZE);
+            foreach (FactoryThread thread in threads)
+            {
+                float maxTimeFraction = 1.0f;//recordingDurationSeconds / (numCoresPerThread * TIME_PER_CORE);
+                spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.Black);
+                spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * maxTimeFraction), CORE_SIZE), new Color(100, 100, 100));
+                float progressFraction = thread.internalTime / (recordingDurationSeconds * 60.0f); // (60.0f* numCoresPerThread * TIME_PER_CORE);
+                spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * progressFraction), CORE_SIZE), thread.stalled ? Color.Red : new Color(100, 200, 0));// new Color(120,170,255));
+                spriteBatch.Draw(thread.stalled ? TextureCache.bad_cores_bar_small : TextureCache.cores_bar_small, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, 1 + numCoresPerThread * CORE_SIZE, 1 + CORE_SIZE), Color.White);
+
+                numCoresDrawn += numCoresPerThread;
+                numCoresDrawnThisLine += numCoresPerThread;
+                if (numCoresDrawnThisLine <= MAX_CORES_PER_LINE)
+                {
+                    progressBarPos.X += numCoresPerThread * CORE_SIZE;
+                }
+                else
+                {
+                    progressBarPos.X = initialBarPos.X;
+                    progressBarPos.Y += CORE_SIZE + 2;
+                    numCoresDrawnThisLine = 0;
+                }
+            }
+
+            while (numCores > numCoresDrawn)
+            {
+                spriteBatch.Draw(TextureCache.empty_core, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, 1+CORE_SIZE, 1+CORE_SIZE), Color.White);
+                progressBarPos.X += CORE_SIZE;
+                numCoresDrawn++;
+            }
+        }
+
+        public override void DrawUI(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
+        {
+            if (anyThreadStalled && warningTriangleMessage != "")
+            {
+                Vectangle warningRect = GetWarningRect();
+                spriteBatch.Draw(TextureCache.warning, warningRect, Color.White);
+
+                if (showErrorMessage)
+                {
+                    Vector2 messageSize = Game1.font.MeasureString(warningTriangleMessage);
+                    if (messageSize.X > warningRect.Left)
+                    {
+                        spriteBatch.Draw(TextureCache.white, Game1.font.GetStringBounds(warningTriangleMessage, warningRect.TopRight, TextAlignment.LEFT).Bloat(2), new Color(0.25f, 0, 0, 0.5f));
+                        spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopRight, Color.Yellow);
+                    }
+                    else
+                    {
+                        spriteBatch.Draw(TextureCache.white, Game1.font.GetStringBounds(warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT).Bloat(2), new Color(0.25f, 0, 0, 0.5f));
+                        spriteBatch.DrawString(Game1.font, warningTriangleMessage, warningRect.TopLeft, TextAlignment.RIGHT, Color.Yellow);
+                    }
+                }
+            }
+
             if (selected)
             {
                 ui.Draw(spriteBatch);
 
                 Rectangle dragBoxRect = GetDragBox();
 
-                const int CORE_SIZE = 8;
-                const int MAX_CORES_PER_LINE = 5;
-                int numCoresDrawn = 0;
-                Vector2 initialBarPos = new Vector2((int)bounds.CenterX + 2 - CORE_SIZE*3, (int)(bounds.Bottom + 2));
-                Vector2 progressBarPos = initialBarPos;
-
                 if (commands.Count > 0)
                 {
                     int recordingDurationFrames = commands.Last().time;
-                    float recordingDurationSeconds = Game1.FramesToSeconds(recordingDurationFrames);
-
-                    int numCoresDrawnThisLine = 0;
-                    int numCoresPerThread = (int)Math.Ceiling(recordingDurationSeconds / TIME_PER_CORE);
-                    int progressBarInternalWidth = (numCoresPerThread * CORE_SIZE);
-                    foreach (FactoryThread thread in threads)
-                    {
-                        float maxTimeFraction = 1.0f;//recordingDurationSeconds / (numCoresPerThread * TIME_PER_CORE);
-                        spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.Black);
-                        spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * maxTimeFraction), CORE_SIZE), new Color(100,100,100));
-                        float progressFraction = thread.internalTime / (recordingDurationSeconds * 60.0f); // (60.0f* numCoresPerThread * TIME_PER_CORE);
-                        spriteBatch.Draw(TextureCache.white, new Rectangle((int)progressBarPos.X, (int)(progressBarPos.Y), (int)(progressBarInternalWidth * progressFraction), CORE_SIZE), thread.stalled ? Color.Red : new Color(100,200,0));// new Color(120,170,255));
-                        spriteBatch.Draw(thread.stalled? TextureCache.bad_cores_bar: TextureCache.cores_bar, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, numCoresPerThread * CORE_SIZE, CORE_SIZE), Color.White);
-
-                        numCoresDrawn += numCoresPerThread;
-                        numCoresDrawnThisLine += numCoresPerThread;
-                        if (numCoresDrawnThisLine <= MAX_CORES_PER_LINE)
-                        {
-                            progressBarPos.X += numCoresPerThread * CORE_SIZE;
-                        }
-                        else
-                        {
-                            progressBarPos.X = initialBarPos.X;
-                            progressBarPos.Y += CORE_SIZE + 2;
-                            numCoresDrawnThisLine = 0;
-                        }
-                    }
-
                     string durationStr = "("+PlatformLevel.TimeToString(recordingDurationFrames)+" secs)";
-                    Vector2 textPos = new Vector2((int)bounds.CenterX, (int)(progressBarPos.Y + (numCoresDrawnThisLine == 0? 0: CORE_SIZE) + 2));
+                    Vector2 textPos = new Vector2((int)bounds.CenterX, (int)(bounds.Top) - 15);
                     spriteBatch.DrawString(Game1.font, durationStr, textPos, TextAlignment.CENTER, Color.White);
-                }
-
-                while (numCores > numCoresDrawn)
-                {
-                    spriteBatch.Draw(TextureCache.empty_core, new Rectangle((int)progressBarPos.X, (int)progressBarPos.Y, CORE_SIZE, CORE_SIZE), Color.White);
-                    progressBarPos.X += CORE_SIZE;
-                    numCoresDrawn++;
                 }
 
 /*                string text = "" + numCores;

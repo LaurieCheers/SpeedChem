@@ -35,7 +35,7 @@ namespace SpeedChem
                 case ChemicalElement.RED:
                     return Color.Red;
                 case ChemicalElement.BLUE:
-                    return Color.Blue;
+                    return new Color(64,128,255);
                 case ChemicalElement.STEEL:
                     return new Color(178, 178, 178);
                 case ChemicalElement.GLASS:
@@ -133,6 +133,21 @@ namespace SpeedChem
         public override bool Equals(Object obj)
         {
             return obj is ChemicalSignature && this == (ChemicalSignature)obj;
+        }
+
+        public ChemicalSignature Rotate()
+        {
+            ChemicalElement[] newElements = new ChemicalElement[elements.Length];
+            int oldWidth = width;
+            int oldHeight = height;
+            for(int oldX = 0; oldX < oldWidth; ++oldX)
+            {
+                for(int oldY = 0; oldY < oldHeight; ++oldY)
+                {
+                    newElements[(oldHeight - 1 - oldY) + oldX * oldHeight] = elements[oldX + oldY * oldWidth];
+                }
+            }
+            return new ChemicalSignature(oldHeight, newElements);
         }
 
         public override int GetHashCode()
@@ -587,10 +602,9 @@ namespace SpeedChem
         const float NAIL_SEARCH_RANGE = 4.0f;
         const float NAIL_SEARCH_NARROW = 8.0f;
 
-        public ChemBlock(ChemicalElement element, Texture2D texture, Vector2 pos, Vector2 size, Color color) : base(texture, pos, size, color)
+        public ChemBlock(ChemicalElement element, Texture2D texture, Vector2 pos, Vector2 size, Color color) : base(texture, pos, size, color, PlatformObjectType.Pushable)
         {
             this.element = element;
-            objectType = PlatformObjectType.Pushable;
             chemGrid = new ChemGrid(this);
         }
 
@@ -642,11 +656,22 @@ namespace SpeedChem
             RunMovement(allObjects);
         }
 
+        public RigidBody GetPrimaryBlock()
+        {
+            return connected[0];
+        }
+
         public override void CollidedX(RigidBody other)
         {
-            bool canPush = (other.onGround != null && (!(other.onGround is ChemBlock) || ((ChemBlock)other.onGround).chemGrid != this.chemGrid));
+            bool canPush = (other.onGround != null);
 
-            if (canPush || (other is PlatformCharacter && ((PlatformCharacter)other).jetting))
+            if(other is ChemBlock && ((ChemBlock)other).chemGrid != this.chemGrid)
+                canPush = true;
+
+            if (other is PlatformCharacter && ((PlatformCharacter)other).jetting)
+                canPush = true;
+
+            if (canPush)
             {
                 velocity.X = other.velocity.X;
                 other.velocity.X *= 0.95f;
@@ -656,6 +681,21 @@ namespace SpeedChem
             else
             {
                 base.CollidedX(other);
+            }
+        }
+
+        public override void CollidedY(RigidBody other)
+        {
+            if (other is ChemBlock || (other is PlatformCharacter && ((PlatformCharacter)other).jetting))
+            {
+                velocity.Y = other.velocity.Y;
+                other.velocity.Y *= 0.95f;
+                UpdatedVelocity();
+                other.UpdatedVelocity();
+            }
+            else
+            {
+                base.CollidedY(other);
             }
         }
 

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace SpeedChem
 {
-    class WorldObject_City : WorldObject
+    public class WorldObject_City : WorldObject
     {
-        CityLevel cityLevel;
+        public readonly CityLevel cityLevel;
         bool unlocked = false;
         bool justUnlocked = false;
         public override float incomePerSecond { get { return cityLevel.incomePerSecond; } }
@@ -64,6 +64,15 @@ namespace SpeedChem
 
             base.Draw(spriteBatch);
             spriteBatch.DrawString(Game1.font, cityLevel.name, bounds.BottomCenter, TextAlignment.CENTER, Color.White);
+
+            if(cityLevel.isComplete)
+            {
+                spriteBatch.Draw(TextureCache.check, bounds.BottomRight + new Vector2(-16, -16), Color.White);
+            }
+            else if(cityLevel.isNew)
+            {
+                spriteBatch.Draw(TextureCache.new_badge, bounds.BottomRight + new Vector2(-16, -16), Color.White);
+            }
         }
     }
 }

@@ -43,6 +43,16 @@ namespace LRCEngine
                 X + Width >= other.X && Y + Height >= other.Y;
         }
 
+        public Vectangle Bloat(float amount)
+        {
+            return new Vectangle(X - amount, Y - amount, Width + amount * 2, Height + amount * 2);
+        }
+
+        public Vectangle Bloat(float bX, float bY)
+        {
+            return new Vectangle(X - bX, Y - bY, Width + bX * 2, Height + bY * 2);
+        }
+
         public Vectangle(float aX, float aY, float aWidth, float aHeight)
         {
             X = aX; Y = aY; Width = aWidth; Height = aHeight;

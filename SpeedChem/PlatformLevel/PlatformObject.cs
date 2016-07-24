@@ -15,6 +15,7 @@ namespace SpeedChem
         Character,
         Pushable,
         Trigger,
+        JumpThrough,
     };
 
     public class PlatformObject
@@ -42,9 +43,10 @@ namespace SpeedChem
             this.size = size;
         }
 
-        public PlatformObject(Texture2D texture, Vector2 pos, Vector2 size, Color color): this(texture, pos, size)
+        public PlatformObject(Texture2D texture, Vector2 pos, Vector2 size, Color color, PlatformObjectType objectType): this(texture, pos, size)
         {
             this.color = color;
+            this.objectType = objectType;
         }
 
         public PlatformObject(Texture2D texture, Vector2 pos, Vector2 size, Color color, Rectangle textureRegion)

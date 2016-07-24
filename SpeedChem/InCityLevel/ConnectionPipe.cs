@@ -85,12 +85,17 @@ namespace SpeedChem
         float cachedRotation;
         int cachedLength;
         Rectangle cachedHandleRect;
+        Rectangle cachedMouseRect;
         SpriteEffects cachedEffects;
 
         List<float> animatingPips = new List<float>();
 
+        bool hovering;
         bool dragging;
         public bool movable;
+
+        const float MOUSE_RANGE = 8;
+        const float MOUSE_RANGE_SQR = MOUSE_RANGE* MOUSE_RANGE;
 
         public OutputPipe(CityObject source, Vector2 offset)
         {
@@ -102,7 +107,20 @@ namespace SpeedChem
 
         public UIMouseResponder GetMouseHover(Vector2 localMousePos)
         {
-            return movable && cachedHandleRect.Contains(localMousePos) ? this : null;
+            if (movable && cachedMouseRect.Contains(localMousePos))
+            {
+                float mouseOffsetLength = (localMousePos - cachedSource).Length();
+                if (mouseOffsetLength > cachedLength)
+                    mouseOffsetLength = cachedLength;
+                Vector2 nearestPipePos = (cachedSource + cachedDirection * mouseOffsetLength);
+                float distSqrFromNearest = (nearestPipePos - localMousePos).LengthSquared();
+                if (distSqrFromNearest < MOUSE_RANGE_SQR)
+                {
+                    return this;
+                }
+            }
+
+            return null;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -114,12 +132,13 @@ namespace SpeedChem
             else
                 UpdateForTargetPos(sourcePos + cachedOffset);
 
-            if (movable)
+            bool highlighted = (hovering || dragging);
+            //if (movable)
             {
-                spriteBatch.Draw(TextureCache.pipe, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, cachedLength, 16),
+                spriteBatch.Draw(highlighted ? TextureCache.pipe_hover: TextureCache.pipe, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, cachedLength, 16),
                     null, Color.White, cachedRotation, new Vector2(0, 8), cachedEffects, 0.0f);
             }
-            else
+            /*else
             {
                 int pipeTextureLength = TextureCache.grassy_pipe.Width;
                 Vector2 currentPos = sourcePos;
@@ -129,7 +148,10 @@ namespace SpeedChem
                     spriteBatch.Draw(TextureCache.grassy_pipe, currentPos, null, Color.White, cachedRotation, new Vector2(0, 8), 1.0f, cachedEffects, 0.0f);
                     currentPos += step;
                 }
-            }
+            }*/
+
+            spriteBatch.Draw(highlighted ? TextureCache.pipe_head_hover: TextureCache.pipe_head, new Rectangle((int)sourcePos.X, (int)sourcePos.Y, 16,16), null, Color.White, cachedRotation, new Vector2(8, 8), cachedEffects, 0);
+            spriteBatch.Draw(highlighted ? TextureCache.pipe_end_hover: TextureCache.pipe_end, new Rectangle((int)(sourcePos.X + cachedOffset.X), (int)(sourcePos.Y + cachedOffset.Y), 16, 16), null, Color.White, cachedRotation, new Vector2(8, 8), cachedEffects, 0);
 
             foreach (float animatingPip in animatingPips)
             {
@@ -140,8 +162,8 @@ namespace SpeedChem
                 spriteBatch.Draw(TextureCache.chemIcon, new Rectangle((int)(sourcePos.X + targetOffset.X - 2), (int)(sourcePos.Y + targetOffset.Y - 2), 4, 4), Color.Yellow);
             }
 
-            if(movable)
-                spriteBatch.Draw(TextureCache.pipeHandle, cachedHandleRect, Color.White);
+            //if(movable)
+            //    spriteBatch.Draw((hovering || dragging) ? TextureCache.pipeHandle_hover: TextureCache.pipeHandle, cachedHandleRect, Color.White);
         }
 
         void UpdateForTargetPos(Vector2 targetPos)
@@ -151,6 +173,7 @@ namespace SpeedChem
             {
                 float length = offset.Length();
                 Vector2 dir = offset / length;
+                cachedSource = sourcePos;
                 cachedOffset = offset;
                 cachedLength = (int)length;
                 cachedDirection = cachedOffset;
@@ -161,7 +184,11 @@ namespace SpeedChem
                     handlePos = sourcePos + dir * 32.0f;
                 else
                     handlePos = targetPos - dir * 32.0f;
-                cachedHandleRect = new Rectangle((int)handlePos.X - 8, (int)handlePos.Y - 12, 16, 16);
+                cachedHandleRect = new Rectangle((int)handlePos.X - 8, (int)handlePos.Y - 18, 16, 16);
+                //cachedMouseRect = cachedHandleRect.Bloat(5);
+
+                cachedMouseRect = new Rectangle((int)cachedSource.X, (int)cachedSource.Y, (int)cachedOffset.X, (int)cachedOffset.Y).FixNegatives().Bloat((int)MOUSE_RANGE);
+
                 cachedEffects = offset.X < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
             }
         }
@@ -221,11 +248,16 @@ namespace SpeedChem
             if (!movable)
                 return;
 
-            bool inBounds = blackboard.inputState.hoveringElement == this;// cachedHandleRect.Contains(blackboard.inputState.MousePos);
-            if (inBounds && blackboard.inputState.WasMouseLeftJustPressed())
+            hovering = blackboard.inputState.hoveringElement == this;// cachedHandleRect.Contains(blackboard.inputState.MousePos);
+            if (hovering && blackboard.inputState.WasMouseLeftJustPressed())
             {
                 dragging = true;
                 blackboard.selectedObject = null;
+            }
+
+            if(cachedOffset.Y < 0)
+            {
+                ConnectTo(null);
             }
 
             if(dragging)
@@ -236,7 +268,15 @@ namespace SpeedChem
                 if (overObject != null)
                 {
                     overSocket = overObject.GetNearestSocket(blackboard.inputState.MousePos);
+                    if (overSocket != null && overSocket.pos.Y < sourcePos.Y)
+                    {
+                        overSocket = null;
+                    }
                 }
+
+                Vector2 clampedPos = blackboard.inputState.MousePos;
+                if (clampedPos.Y <= sourcePos.Y)
+                    clampedPos.Y = sourcePos.Y;
 
                 if (blackboard.inputState.mouseLeft.isDown)
                 {
@@ -246,7 +286,7 @@ namespace SpeedChem
                     }
                     else
                     {
-                        UpdateForTargetPos(blackboard.inputState.MousePos);
+                        UpdateForTargetPos(clampedPos);
                     }
                 }
                 else

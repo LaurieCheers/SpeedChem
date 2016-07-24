@@ -13,6 +13,7 @@ namespace SpeedChem
     {
         ChemicalSignature signature;
         int numCrystals;
+        public override float ShelfRestOffset { get { return 12; } }
 
         public CrystalOutbox(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.depot, template.getVector2("pos"), TextureCache.depot.Size())
         {
@@ -29,7 +30,7 @@ namespace SpeedChem
 
         void Init()
         {
-            SetPipeSocket(new Vector2(16, 28), 10);
+            SetPipeSocket(new Vector2(16, 2), 10);
         }
 
         public override bool ReceiveInput(ChemicalSignature signature, ref string errorMessage)
@@ -59,7 +60,11 @@ namespace SpeedChem
         public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
         {
             base.Draw(spriteBatch, blackboard);
-            Vector2 pos = new Vector2(bounds.X, bounds.Y + bounds.Height);
+        }
+
+        public override void DrawUI(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
+        {
+            Vector2 pos = new Vector2(bounds.X, bounds.Y + 32);
             Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
 
             string text = numCrystals > 1? " +"+numCrystals+" bubbles": " +1 bubble";
@@ -75,6 +80,8 @@ namespace SpeedChem
                 pos.Y
             );
 
+            Vectangle labelRect = new Vectangle(signaturePos.X, signaturePos.Y + (signatureSize.Y - textSize.Y) * 0.5f, signatureSize.X + textSize.X, Math.Max(signatureSize.Y, textSize.Y));
+            spriteBatch.Draw(TextureCache.white, labelRect.Bloat(5,2), new Color(0, 0, 0, 0.5f));
             signature.Draw(spriteBatch, signaturePos, true);
 
             spriteBatch.DrawString(Game1.font, text, textPos, Color.Yellow);

@@ -31,13 +31,20 @@ namespace SpeedChem
 
         public override void Update(InputState input, List<PlatformObject> allObjects, List<Projectile> projectiles)
         {
-            Game1.instance.inventory.UpdateWeapons(input, this, allObjects, projectiles);
+            pressingLeft = input.IsKeyDown(Keys.A);
+            pressingRight = input.IsKeyDown(Keys.D);
+            bool pressingJump = input.IsKeyDown(Keys.Space);
+
+            if(pressingLeft)
+                spriteEffects = SpriteEffects.FlipHorizontally;
+            else if (pressingRight)
+                spriteEffects = SpriteEffects.None;
 
             if (jetting)
             {
                 const float THRUST_MINRANGE = 16.0f;
                 const float THRUST_STRENGTH = 8.0f;
-                const float DAMPING = 0.94f;
+                const float DAMPING = 0.74f;
 
                 Vector2 thrust = input.MousePos - bounds.Center;
                 float length = thrust.Length();
@@ -46,11 +53,38 @@ namespace SpeedChem
 
                 //thrust.X *= 0.85f;
 
-                thrust *= THRUST_STRENGTH / length;
-                velocity = thrust;
-//                velocity *= DAMPING;
+                //thrust *= THRUST_STRENGTH / length;
+                //velocity = thrust;
+                //                velocity *= DAMPING;
 
-//                velocity.
+                if (pressingLeft)
+                {
+                    velocity.X = -THRUST_STRENGTH;
+                }
+                else if (pressingRight)
+                {
+                    velocity.X = THRUST_STRENGTH;
+                }
+                else
+                {
+                    velocity.X *= DAMPING;
+                }
+
+                if (pos.Y < 0)
+                {
+                    pos.Y = 0;
+                    velocity.Y = 0;
+                }
+                else if(pressingJump && pos.Y > 0)
+                {
+                    velocity.Y = -THRUST_STRENGTH;
+                }
+                else
+                {
+                    //velocity.Y *= DAMPING;
+                }
+
+                //                velocity.
             }
             else
             {
@@ -72,8 +106,6 @@ namespace SpeedChem
                     UnbondFromGroup();
                 }
 
-                pressingLeft = input.IsKeyDown(Keys.A);
-                pressingRight = input.IsKeyDown(Keys.D);
                 if (pressingLeft)
                 {
                     Game1.instance.inventory.pressLeftTutorial = false;
@@ -101,7 +133,7 @@ namespace SpeedChem
                     velocity.X *= BRAKES_DAMPINGX;
                 }
 
-                if (velocity.Y > 0 || input.IsKeyDown(Keys.Space))
+                if (velocity.Y > 0 || pressingJump)
                 {
                     velocity.Y *= DAMPINGY;
                 }
@@ -149,7 +181,11 @@ namespace SpeedChem
             if (pos.Y > 700)
             {
                 pos.Y = -30;
-                if (Game1.instance.platformLevel.isDoubleFactory)
+                if(Game1.instance.platformLevel.isBigFactory)
+                {
+                    pos.X = 300;
+                }
+                else if (Game1.instance.platformLevel.isDoubleFactory)
                 {
                     if (pos.X > 300)
                         pos.X = 300;

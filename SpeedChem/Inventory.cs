@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,6 +42,12 @@ namespace SpeedChem
         public bool pressRightTutorial = true;
         public bool pressJumpTutorial = true;
 
+        public bool hasWorldMap = false;
+        public bool hasFactoryBlueprint = false;
+        public bool hasBigFactoryBlueprint = false;
+        public bool hasSiloBlueprint = false;
+        public bool hasCentrifugeBlueprint = false;
+
         public Inventory()
         {
             unlockableWeapons = new Dictionary<string, Weapon>();
@@ -48,6 +55,8 @@ namespace SpeedChem
             AddUnlockable(new Weapon_CuttingBeam());
             AddUnlockable(new Weapon_BubbleGun());
             AddUnlockable(new Weapon_Jetpack());
+            AddUnlockable(new Weapon_Teleporter());
+            AddUnlockable(new Weapon_Grabber());
 
             Weapon rivetGun = unlockableWeapons["RIVETGUN"];
 
@@ -145,17 +154,47 @@ namespace SpeedChem
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.DrawString(Game1.font, "$" + money, new Vector2(10, 10), Color.Yellow);
+            spriteBatch.DrawString(Game1.font, "$" + money, new Vector2(10, 10), Color.Black);
 
             if (showIncomePerSecond)
-                spriteBatch.DrawString(Game1.font, "($" + (int)incomePerSecond + "/s)", new Vector2(10, 30), Color.Yellow);
+                spriteBatch.DrawString(Game1.font, "($" + (int)incomePerSecond + "/s)", new Vector2(10, 30), Color.Black);
 
-            if(showCrystals)
-                spriteBatch.DrawString(Game1.font, "" + crystals + " bubbles", new Vector2(10, 50), Color.Orange);
+            if (showCrystals)
+                spriteBatch.DrawString(Game1.font, "" + crystals + " bubbles", new Vector2(10, 50), Color.Black);
 
             if (cityJustUnlocked)
             {
                 spriteBatch.DrawString(Game1.font, "New city available on the map screen!", new Vector2(300, 5), TextAlignment.CENTER, Color.Orange);
+            }
+        }
+
+        public void AcquireBlueprint(string blueprint)
+        {
+            switch (blueprint)
+            {
+                case "WORLD":
+                    hasWorldMap = true;
+                    break;
+                case "FACTORY":
+                    hasFactoryBlueprint = true;
+                    break;
+                case "BIG_FACTORY":
+                    hasBigFactoryBlueprint = true;
+                    break;
+                case "SILO":
+                    hasSiloBlueprint = true;
+                    break;
+                case "CENTRIFUGE":
+                    hasCentrifugeBlueprint = true;
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+
+            if(Game1.instance.currentScreen is CityLevel)
+            {
+                (Game1.instance.currentScreen as CityLevel).InitUI();
             }
         }
     }

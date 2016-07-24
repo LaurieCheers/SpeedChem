@@ -72,7 +72,7 @@ namespace SpeedChem
             buttonStyle = UIButton.GetDefaultStyle(Content);
             worldLevel = new WorldLevel(settings.getJSON("cities"));
             platformLevel = new PlatformLevel();
-            currentScreen = worldLevel;
+            currentScreen = worldLevel.tutorialCity.cityLevel;
             splashes = new SplashManager();
         }
 
@@ -138,6 +138,8 @@ namespace SpeedChem
 
         public void ViewCity(CityLevel cityLevel)
         {
+            cityLevel.InitUI();
+            cityLevel.isNew = false;
             this.currentScreen = cityLevel;
         }
 

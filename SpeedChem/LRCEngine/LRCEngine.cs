@@ -184,5 +184,15 @@ namespace LRCEngine
         {
             return new Rectangle(rect.X - amount, rect.Y - amount, rect.Width + amount * 2, rect.Height + amount * 2);
         }
+
+        public static Rectangle FixNegatives(this Rectangle rect)
+        {
+            return new Rectangle(
+                Math.Min(rect.X, rect.X + rect.Width),
+                Math.Min(rect.Y, rect.Y + rect.Height),
+                Math.Abs(rect.Width),
+                Math.Abs(rect.Height)
+            );
+        }
     }
 }

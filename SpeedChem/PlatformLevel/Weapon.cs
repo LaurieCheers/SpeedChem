@@ -92,6 +92,115 @@ namespace SpeedChem
         }
     }
 
+    class Weapon_Teleporter : Weapon
+    {
+        bool showGhost;
+        Vector2 ghostPos;
+        public Texture2D texture { get { return TextureCache.jetpack; } }
+        public string name { get { return "Teleporter"; } }
+        public string ID { get { return "TELEPORTER"; } }
+
+        public void Update(MouseButtonState buttonState, Vector2 mousePos, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
+        {
+            if (buttonState == null)
+                return;
+
+            showGhost = false;
+            if(buttonState.isDown)
+                Game1.instance.platformLevel.PauseFrame();
+
+            if (buttonState.isDown || buttonState.justReleased)
+            {
+                Vectangle targetBounds = new Vectangle(mousePos - shooter.size/2, shooter.size);
+                bool targetBoundsFailed = false;
+                Vectangle altBounds = new Vectangle(mousePos - new Vector2(shooter.size.X/2, shooter.size.Y), shooter.size);
+                bool altBoundsFailed = false;
+                foreach (PlatformObject p in allObjects)
+                {
+                    if(!targetBoundsFailed && p.bounds.Intersects(targetBounds))
+                    {
+                        targetBoundsFailed = true;
+                        if (altBoundsFailed)
+                            break;
+                    }
+                    if (!altBoundsFailed && p.bounds.Intersects(altBounds))
+                    {
+                        altBoundsFailed = true;
+                        if (targetBoundsFailed)
+                            break;
+                    }
+                }
+
+                if(!targetBoundsFailed)
+                {
+                    ghostPos = targetBounds.XY;
+                    showGhost = true;
+                }
+                else if(!altBoundsFailed)
+                {
+                    ghostPos = altBounds.XY;
+                    showGhost = true;
+                }
+            }
+
+            if(buttonState.justReleased && showGhost)
+            {
+                shooter.pos = ghostPos;
+                showGhost = false;
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            if(showGhost)
+            {
+                spriteBatch.Draw(TextureCache.character, ghostPos, Color.Gray);
+            }
+        }
+    }
+
+    class Weapon_Grabber : Weapon
+    {
+        ChemBlock clicked;
+        Vector2 clickedOffset;
+        public Texture2D texture { get { return TextureCache.jetpack; } }
+        public string name { get { return "Grabber"; } }
+        public string ID { get { return "GRABBER"; } }
+
+        public void Update(MouseButtonState buttonState, Vector2 mousePos, PlatformCharacter shooter, List<PlatformObject> allObjects, List<Projectile> projectiles)
+        {
+            if (buttonState == null)
+                return;
+
+            if (buttonState.justPressed)
+            {
+                foreach (PlatformObject p in allObjects)
+                {
+                    if(p is ChemBlock && p.bounds.Contains(mousePos))
+                    {
+                        clicked = (ChemBlock)(p as ChemBlock).GetPrimaryBlock();
+                        clickedOffset = mousePos - clicked.pos;
+                        break;
+                    }
+                }
+            }
+            else if(buttonState.justReleased)
+            {
+                clicked = null;
+            }
+
+            if(clicked != null)
+            {
+                Vector2 offset = mousePos - (clicked.pos + clickedOffset);
+                clicked.velocity = offset;
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+        }
+    }
+
     class Weapon_CuttingBeam : Weapon
     {
         public Texture2D texture { get { return TextureCache.cutting_laser; } }

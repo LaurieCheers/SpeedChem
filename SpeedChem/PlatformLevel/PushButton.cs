@@ -24,7 +24,7 @@ namespace SpeedChem
             objectType = PlatformObjectType.Trigger;
         }
 
-        public PushButton(Command target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size, Color color) : base(unpushedTexture, pos, size, color)
+        public PushButton(Command target, Texture2D pushedTexture, Texture2D unpushedTexture, Vector2 pos, Vector2 size, Color color) : base(unpushedTexture, pos, size, color, PlatformObjectType.Trigger)
         {
             this.target = target;
             this.pushedTexture = pushedTexture;

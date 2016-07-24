@@ -4,91 +4,309 @@
       "name": "Tutopia",
       "pos": [ 100, 140 ],
       "price": 0,
+	  "isTutorial": true,
       "unlocks": {
         "start": {
           "inbox1": {
             "type": "inbox",
-            "chemical": [ "W" ],
-            "pos": [ 100, 30 ],
+            "chemical": [ "B" ],
+            "pos": [ 100, 10 ],
             "pipes": [ "factory1" ]
           },
           "factory1": {
             "type": "factory",
             "movable": false,
-            "pos": [ 40, 310 ],
+            "pos": [ 40, 330 ],
             "pipes": [ "outbox1" ]
           },
           "outbox1": {
             "type": "outbox",
-            "chemical": [ "WW" ],
+            "chemical": [ "BB" ],
             "price": 1,
-            "pos": [ 20, 380 ]
+            "pos": [ 20, 395 ]
           }
         },
         "outbox1": {
 		  "build2": {
               "type": "buildingSite",
-              "pos": [ 200, 20 ],
-			  "price":6,
-			  "built": {
-				"type": "inbox",
-				"chemical": [ "B" ],
-				"pos": [ 200, 30 ]
-			  },
+              "pos": [ 200, 10 ],
+			  "chemical": [ "R" ],
+			  "price":3
 		  },
           "factory2": {
             "type": "factory",
             "movable": false,
-            "pos": [ 140, 310 ],
+            "pos": [ 140, 330 ],
             "pipes": [ "outbox2" ]
           },
           "outbox2": {
             "type": "outbox",
-            "chemical": [ "B", "B" ],
+            "chemical": [ "R", "R" ],
             "price": 2,
-            "pos": [ 120, 380 ]
+            "pos": [ 120, 395 ]
           }
         },
         "outbox2": {
-          "factory3": {
-            "type": "factory",
-            "movable": false,
-            "pos": [ 240, 310 ],
-            "pipes": [ "outbox3" ]
-          },
+		  "blueprint4": {
+			"type": "blueprint",
+			"pos": [ 450, 150 ],
+			"label":"Factory Blueprint"
+			"unlocks":"FACTORY",
+		  },
           "outbox3": {
             "type": "outbox",
-            "chemical": [ "BWB" ],
+            "chemical": [ "BRB" ],
             "price": 10,
-            "pos": [ 220, 380 ]
+            "pos": [ 220, 395 ]
           }
         },
-        "outbox3": {
+		"outbox3": {
 		  "build4": {
             "type": "buildingSite",
             "pos": [ 300, 20 ],
-			"price":16,
-            "built":{
-              "type": "inbox",
-              "chemical": [ "RRR" ],
-              "pos": [ 300, 30 ]
-            },
+            "chemical": [ "WWW" ],
+		    "price":16,
 		  },
           "outbox4": {
             "type": "outbox",
-            "chemical": [ "B B", "RRR", " W " ],
+            "chemical": [ "B B", "WWW", " R " ],
             "price": 30,
-            "pos": [ 320, 380 ]
+            "pos": [ 320, 395 ]
           },
-          "BUY_FACTORY": true
+        }
+		"outbox4":{
+		  "blueprint4": {
+			"type": "blueprint",
+			"pos": [ 450, 50 ],
+			"label":"Train Station"
+			"unlocks":"WORLD",
+		  },
+ 	    }
+      }
+    },
+	
+	"city1a": {
+      "name": "Bristol",
+      "pos": [ 200, 320 ],
+      "price": 0,
+      "unlocks": {
+        "start": {
+          "inbox1": {
+			"type": "buildingSite",
+			"chemical": [ "G" ],
+			"pos": [ 150, 30 ]
+			"price":100,
+          },
+          "inbox1a": {
+			"type": "buildingSite",
+			"chemical": [ "B" ],
+			"pos": [ 250, 30 ]
+			"price":100,
+          },
+          "outbox1": {
+            "type": "outbox",
+            "chemical": [ "BG" ],
+            "price": 40,
+            "pos": [ 100, 410 ]
+          }
+        },
+		"outbox1":{
+          "outbox2": {
+            "type": "outbox",
+            "chemical": [ "BG", "GB" ],
+            "price": 100,
+            "pos": [ 300, 410 ]
+          },
+		},
+      }
+    },
+	
+	"city2": {
+      "name": "Cardiff",
+      "pos": [ 100, 310 ],
+      "price": 1000,
+      "unlocks": {
+        "start": {
+		  "plinth1":{
+			"type": "plinth",
+			"weapon":"BUBBLEGUN",
+			"crystals":30,
+			"pos": [ 250, 230 ],
+			"price": 3000,
+		  },
+		},
+        "plinth1": {
+          "inbox2": {
+			"type": "inbox",
+			"chemical": [ "R","R","R" ],
+			"pos": [ 150, 30 ],
+			"pipes": [ "factory2" ]
+          },
+		  "factory2": {
+            "type": "factory",
+            "movable": false,
+            "pos": [ 40, 310 ],
+            "pipes": [ "outbox2" ]
+          },
+          "outbox2": {
+            "type": "outbox",
+            "chemical": [ " R ", "WRW", " R " ],
+            "price": 98,
+            "pos": [ 120, 380 ]
+          }
+        },
+		"outbox2":{
+          "inbox3": {
+            "type": "buildingSite",
+            "chemical": [ "W" ],
+			"price":200,
+            "pos": [ 250, 30 ]
+          },
+          "outbox3": {
+            "type": "crystalOutbox",
+            "chemical": [ "WWW", "W W", "WWW" ],
+            "crystals": 9,
+            "pos": [ 250, 410 ]
+          }
+        },
+		"outbox3":{
+          "outbox4": {
+            "type": "outbox",
+            "chemical": [ "WRW", " R ", "WRW" ],
+            "price": 200,
+            "pos": [ 400, 380 ]
+          }
+		}
+      }
+    },
+
+	"city3": {
+      "name": "Birmingham",
+      "pos": [ 400, 190 ],
+      "price": 10000,
+      "unlocks": {
+	    "start":{
+		  "blueprint1": {
+			"type": "blueprint",
+			"pos": [ 250, 150 ],
+			"label":"Centrifuge Blueprint"
+			"unlocks":"CENTRIFUGE",
+		  },
+          "inbox1": {
+            "type": "buildingSite",
+            "chemical": [ " W ", "RWR" ],
+			"price":1000,
+            "pos": [ 150, 30 ]
+          },
+		  "outbox1": {
+            "type": "outbox",
+            "chemical": [
+			  "RWR",
+			  " W ",
+			],
+            "price": 5,
+            "pos": [ 50, 380 ]
+          }
+		}
+        "outbox1": {
+		  "outbox2": {
+            "type": "outbox",
+            "chemical": [
+			  " RR ",
+			  "WWWW",
+			  " RR ",
+			],
+            "price": 40,
+            "pos": [ 200, 380 ]
+          }
+		}
+        "outbox2": {
+          "outbox3": {
+            "type": "outbox",
+            "chemical": [
+			  " R  ",
+			  "WWR ",
+			  " RWW",
+			  "  R ",
+			],
+            "price": 60,
+            "pos": [ 350, 380 ]
+          }
         }
       }
-    }
+    },
+	
+	"city4": {
+      "name": "Sheffield",
+      "pos": [ 530, 90 ],
+      "price": 50000,
+      "unlocks": {
+	    "start":{
+		  "plinth1":{
+			"type": "plinth",
+			"weapon":"TELEPORTER",
+			"pos": [ 250, 230 ],
+			"price": 60000,
+		  },
+		}
+        "plinth1": {
+          "inbox1": {
+            "type": "buildingSite",
+            "chemical": [ "BGB", " B " ],
+            "pos": [ 150, 30 ]
+			"price": 500,
+			"pipes": [ "factory1" ]
+          },
+          "factory1": {
+            "type": "factory",
+            "pos": [ 40, 310 ]
+			"pipes": [ "outbox1" ]
+			"movable": false,
+          },
+		  "outbox1": {
+            "type": "outbox",
+            "chemical": [
+			  " ???",
+			  "  ? ",
+			  "??? ",
+			  " ?  ",
+			],
+            "price": 25,
+            "pos": [ 50, 380 ]
+          }
+		}
+        "outbox1": {
+		  "outbox2": {
+            "type": "outbox",
+            "chemical": [
+			  "???",
+			  " ? ",
+			  "???",
+			],
+            "price": 80,
+            "pos": [ 200, 380 ]
+          }
+		}
+        "outbox2": {
+          "outbox3": {
+            "type": "outbox",
+            "chemical": [
+			  " ?  ",
+			  "????",
+			  " ?  ",
+			  "????",
+			],
+            "price": 540,
+            "pos": [ 350, 380 ]
+          }
+        }
+      }
+    },
 
-    "city2": {
+/*	"city5": {
       "name": "Liverpool",
       "pos": [ 300, 70 ],
-      "price": 300,
+      "price": 20000,
       "unlocks": {
         "start": {
           "inbox1": {
@@ -99,7 +317,7 @@
           },
           "factory1": {
               "type": "factory",
-              "pos": [ 30, 115 ]
+              "pos": [ 100, 115 ]
 			  "movable": false,
               "pipes": [ "silo1" ]
 	      }
@@ -107,18 +325,18 @@
               "type": "silo",
               "chemical": [ "B" ],
 			  "movable": false,
-              "pos": [ 110, 160 ]
+              "pos": [ 40, 160 ]
           },
           "outbox1": {
             "type": "outbox",
             "chemical": [ "B", "B", "B" ],
             "price": 10,
-            "pos": [ 150, 380 ]
+            "pos": [ 50, 380 ]
           },
-          "BUY_FACTORY": true,
+          //"BUY_BIG_FACTORY": true,
 		},
 		"outbox1":{
-          "BUY_SILO": true,
+          //"BUY_SILO": true,
           "inbox2": {
             "type": "inbox",
             "chemical": [ "GGR" ],
@@ -153,133 +371,7 @@
 		  },
         },
       }
-    }
+    },*/
 
-    "city4": {
-      "name": "Cardiff",
-      "pos": [ 100, 310 ],
-      "price": 1500,
-      "unlocks": {
-        "start": {
-		  "plinth1":{
-			"type": "plinth",
-			"weapon":"BUBBLEGUN",
-			"crystals":30,
-			"pos": [ 250, 230 ],
-			"price": 3000,
-		  },
-		},
-        "plinth1": {
-          "BUY_FACTORY": true,
-          "inbox2": {
-			"type": "inbox",
-			"chemical": [ "R","R","R" ],
-			"pos": [ 150, 30 ]
-			"pipes": [ "factory2" ]
-          },
-		  "factory2": {
-            "type": "factory",
-            "movable": false,
-            "pos": [ 40, 310 ],
-            "pipes": [ "outbox2" ]
-          },
-          "outbox2": {
-            "type": "outbox",
-            "chemical": [ " R ", "WRW", " R " ],
-            "price": 98,
-            "pos": [ 120, 380 ]
-          }
-        },
-		"outbox2":{
-          "inbox3": {
-            "type": "inbox",
-            "chemical": [ "W" ],
-            "pos": [ 250, 30 ]
-          },
-          "outbox3": {
-            "type": "crystalOutbox",
-            "chemical": [ "WWW", "W W", "WWW" ],
-            "crystals": 9,
-            "pos": [ 250, 410 ]
-          }
-        },
-		"outbox3":{
-          "outbox4": {
-            "type": "outbox",
-            "chemical": [ "WRW", " R ", "WRW" ],
-            "price": 200,
-            "pos": [ 400, 380 ]
-          }
-		}
-      }
-    },
-
-    "city3": {
-      "name": "Sheffield",
-      "pos": [ 530, 90 ],
-      "price": 10000,
-      "unlocks": {
-	    "start":{
-		  "plinth1":{
-			"type": "plinth",
-			"weapon":"JETPACK",
-			"pos": [ 250, 230 ],
-			"price": 20000,
-		  },
-		}
-        "plinth1": {
-          "BUY_FACTORY": true,
-          "BUY_SILO": true,
-          "inbox1": {
-            "type": "inbox",
-            "chemical": [ "BGB", " B " ],
-            "pos": [ 150, 30 ]
-			"pipes": [ "factory1" ]
-          },
-          "factory1": {
-            "type": "factory",
-            "pos": [ 40, 310 ]
-			"pipes": [ "outbox1" ]
-			"movable": false,
-          },
-		  "outbox1": {
-            "type": "outbox",
-            "chemical": [
-			  " ???",
-			  "  ? ",
-			  "??? ",
-			  " ?  ",
-			],
-            "price": 25,
-            "pos": [ 50, 380 ]
-          }
-		}
-        "outbox1": {
-		  "outbox2": {
-            "type": "outbox",
-            "chemical": [
-			  "???",
-			  "?? ",
-			  "???",
-			],
-            "price": 400,
-            "pos": [ 200, 380 ]
-          }
-		}
-        "outbox2": {
-          "outbox3": {
-            "type": "outbox",
-            "chemical": [
-			  " ? ",
-			  "???",
-			  "???",
-			  "? ?",
-			],
-            "price": 540,
-            "pos": [ 350, 380 ]
-          }
-        }
-      }
-    },
   }
 }

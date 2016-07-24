@@ -23,7 +23,7 @@ namespace SpeedChem
             connectedID = nextUnusedConnectID++;
         }
 
-        public RigidBody(Texture2D texture, Vector2 pos, Vector2 size, Color color) : base(texture, pos, size, color)
+        public RigidBody(Texture2D texture, Vector2 pos, Vector2 size, Color color, PlatformObjectType objectType) : base(texture, pos, size, color, objectType)
         {
             connected = new RigidBody[] { this };
             connectedID = nextUnusedConnectID++;
@@ -35,12 +35,12 @@ namespace SpeedChem
             connectedID = nextUnusedConnectID++;
         }
 
-        public bool IgnoreCollisions(PlatformObject obj)
+        public bool IgnoreCollisions(PlatformObject obj, Vector2 move)
         {
             if (obj is RigidBody)
                 return ((RigidBody)obj).connectedID == connectedID;
 
-            return obj.objectType == PlatformObjectType.Trigger;
+            return obj.objectType == PlatformObjectType.Trigger || (objectType == PlatformObjectType.Character && obj.objectType == PlatformObjectType.JumpThrough && move.Y <= 0);
         }
 
         public virtual void HandleColliding(PlatformObject obj, Vector2 move)
@@ -128,7 +128,7 @@ namespace SpeedChem
 
             foreach (PlatformObject obj in allObjects)
             {
-                if (obj == this || IgnoreCollisions(obj))
+                if (obj == this || IgnoreCollisions(obj, currentMove))
                     continue;
 
                 Vectangle objBounds = obj.bounds;

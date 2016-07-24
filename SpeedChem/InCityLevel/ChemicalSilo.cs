@@ -15,10 +15,11 @@ namespace SpeedChem
         ChemicalSignature signature;
         public int amount;
         int maxAmount = 999;
+        public override float ShelfRestOffset { get { return -5; } }
 
         public ChemicalSilo(CityLevel cityLevel, JSONTable template): base(
             cityLevel,
-            template.getBool("movable", true)? TextureCache.silo : TextureCache.grassy_silo,
+            TextureCache.silo,
             template.getVector2("pos"),
             TextureCache.silo.Size()
           )
@@ -44,8 +45,8 @@ namespace SpeedChem
         {
             ui = new UIContainer();
 
-            SetPipeSocket(new Vector2(16, 16), 1);
-            AddOutputPipe(new Vector2(16,16));
+            SetPipeSocket(new Vector2(16, 28), 1);
+            AddOutputPipe(new Vector2(16,54));
             unlimitedPipes = true;
         }
 
@@ -129,23 +130,43 @@ namespace SpeedChem
         {
             base.Draw(spriteBatch, blackboard);
 
-            Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
+            bool hovering = (blackboard.inputState != null) ? (blackboard.inputState.hoveringElement == this) : false;
+            if (hovering || dragging)
+            {
+                spriteBatch.Draw(
+                    TextureCache.silo_hover,
+                    bounds,
+                    new Color(0.75f, 0.75f, 0.0f, 0.5f)
+                );
+            }
+        }
 
-            string text = "" + amount;
-            Vector2 textSize = Game1.font.MeasureString(text);
+        public override void DrawUI(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
+        {
+            if (signature != null)
+            {
+                Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
 
-            Vector2 signaturePos = new Vector2(
-                bounds.X + (bounds.Width - (signatureSize.X + textSize.X)) * 0.5f,
-                bounds.Y + (textSize.Y - signatureSize.Y) * 0.5f - textSize.Y
-            );
+                string text = "" + amount;
+                Vector2 textSize = Game1.font.MeasureString(text);
 
-            Vector2 textPos = new Vector2(
-                signaturePos.X + signatureSize.X + 2,
-                bounds.Y - textSize.Y
-            );
+                Vector2 signaturePos = new Vector2(
+                    bounds.X + (bounds.Width - (signatureSize.X + textSize.X)) * 0.5f,
+                    bounds.Y + 32 + (textSize.Y - signatureSize.Y) * 0.5f - textSize.Y
+                );
 
-            signature.Draw(spriteBatch, signaturePos, true);
-            spriteBatch.DrawString(Game1.font, text, textPos, Color.Yellow);
+                Vector2 textPos = new Vector2(
+                    signaturePos.X + signatureSize.X + 2,
+                    bounds.Y + 32 - textSize.Y
+                );
+
+                float labelHeight = Math.Max(signatureSize.Y, textSize.Y);
+                Vectangle labelRect = new Vectangle(signaturePos.X, signaturePos.Y + (signatureSize.Y - labelHeight) * 0.5f, signatureSize.X + textSize.X, Math.Max(signatureSize.Y, textSize.Y));
+                spriteBatch.Draw(TextureCache.white, labelRect.Bloat(5, 2), new Color(0, 0, 0, 0.5f));
+
+                signature.Draw(spriteBatch, signaturePos, true);
+                spriteBatch.DrawString(Game1.font, text, textPos, Color.LightGray);
+            }
         }
     }
 }

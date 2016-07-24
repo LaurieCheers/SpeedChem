@@ -22,7 +22,9 @@ namespace SpeedChem
         PlatformCharacter player;
         int currentTime;
         bool paused;
+        bool pausedThisFrame;
         bool timerRunning = false;
+        public bool isBigFactory = false;
         public bool isDoubleFactory = false;
         UIButtonStyle weaponButtonStyle;
 
@@ -31,10 +33,10 @@ namespace SpeedChem
             //InitObjects();
 
             ui = new UIContainer();
-            ui.Add(new UIButton("Reset", new Rectangle(500,30, 100,50), Game1.buttonStyle, button_Reset));
-            ui.Add(new UIButton("Cancel", new Rectangle(500, 90, 100, 50), Game1.buttonStyle, button_Cancel));
+            ui.Add(new UIButton("Reset", new Rectangle(610,30, 100,50), Game1.buttonStyle, button_Reset));
+            ui.Add(new UIButton("Cancel", new Rectangle(610, 90, 100, 50), Game1.buttonStyle, button_Cancel));
 
-            saveButton = new UIButton("Save", new Rectangle(500, 150, 100, 50), Game1.buttonStyle, button_Save);
+            saveButton = new UIButton("Save", new Rectangle(10, 302, 100, 40), Game1.buttonStyle, button_Save);
             ui.Add(saveButton);
             weaponSlots = new UIContainer();
             ui.Add(weaponSlots);
@@ -54,66 +56,132 @@ namespace SpeedChem
                 playerPos = player.bounds.XY;
 
             objects = new List<PlatformObject>();
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 0), new Vector2(32, 136)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(0, 136), new Vector2(32, 136)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 0), new Vector2(32, 128)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 128), new Vector2(32, 128)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 256), new Vector2(32, 128)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 384), new Vector2(32, 128)));
-            objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(16, 204), new Vector2(32, 32)));
-            objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(0, 272), new Vector2(192, 32)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(192, 272), new Vector2(32, 128)));
-            objects.Add(new PlatformObject(TextureCache.cement, new Vector2(192, 400), new Vector2(32, 128)));
+            triggerables = new List<Command>();
 
-            if (factory.internalSeller != null)
+            isDoubleFactory = (factory.rightSocket != null && factory.rightSocket.connectedPipes.Count > 0);
+            isBigFactory = factory.isBigFactory;
+
+            if (isBigFactory)
             {
-                objects.Add(new SellerZone(factory.internalSeller, factory.sellerPrice, factory.sellerAction, new Vector2(192, 300), new Vector2(160, 32)));
-            }
-            else
-            {
-                //ChemicalSignature inputChemical = new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.GREEN });
-                ChemicalSignature outputChemical = null;
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 0), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 128), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 256), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 384), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(550, 0), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(550, 128), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(550, 256), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(550, 384), new Vector2(32, 128)));
+
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(187-32, 272), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(187 - 32, 400), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(187, 272), new Vector2(192, 32)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(187 + 192, 272), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(187 + 192, 400), new Vector2(32, 128)));
+
+                objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(0, 64), new Vector2(32, 32)));
+
+                //objects.Add(new PlatformObject(TextureCache.cement_dark, new Vector2(187-32, 230), new Vector2(128, 42), Color.White, PlatformObjectType.JumpThrough));
+
+                Command_Spawn spawner = new Command_Spawn(new Vectangle(250, -36, 78, 32), factory, 0);
+                triggerables.Add(spawner);
+                objects.Add(new PushButton(spawner, TextureCache.clear, TextureCache.white, new Vector2(16, 96), new Vector2(8, 32), Color.Red));
+
+                if (isDoubleFactory)
+                {
+                    objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(550 - 16, 64), new Vector2(32, 32)));
+
+                    Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, -36, 78, 32), factory, 1);
+                    triggerables.Add(spawner2);
+                    objects.Add(new PushButton(spawner2, TextureCache.clear, TextureCache.white, new Vector2(550 - 8, 96), new Vector2(8, 32), Color.Red));
+                }
+
+                ChemicalSignature outputChemical1 = null;
                 ChemicalSignature outputChemical2 = null;
-                foreach(OutputPipe pipe in factory.pipes)
+                bool setOutput1 = true;
+                foreach (OutputPipe pipe in factory.pipes)
                 {
                     PipeSocket receiver = pipe.connectedTo;
-                    if (receiver != null)
+                    if (setOutput1)
                     {
-                        if (outputChemical == null)
+                        if (receiver != null)
                         {
-                            outputChemical = receiver.parent.GetInputChemical();
+                            outputChemical1 = receiver.parent.GetInputChemical();
                         }
-                        else
+                        setOutput1 = false;
+                    }
+                    else
+                    {
+                        if (receiver != null)
                         {
                             outputChemical2 = receiver.parent.GetInputChemical();
-                            break;
                         }
+                        break;
                     }
                 }
 
-                objects.Add(new OutputZone(outputChemical, outputChemical2, new Vector2(192, 300), new Vector2(192, 32)));
-            }
+                objects.Add(new OutputZone(outputChemical1, null, new Vector2(32, 400), new Vector2(155, 32)));
+                objects.Add(new OutputZone(outputChemical2, null, new Vector2(187+192+32, 400), new Vector2(155, 32)));
 
-            triggerables = new List<Command>();
-            Command_Spawn spawner = new Command_Spawn(new Vectangle(92, -36, 78, 32), factory, 0);
-            triggerables.Add(spawner);
-
-            objects.Add(new PushButton(spawner, TextureCache.clear, TextureCache.white, new Vector2(32, 240), new Vector2(8, 32), Color.Red));
-
-            if (factory.rightSocket.connectedPipes.Count > 0)
-            {
-                objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(382, 28), new Vector2(32, 32)));
-                objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(192, 96), new Vector2(208, 32)));
-
-                Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, -36, 78, 32), factory, 1);
-                triggerables.Add(spawner2);
-                objects.Add(new PushButton(spawner2, TextureCache.clear, TextureCache.white, new Vector2(400 - 8, 64), new Vector2(8, 32), Color.Red));
-
-                isDoubleFactory = true;
+                saveButton.frame = new Rectangle(185, 302, 100, 40);
             }
             else
             {
-                isDoubleFactory = false;
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(-16, 0), new Vector2(32, 136)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(0, 136), new Vector2(32, 136)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 0), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 128), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 256), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(400, 384), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(16, 204), new Vector2(32, 32)));
+                objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(0, 272), new Vector2(192, 32)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(192, 272), new Vector2(32, 128)));
+                objects.Add(new PlatformObject(TextureCache.cement, new Vector2(192, 400), new Vector2(32, 128)));
+
+                if (factory.internalSeller != null)
+                {
+                    objects.Add(new SellerZone(factory.internalSeller, factory.sellerPrice, factory.sellerAction, new Vector2(192, 300), new Vector2(160, 32)));
+                }
+                else
+                {
+                    //ChemicalSignature inputChemical = new ChemicalSignature(2, new ChemicalElement[] { ChemicalElement.WHITE, ChemicalElement.GREEN });
+                    ChemicalSignature outputChemical = null;
+                    ChemicalSignature outputChemical2 = null;
+                    foreach (OutputPipe pipe in factory.pipes)
+                    {
+                        PipeSocket receiver = pipe.connectedTo;
+                        if (receiver != null)
+                        {
+                            if (outputChemical == null)
+                            {
+                                outputChemical = receiver.parent.GetInputChemical();
+                            }
+                            else
+                            {
+                                outputChemical2 = receiver.parent.GetInputChemical();
+                                break;
+                            }
+                        }
+                    }
+
+                    objects.Add(new OutputZone(outputChemical, outputChemical2, new Vector2(192, 300), new Vector2(192, 32)));
+                }
+
+                Command_Spawn spawner = new Command_Spawn(new Vectangle(92, -36, 78, 32), factory, 0);
+                triggerables.Add(spawner);
+
+                objects.Add(new PushButton(spawner, TextureCache.clear, TextureCache.white, new Vector2(32, 240), new Vector2(8, 32), Color.Red));
+
+                if (isDoubleFactory)
+                {
+                    objects.Add(new PlatformObject(TextureCache.buttonHood, new Vector2(382, 28), new Vector2(32, 32)));
+                    objects.Add(new PlatformObject(TextureCache.woodFloor, new Vector2(192, 96), new Vector2(208, 32)));
+
+                    Command_Spawn spawner2 = new Command_Spawn(new Vectangle(256, -36, 78, 32), factory, 1);
+                    triggerables.Add(spawner2);
+                    objects.Add(new PushButton(spawner2, TextureCache.clear, TextureCache.white, new Vector2(400 - 8, 64), new Vector2(8, 32), Color.Red));
+                }
+
+                saveButton.frame = new Rectangle(10, 302, 100, 40);
             }
 
             player = new PlatformCharacter(TextureCache.character, playerPos, new Vector2(14, 32), Color.White, new Rectangle(9, 0, 14, 32));
@@ -140,7 +208,7 @@ namespace SpeedChem
             }
 
             weaponSlots.Clear();
-            Rectangle currentRect = new Rectangle(430, 425, 175, 50);
+            Rectangle currentRect = new Rectangle(600, 425, 175, 50);
             int WEAPON_SPACING = 55;
             currentRect.Y -= Game1.instance.inventory.availableWeapons.Count * WEAPON_SPACING;
             foreach (Weapon w in Game1.instance.inventory.availableWeapons)
@@ -148,6 +216,11 @@ namespace SpeedChem
                 weaponSlots.Add(new UIWeaponButton(w, Game1.instance.inventory.leftWeapon, Game1.instance.inventory.rightWeapon, currentRect, weaponButtonStyle));
                 currentRect.Y += WEAPON_SPACING;
             }
+        }
+
+        public void PauseFrame()
+        {
+            pausedThisFrame = true;
         }
 
         public void Record(FactoryCommandType commandType)
@@ -184,7 +257,9 @@ namespace SpeedChem
 
         public void Update(InputState inputState)
         {
-            if (paused)
+            inputState.hoveringElement = ui.GetMouseHover(inputState.MousePos);
+
+            /*if (paused)
             {
                 if (inputState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.A)
                     || inputState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.D)
@@ -194,11 +269,14 @@ namespace SpeedChem
                 {
                     paused = false;
                 }
+            }*/
+
+            if (paused || pausedThisFrame)
+            {
+                pausedThisFrame = false;
+                Game1.instance.inventory.UpdateWeapons(inputState, player, objects, projectiles);
             }
-
-            inputState.hoveringElement = ui.GetMouseHover(inputState.MousePos);
-
-            if (!paused)
+            else
             {
                 if(timerRunning)
                     currentTime++;
@@ -210,6 +288,9 @@ namespace SpeedChem
                 }
 
                 bool needsDestroy = false;
+
+                Game1.instance.inventory.UpdateWeapons(inputState, player, objects, projectiles);
+
                 foreach (PlatformObject obj in objects)
                 {
                     obj.Update(inputState, objects, projectiles);
@@ -247,7 +328,10 @@ namespace SpeedChem
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(TextureCache.levelbg, new Rectangle(0, 0, 400, 600), Color.White);
+            if(factory.isBigFactory)
+                spriteBatch.Draw(TextureCache.levelbg, new Rectangle(0, 0, 550, 600), Color.White);
+            else
+                spriteBatch.Draw(TextureCache.levelbg, new Rectangle(0, 0, 400, 600), Color.White);
 
             foreach (PlatformObject obj in objects)
             {
@@ -258,12 +342,18 @@ namespace SpeedChem
                 projectile.Draw(spriteBatch);
             }
 
+            Vector2 panelPos = factory.isBigFactory ? new Vector2(175,0): new Vector2(0, 0);
+            spriteBatch.Draw(TextureCache.screw_panel, new Rectangle((int)panelPos.X, (int)panelPos.Y + 280, 215, 200), Color.White);
+
+            if (timerRunning)
+            {
+                spriteBatch.Draw(TextureCache.record_icon, panelPos + new Vector2(20, 315), Color.White);
+                spriteBatch.DrawString(Game1.font, "REC", panelPos + new Vector2(35, 315), Color.White);
+            }
+            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), panelPos + new Vector2(145, 315), timerRunning ? Color.White: Color.Black);
+            spriteBatch.Draw(timerRunning ? TextureCache.hourglass : TextureCache.hourglass_frozen, panelPos + new Vector2(115, 305), Color.White);
+
             ui.Draw(spriteBatch);
-
-            spriteBatch.Draw(TextureCache.screw_panel, new Rectangle(0, 280, 215, 200), Color.White);
-
-            spriteBatch.DrawString(Game1.font, TimeToString(currentTime), new Vector2(95, 315), timerRunning ? Color.White: Color.Black);
-            spriteBatch.Draw(timerRunning ? TextureCache.hourglass : TextureCache.hourglass_frozen, new Vector2(65, 305), Color.White);
 
             int currentMultiplier = NumThreadsForTime(currentTime/60.0f);
 
@@ -271,7 +361,7 @@ namespace SpeedChem
             int testMultiplier = NumThreadsForTime(testTime);
             int lastMultiplier = 0;
 
-            Vector2 currentPos = new Vector2(10, 400);
+            Vector2 currentPos = panelPos + new Vector2(10, 400);
             while (true)
             {
                 if (testMultiplier != lastMultiplier)
@@ -290,7 +380,7 @@ namespace SpeedChem
             }
 
             int runningCore = currentTime / (60 * ChemicalFactory.TIME_PER_CORE);
-            Vector2 corePos = new Vector2(10, 350);
+            Vector2 corePos = panelPos + new Vector2(10, 350);
             for (int coreIndex = 0; coreIndex < 6; ++coreIndex)
             {
                 if (runningCore > coreIndex)
@@ -361,7 +451,7 @@ namespace SpeedChem
                     break;
                 }
             }
-            Game1.instance.platformLevel.saveButton.SetEnabled(!timerRunning && recordedCommands.Count > 0);
+            Game1.instance.platformLevel.saveButton.SetVisible(!timerRunning && recordedCommands.Count > 0);
         }
 
         public static string TimeToString(int time)

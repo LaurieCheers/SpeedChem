@@ -13,14 +13,27 @@ namespace SpeedChem
     {
         int price;
         CityObject spawn;
+        ChemicalSignature signature;
         UIContainer ui = new UIContainer();
         bool purchased;
+        public override float ShelfRestOffset { get { return 4; } }
 
         public BuildingSite(CityLevel cityLevel, JSONTable template) : base(cityLevel, TextureCache.building_site, template.getVector2("pos"), TextureCache.building_site.Size())
         {
-            this.spawn = CityObject.FromTemplate(cityLevel, template.getJSON("built"));
             this.price = template.getInt("price");
             this.canDrag = false;
+
+            JSONArray signatureTemplate = template.getArray("chemical", null);
+            if (signatureTemplate != null)
+            {
+                this.signature = new ChemicalSignature(signatureTemplate);
+                this.spawn = new ChemicalInbox(cityLevel, signature, 0, bounds.XY);
+            }
+            else
+            {
+                this.spawn = CityObject.FromTemplate(cityLevel, template.getJSON("built"));
+            }
+
             Init();
         }
 
@@ -40,6 +53,7 @@ namespace SpeedChem
         public void button_Purchase()
         {
             purchased = true;
+            didOutput = true;
         }
 
         public override UIMouseResponder GetOverlayMouseHover(Vector2 localMousePos)
@@ -65,6 +79,18 @@ namespace SpeedChem
         public override void Draw(SpriteBatch spriteBatch, CityUIBlackboard blackboard)
         {
             base.Draw(spriteBatch, blackboard);
+
+            if (signature != null)
+            {
+                Vector2 signatureSize = new Vector2(signature.width * 8, signature.height * 8);
+
+                Vector2 signaturePos = new Vector2(
+                    bounds.CenterX - signatureSize.X * 0.5f,
+                    bounds.CenterY - (signatureSize.Y * 0.5f + 8)
+                );
+
+                signature.Draw(spriteBatch, signaturePos, true);
+            }
 
             ui.Draw(spriteBatch);
         }

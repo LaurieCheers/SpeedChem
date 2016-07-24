@@ -127,7 +127,7 @@ namespace SpeedChem
                 currentStyle = styles.normal;
             }
 
-            currentStyle.Draw(spriteBatch, slot.weapon.name, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
+            currentStyle.Draw(spriteBatch, slot.weapon.name, null, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
             spriteBatch.Draw(slot.weapon.texture, new Vector2(frame.X + (int)origin.X + 5, frame.Y + (int)origin.Y + 5), Color.White);
 
             if(isOpen)
@@ -223,7 +223,7 @@ namespace SpeedChem
                 currentStyle = styles.normal;
             }
 
-            currentStyle.Draw(spriteBatch, weapon.name, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
+            currentStyle.Draw(spriteBatch, weapon.name, null, new Rectangle(frame.X + (int)origin.X, frame.Y + (int)origin.Y, frame.Width, frame.Height));
             spriteBatch.Draw(weapon.texture, new Vector2(frame.X + (int)origin.X + 5, frame.Y + (int)origin.Y + 5), Color.White);
 
             if(lmbSlot.weapon == weapon)
